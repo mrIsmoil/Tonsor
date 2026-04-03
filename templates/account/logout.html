@@ -1,0 +1,186 @@
+{% extends 'base.html' %}
+{% load masterpiece_i18n %}
+{% load account socialaccount %}
+
+{% block mobile_toggle %}
+<!-- Hidden on sign out page -->
+{% endblock %}
+
+{% block nav_links %}
+<!-- Hidden on sign out page -->
+{% endblock %}
+
+{% block nav_actions %}
+<!-- Hidden on sign out page -->
+{% endblock %}
+
+{% block head_title %}{% masterpiece_trans "Sign Out" %}{% endblock %}
+
+{% block content %}
+<style>
+    .logout-container {
+        min-height: 80vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 40px 20px;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .logout-card {
+        width: 100%;
+        max-width: 450px;
+        padding: 60px 40px;
+        text-align: center;
+        background: linear-gradient(180deg, rgba(255, 255, 255, 0.05) 0%, transparent 100%);
+        border: 1px solid var(--glass-border);
+        border-radius: 40px;
+        box-shadow: 0 40px 100px rgba(0,0,0,0.5);
+        backdrop-filter: blur(25px);
+        -webkit-backdrop-filter: blur(25px);
+        position: relative;
+        z-index: 10;
+    }
+
+    .logout-icon-wrapper {
+        width: 100px;
+        height: 100px;
+        background: rgba(255, 71, 87, 0.1);
+        border: 1px solid rgba(255, 71, 87, 0.3);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 35px;
+        position: relative;
+    }
+
+    .logout-icon-wrapper i {
+        font-size: 2.5rem;
+        color: #ff4757;
+    }
+
+    .logout-icon-glow {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        background: #ff4757;
+        border-radius: 50%;
+        filter: blur(25px);
+        opacity: 0.3;
+        z-index: -1;
+    }
+
+    .btn-logout {
+        background: white;
+        color: black;
+        border: none;
+        padding: 20px;
+        border-radius: 20px;
+        font-weight: 900;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        cursor: pointer;
+        transition: all 0.4s cubic-bezier(0.19, 1, 0.22, 1);
+        width: 100%;
+        margin-bottom: 20px;
+    }
+
+    .btn-logout:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 30px rgba(255,255,255,0.2);
+        background: #f0f0f0;
+    }
+
+    .btn-delete {
+        background: rgba(139, 0, 0, 0.1);
+        border: 1px solid rgba(139, 0, 0, 0.3);
+        color: #ff4757;
+        padding: 15px;
+        border-radius: 18px;
+        font-weight: 700;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        width: 100%;
+        transition: 0.3s;
+        margin-top: 15px;
+        font-size: 0.95rem;
+    }
+
+    .btn-delete:hover {
+        background: rgba(139, 0, 0, 0.2);
+        border-color: #ff4757;
+        box-shadow: 0 0 20px rgba(255, 71, 87, 0.1);
+    }
+
+    .back-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        color: #666;
+        text-decoration: none;
+        font-size: 0.9rem;
+        font-weight: 600;
+        margin-top: 40px;
+        transition: 0.3s;
+    }
+
+    .back-link:hover {
+        color: white;
+    }
+
+    @media (max-width: 480px) {
+        .logout-card {
+            padding: 50px 25px;
+            border-radius: 32px;
+        }
+        .logout-container { padding: 20px 15px; }
+        .logout-icon-wrapper { width: 85px; height: 85px; }
+        .logout-icon-wrapper i { font-size: 2rem; }
+    }
+</style>
+
+<div class="logout-container">
+    <!-- Background Elements -->
+    <div style="position: absolute; top: 10%; right: 5%; width: 300px; height: 300px; background: rgba(255,255,255,0.02); border-radius: 50%; filter: blur(60px); z-index: 1;"></div>
+    <div style="position: absolute; bottom: 10%; left: 5%; width: 250px; height: 250px; background: rgba(255, 71, 87, 0.03); border-radius: 50%; filter: blur(60px); z-index: 1;"></div>
+
+    <div class="logout-card reveal-content">
+        <div class="logout-icon-wrapper">
+            <div class="logout-icon-glow"></div>
+            <i class="fas fa-sign-out-alt"></i>
+        </div>
+
+        <h1 class="gradient-text" style="font-size: 2.8rem; font-weight: 900; margin-bottom: 15px; letter-spacing: -1px;">{% masterpiece_trans "Sign Out" %}</h1>
+        <p style="color: #888; font-size: 1.1rem; margin-bottom: 45px; font-weight: 500;">
+            {% masterpiece_trans 'Are you sure you want to sign out?' %}
+        </p>
+
+        <form method="post" action="{% url 'account_logout' %}">
+            {% csrf_token %}
+            {% if redirect_field_value %}
+                <input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}"/>
+            {% endif %}
+            
+            <button type="submit" class="btn-logout">
+                {% masterpiece_trans "Sign Out" %}
+            </button>
+        </form>
+
+        {% if user.is_authenticated %}
+            <a href="{% url 'accounts:delete_account_confirm' %}" class="btn-delete">
+                <i class="fas fa-user-minus"></i> {% masterpiece_trans "Remove Account" %}
+            </a>
+        {% endif %}
+
+        <br>
+        <a href="{% url 'accounts:home' %}" class="back-link">
+            <i class="fas fa-long-arrow-alt-left"></i> {% masterpiece_trans "Back to Safety" %}
+        </a>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,144 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: Tonsor\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-03-29 20:29+0500\n"
+"PO-Revision-Date: 2026-03-29 20:29+0500\n"
+"Last-Translator: Antigravity\n"
+"Language-Team: Uzbek\n"
+"Language: uz\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+msgid "Features"
+msgstr "Imkoniyatlar"
+
+msgid "Services"
+msgstr "Xizmatlar"
+
+msgid "Explore"
+msgstr "Kashf qilish"
+
+msgid "Get Started"
+msgstr "Boshlash"
+
+msgid "Home"
+msgstr "Asosiy"
+
+msgid "Barbers"
+msgstr "Sartaroshlar"
+
+msgid "Feed"
+msgstr "Lenta"
+
+msgid "Profile"
+msgstr "Profil"
+
+msgid "Schedule"
+msgstr "Jadval"
+
+msgid "Logout"
+msgstr "Chiqish"
+
+msgid "Login"
+msgstr "Kirish"
+
+msgid "The Antigravity Standard"
+msgstr "Antigravity Standarti"
+
+msgid "Pure Mastery."
+msgstr "Sof Mahorat."
+
+msgid "Tonsor is an exclusive digital ecosystem for the world's most elite barbers and discerning clients. Experience precision grooming through an uncompromising lens."
+msgstr "Tonsor - dunyodagi eng elita sartaroshlar va nozik mijozlar uchun eksklyuziv raqamli ekotizim. Murosasiz nigoh orqali aniq parvarishni his qiling."
+
+msgid "Start Experience"
+msgstr "Tajribani Boshlash"
+
+msgid "Master Barbers"
+msgstr "Usta Sartaroshlar"
+
+msgid "Monthly Sessions"
+msgstr "Oylik Seanslar"
+
+msgid "Precision Rate"
+msgstr "Aniqlik Darajasi"
+
+msgid "Engineered for Artists."
+msgstr "San'atkorlar uchun Yaratilgan."
+
+msgid "A dual-sided ecosystem designed to elevate the barbering craft to a global standard."
+msgstr "Sartaroshlik san'atini global standartga ko'tarish uchun mo'ljallangan ikki tomonlama ekotizim."
+
+msgid "The Client Path"
+msgstr "Mijoz Yo'li"
+
+msgid "Discover an elite network of verified master barbers. Book your next masterpiece with 0% friction, manage your style history, and explore trends."
+msgstr "Tasdiqlangan usta sartaroshlarning elita tarmog'ini kashf eting. Keyingi asaringizni 0% qiyinchilik bilan band qiling, uslubingiz tarixini boshqaring va trendlarni o'rganing."
+
+msgid "Smart Proximity Discovery"
+msgstr "Aqlli Yaqinlikni Aniqlash"
+
+msgid "Adaptive Session Reminders"
+msgstr "Moslashuvchan Seans Eslatmalari"
+
+msgid "The Barber Edge"
+msgstr "Sartarosh Ustunligi"
+
+msgid "Secure your legacy on a platform built for professionals. High-fidelity video portfolios meet advanced shop analytics and revenue scaling tools."
+msgstr "Professionallar uchun yaratilgan platformada o'z merosingizni ta'minlang. Yuqori sifatli video portfellar, ilg'or do'kon tahlillari va daromadni oshirish vositalari bilan birlashadi."
+
+msgid "Master Financial Tracking"
+msgstr "Moliyaviy Nazorat"
+
+msgid "Global Portfolio Distribution"
+msgstr "Global Portfel Tarqatish"
+
+msgid "Curated Excellence"
+msgstr "Tanlangan Mukammallik"
+
+msgid "Tonsor is a closed network. Every professional on this platform is vetted for artistic skill, shop hygiene, and elite client interaction."
+msgstr "Tonsor - yopiq tarmoq. Ushbu platformadagi har bir professional badiiy mahorat, do'kon gigienasi va elita mijozlar bilan muloqot bo'yicha tekshiriladi."
+
+msgid "Vetted Professional Network"
+msgstr "Tekshirilgan Professional Tarmoq"
+
+msgid "Premium Waitlist Priority"
+msgstr "Premium Kutish Ro'yxati Navbati"
+
+msgid "State-of-the-Art"
+msgstr "Eng So'nggi Texnologiya"
+
+msgid "Under the hood resides a custom-built infrastructure optimized for speed. 60FPS fluid interactions and precision map discovery come standard."
+msgstr "Tizim ostida tezlik uchun optimallashtirilgan maxsus infratuzilma yotadi. 60FPS silliq o'zaro ta'sirlar va aniq xarita kashfiyoti standart hisoblanadi."
+
+msgid "Ultra-Low Latency Booking"
+msgstr "O'ta Past Kechikishli Band Qilish"
+
+msgid "Advanced Geospatial Logic"
+msgstr "Ilg'or Geofazo Logikasi"
+
+msgid "Choose Your Path."
+msgstr "O'z Yo'lingizni Tanlang."
+
+msgid "Define your experience in the Tonsor ecosystem."
+msgstr "Tonsor ekotizimida o'z tajribangizni belgilang."
+
+msgid "Client Portal"
+msgstr "Mijoz Portali"
+
+msgid "Access the most exclusive barbershops in the network and optimize your grooming schedule."
+msgstr "Tarmoqdagi eng eksklyuziv sartaroshxonalarga kiring va parvarishlash jadvalingizni optimallashtiring."
+
+msgid "Enter as Client"
+msgstr "Mijoz Sifatida Kirish"
+
+msgid "Barber Portal"
+msgstr "Sartarosh Portali"
+
+msgid "Scale your business with professional tools and showcase your identity to elite clientele."
+msgstr "O'z biznesingizni professional vositalar bilan kengaytiring va o'zligingizni elita mijozlarga namoyish eting."
+
+msgid "Enter as Barber"
+msgstr "Sartarosh Sifatida Kirish"

@@ -1,0 +1,222 @@
+{% load static masterpiece_i18n %}
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Antigravity Barber{% endblock %}</title>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Main CSS -->
+    <link rel="stylesheet" href="{% static 'css/main.css' %}">
+</head>
+<body>
+    <canvas id="bg-canvas"></canvas>
+
+    <!-- Navbar -->
+    <nav class="navbar floating-fast">
+        <div class="logo">
+            <h2 class="gradient-text">Tonsor</h2>
+        </div>
+
+        <div class="nav-links" id="navLinks">
+            {% block nav_links %}
+            <a href="{% url 'accounts:home' %}">{% masterpiece_trans "Home" %}</a>
+            <a href="{% url 'bookings:search_barbers' %}">{% masterpiece_trans "Barbers" %}</a>
+            <a href="{% url 'bookings:client_home' %}">{% masterpiece_trans "Feed" %}</a>
+            {% if user.is_authenticated and user.is_client %}
+            <a href="{% url 'bookings:my_appointments' %}">{% masterpiece_trans "Services" %}</a>
+            {% endif %}
+            {% if user.is_authenticated and user.is_barber %}
+            <a href="{% url 'shops:schedule' %}">{% masterpiece_trans "Schedule" %}</a>
+            {% endif %}
+            <div class="mobile-actions">
+                <!-- Mobile Language Selector -->
+                <div class="language-selector" style="margin-bottom: 20px; display: flex; justify-content: center;">
+                    <button class="lang-btn lang-toggle-trigger" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); padding: 10px 20px; border-radius: 25px;">
+                        <i class="fas fa-globe"></i>
+                        <span class="curr-lang">{% if request.session.masterpiece_lang == 'uz' %}UZ{% elif request.session.masterpiece_lang == 'ru' %}RU{% else %}EN{% endif %}</span>
+                    </button>
+                    <div class="lang-dropdown" style="left: 50%; transform: translateX(-50%) translateY(-10px); right: auto; width: 160px;">
+                        <form action="{% url 'accounts:set_language_direct' %}" method="post">
+                            {% csrf_token %}
+                            <input name="next" type="hidden" value="{{ request.get_full_path }}">
+                            <button type="submit" name="language" value="en" class="lang-opt">English</button>
+                            <button type="submit" name="language" value="uz" class="lang-opt">O'zbekcha</button>
+                            <button type="submit" name="language" value="ru" class="lang-opt">Русский</button>
+                        </form>
+                    </div>
+                </div>
+
+                {% if user.is_authenticated %}
+                    {% if user.is_barber %}
+                    <a href="{% url 'social:upload_video' %}" class="btn-glow blue" style="margin-right: 0; margin-bottom: 15px; font-size: 0.9rem; padding: 10px 20px; text-decoration: none; width: 100%;" title="Add Post">
+                        <i class="fas fa-plus"></i> {% masterpiece_trans "Add Post" %}
+                    </a>
+                    {% endif %}
+                    <a href="{% url 'account_logout' %}" class="btn-glow logout-btn" title="{% masterpiece_trans 'Logout' %}" style="width: 100%; display: flex; justify-content: center; align-items: center; gap: 10px; margin: 0;">
+                        <i class="fas fa-sign-out-alt"></i> {% masterpiece_trans "Logout" %}
+                    </a>
+                {% else %}
+                    <a href="{% url 'accounts:login' %}" class="btn-glow" style="width: 100%;">{% masterpiece_trans "Login" %}</a>
+                {% endif %}
+            </div>
+            {% endblock %}
+        </div>
+        <div class="nav-actions desktop-only" style="display: flex; align-items: center; gap: 15px;">
+            
+            <!-- Language Selector -->
+            {% block nav_lang %}
+            <div class="language-selector" style="margin-right: 0;">
+                <button class="lang-btn lang-toggle-trigger">
+                    <i class="fas fa-globe"></i>
+                    <span class="curr-lang">
+                        {% if request.session.masterpiece_lang == 'uz' %}UZ{% elif request.session.masterpiece_lang == 'ru' %}RU{% else %}EN{% endif %}
+                    </span>
+                </button>
+                <div class="lang-dropdown">
+                    <form action="{% url 'accounts:set_language_direct' %}" method="post">
+                        {% csrf_token %}
+                        <input name="next" type="hidden" value="{{ request.get_full_path }}">
+                        <button type="submit" name="language" value="en" class="lang-opt">English</button>
+                        <button type="submit" name="language" value="uz" class="lang-opt">O'zbekcha</button>
+                        <button type="submit" name="language" value="ru" class="lang-opt">Русский</button>
+                    </form>
+                </div>
+            </div>
+            {% endblock %}
+
+            {% block nav_actions %}
+            <div style="display: flex; align-items: center; gap: 10px;">
+                {% if user.is_authenticated %}
+                    {% if user.is_barber %}
+                    <a href="{% url 'social:upload_video' %}" class="btn-glow blue" style="font-size: 0.85rem; padding: 8px 18px; text-decoration: none; white-space: nowrap;" title="{% masterpiece_trans 'Add Post' %}">
+                        {% masterpiece_trans "Add Post" %}
+                    </a>
+                    {% endif %}
+
+                    {% if user.is_authenticated %}
+                    <a href="{% url 'accounts:profile' %}" class="nav-avatar-circle" title="{{ user.get_full_name|default:user.username }}" style="margin: 0; width: 38px; height: 38px;">
+                        {% if user.profile_photo %}
+                            <img src="{{ user.profile_photo.url }}" alt="{{ user.username }}">
+                        {% elif user.is_barber and user.barber_profile.logo_url %}
+                            <img src="{{ user.barber_profile.logo_url }}" alt="{{ user.barber_profile.shop_name }}">
+                        {% else %}
+                            <span>{{ user.first_name|default:user.username|make_list|first|upper }}</span>
+                        {% endif %}
+                    </a>
+                    {% endif %}
+
+                    <a href="{% url 'account_logout' %}" class="logout-icon-btn" title="{% masterpiece_trans 'Logout' %}" style="color: rgba(255,255,255,0.6); transition: 0.3s; font-size: 1.1rem; padding: 5px;">
+                        <i class="fas fa-sign-out-alt"></i>
+                    </a>
+                {% else %}
+                    <a href="{% url 'accounts:login' %}" class="btn-glow">{% masterpiece_trans "Login" %}</a>
+                {% endif %}
+            </div>
+            {% endblock %}
+        </div>
+        <div class="mobile-only">
+            {% if user.is_authenticated %}
+            <a href="{% url 'accounts:profile' %}" class="nav-avatar-circle" style="width: 35px; height: 35px; margin-left: 0; margin-right: 0;">
+                {% if user.profile_photo %}
+                    <img src="{{ user.profile_photo.url }}" alt="{{ user.username }}">
+                {% elif user.is_barber and user.barber_profile.logo_url %}
+                    <img src="{{ user.barber_profile.logo_url }}" alt="{{ user.barber_profile.shop_name }}">
+                {% else %}
+                    <span style="font-size: 0.9rem;">{{ user.first_name|default:user.username|make_list|first|upper }}</span>
+                {% endif %}
+            </a>
+            {% endif %}
+
+            {% block mobile_toggle %}
+            <div class="menu-toggle" id="mobileMenuToggle" style="margin-left: 5px;">
+                <i class="fas fa-bars"></i>
+            </div>
+            {% endblock %}
+        </div>
+
+        <style>
+            .nav-avatar-circle {
+                width: 40px;
+                height: 40px;
+                border-radius: 50%;
+                background: var(--glass-bg);
+                border: 1px solid rgba(255,255,255,0.2);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                overflow: hidden;
+                margin-right: 15px;
+                transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+                text-decoration: none;
+                color: #ffffff;
+                font-weight: 800;
+                box-shadow: 0 0 15px rgba(255,255,255,0.05);
+            }
+            .logout-icon-btn:hover {
+                color: #ff4757 !important;
+                transform: translateX(3px);
+            }
+            .nav-avatar-circle:hover {
+                transform: scale(1.1);
+                border-color: #ffffff;
+                box-shadow: 0 0 20px rgba(255,255,255,0.2);
+            }
+            .nav-avatar-circle img {
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+            }
+        </style>
+    </nav>
+
+    <!-- Main Content -->
+    <main>
+        {% block content %}
+        {% endblock %}
+    </main>
+
+    <!-- JavaScript for Mobile Menu -->
+    <script>
+        const mobileMenuToggle = document.getElementById('mobileMenuToggle');
+        const navLinks = document.getElementById('navLinks');
+        const langTriggers = document.querySelectorAll('.lang-toggle-trigger');
+        
+        langTriggers.forEach(trigger => {
+            const dropdown = trigger.nextElementSibling;
+            if (trigger && dropdown) {
+                trigger.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    // Close other dropdowns
+                    document.querySelectorAll('.lang-dropdown').forEach(d => {
+                        if (d !== dropdown) d.classList.remove('active');
+                    });
+                    dropdown.classList.toggle('active');
+                });
+            }
+        });
+
+        document.addEventListener('click', () => {
+            document.querySelectorAll('.lang-dropdown').forEach(d => d.classList.remove('active'));
+        });
+
+        if (mobileMenuToggle) {
+            mobileMenuToggle.addEventListener('click', () => {
+                navLinks.classList.toggle('active');
+                mobileMenuToggle.classList.toggle('active');
+                const icon = mobileMenuToggle.querySelector('i');
+                if (navLinks.classList.contains('active')) {
+                    icon.classList.replace('fa-bars', 'fa-times');
+                } else {
+                    icon.classList.replace('fa-times', 'fa-bars');
+                }
+            });
+        }
+    </script>
+    {% block scripts %}{% endblock %}
+    <script src="{% static 'js/home_animation.js' %}"></script>
+</body>
+</html>

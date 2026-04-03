@@ -1,0 +1,174 @@
+{% extends 'base.html' %}
+{% load socialaccount masterpiece_i18n static %}
+
+{% block mobile_toggle %}
+<!-- Hidden on login page -->
+{% endblock %}
+
+{% block nav_links %}
+<!-- Hidden on login page -->
+{% endblock %}
+
+{% block nav_actions %}
+<!-- Hidden on login page -->
+{% endblock %}
+
+{% block content %}
+<style>
+    /* IMMERSIVE LOGIN UI */
+    body {
+        overflow: hidden !important;
+        height: 100vh;
+    }
+
+    /* BULLETPROOF HIGH-FIDELITY INPUT OVERRIDES */
+    input.premium-input {
+        background: rgba(255, 255, 255, 0.03) !important;
+        border: 1px solid rgba(255, 255, 255, 0.12) !important;
+        color: white !important;
+        width: 100% !important;
+        min-height: 60px !important;
+        padding: 0 25px !important;
+        border-radius: 20px !important;
+        font-size: 1rem !important;
+        display: block !important;
+        box-shadow: inset 0 2px 4px rgba(0,0,0,0.2) !important;
+        -webkit-appearance: none !important;
+        appearance: none !important;
+        transition: all 0.4s ease !important;
+    }
+
+    input.premium-input:focus {
+        background: rgba(255, 255, 255, 0.08) !important;
+        border-color: rgba(255, 255, 255, 0.4) !important;
+        box-shadow: 0 0 30px rgba(255,255,255,0.05), inset 0 2px 4px rgba(0,0,0,0.2) !important;
+    }
+
+    .password-wrap {
+        position: relative;
+        width: 100%;
+    }
+
+    .id_password_input {
+        padding-right: 65px !important;
+    }
+
+    .form-container {
+        width: 100%;
+        text-align: left;
+    }
+
+    .tonsor-attention {
+        display: none !important;
+    }
+</style>
+
+
+<div class="login-container" style="min-height: 100vh; display: flex; align-items: center; justify-content: center; position: relative; z-index: 2;">
+
+    <section class="reveal-content" style="width: 100%; max-width: 480px; padding: 20px;">
+        <div class="glass-panel" style="text-align: center; border-radius: 48px; border: 1px solid rgba(255,255,255,0.08); background: linear-gradient(165deg, rgba(255,255,255,0.04), transparent);">
+            <h1 class="gradient-text" style="font-size: clamp(2.5rem, 8vw, 3.5rem); margin-bottom: 40px; font-weight: 900; letter-spacing: -2px;">{% masterpiece_trans "Login" %}</h1>
+            
+            <form method="post" class="form-container" id="loginForm" novalidate>
+                {% csrf_token %}
+                <div style="margin-bottom: 35px; position: relative;" class="field-wrap">
+                    <label style="display: block; margin-bottom: 12px; font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; color: var(--text-primary);">{% masterpiece_trans "Email Address" %}</label>
+                    <input type="email" name="username" id="id_username" class="premium-input" placeholder='{% masterpiece_trans "e.g. master@tonsor.pro" %}' required autocomplete="email">
+                    <div class="tonsor-attention" id="attention_username">
+                        <i class="fas fa-exclamation-triangle" style="margin-right: 8px;"></i>
+                        <span class="error-msg">{% masterpiece_trans "Please provide a valid master portal address." %}</span>
+                    </div>
+                </div>
+                <div style="margin-bottom: 45px; position: relative;" class="field-wrap">
+                    <label style="display: block; margin-bottom: 12px; font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; color: var(--text-primary);">{% masterpiece_trans "Access Key" %}</label>
+                    <div class="password-wrap">
+                        <input type="password" name="password" id="id_password" class="premium-input id_password_input" placeholder="••••••" required autocomplete="current-password">
+                        <span class="password-toggle" onclick="togglePassword()" style="cursor: pointer; position: absolute; right: 20px; top: 50%; transform: translateY(-50%); color: rgba(255,255,255,0.5);">
+                            <i class="fas fa-eye-low-vision" id="toggleIcon"></i>
+                        </span>
+                    </div>
+                    <div class="tonsor-attention" id="attention_password">
+                        <i class="fas fa-lock" style="margin-right: 8px;"></i>
+                        <span class="error-msg">{% masterpiece_trans "Access key is required for ecosystem entry." %}</span>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-glow" style="width: 100%; height: 65px; font-size: 1rem; border: 1.5px solid white; background: white; color: black; border-radius: 20px; font-weight: 900; letter-spacing: 1px;">
+                    {% masterpiece_trans "ENTER ECOSYSTEM" %}
+                </button>
+            </form>
+
+
+
+            <div style="margin: 40px 0; display: flex; align-items: center; gap: 20px;">
+                <div style="flex: 1; height: 1px; background: rgba(255,255,255,0.06);"></div>
+                <span style="font-size: 0.7rem; color: rgba(255,255,255,0.3); text-transform: uppercase; letter-spacing: 3px; font-weight: 800;">{% masterpiece_trans "or" %}</span>
+                <div style="flex: 1; height: 1px; background: rgba(255,255,255,0.06);"></div>
+            </div>
+
+            <a href="{% provider_login_url 'google' %}" class="btn-glow blue" style="width: 100%; height: 55px; border-color: rgba(255,255,255,0.2); background: rgba(255,255,255,0.05); color: white; text-transform: none; letter-spacing: 0.5px; font-weight: 500; font-size: 0.95rem; border-radius: 16px; display: flex; align-items: center; justify-content: center; text-decoration: none;">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" alt="Google" style="width: 20px; height: 20px; margin-right: 12px;">
+                {% masterpiece_trans "Continue with Google" %}
+            </a>
+
+        </div>
+    </section>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{% static 'js/home_animation.js' %}"></script>
+<script>
+function togglePassword() {
+    const passwordInput = document.getElementById('id_password');
+    const toggleIcon = document.getElementById('toggleIcon');
+    if (passwordInput.type === 'password') {
+        passwordInput.type = 'text';
+        toggleIcon.classList.remove('fa-eye-low-vision');
+        toggleIcon.classList.add('fa-eye');
+    } else {
+        passwordInput.type = 'password';
+        toggleIcon.classList.remove('fa-eye');
+        toggleIcon.classList.add('fa-eye-low-vision');
+    }
+}
+
+document.getElementById('loginForm').addEventListener('submit', function(e) {
+    let isValid = true;
+    const email = document.getElementById('id_username');
+    const password = document.getElementById('id_password');
+    
+    // Hide all attentions
+    document.querySelectorAll('.tonsor-attention').forEach(a => a.style.display = 'none');
+    document.querySelectorAll('.premium-input').forEach(i => i.classList.remove('is-invalid', 'shake'));
+
+    if (!email.value.includes('@') || email.value.length < 5) {
+        isValid = false;
+        showAttention('username');
+    }
+
+    if (password.value.length < 1) {
+        isValid = false;
+        showAttention('password');
+    }
+
+    if (!isValid) {
+        e.preventDefault();
+    }
+});
+
+function showAttention(fieldId) {
+    const field = document.getElementById('id_' + fieldId);
+    const attention = document.getElementById('attention_' + fieldId);
+    field.classList.add('is-invalid', 'shake');
+    attention.style.setProperty('display', 'block', 'important');
+    
+    // Reset shake class after animation
+    setTimeout(() => field.classList.remove('shake'), 500);
+}
+</script>
+{% endblock %}
+
+
+

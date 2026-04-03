@@ -1,0 +1,1400 @@
+{% extends 'base.html' %}
+{% load masterpiece_i18n %}
+
+{% block nav_dashboard %}
+<!-- Hidden on profile page -->
+{% endblock %}
+
+{% block nav_dashboard_mobile %}
+<!-- Hidden on profile page -->
+{% endblock %}
+
+{% block content %}
+<style>
+    .profile-header {
+        position: relative;
+        padding: 60px 20px 40px;
+        text-align: center;
+        background: linear-gradient(180deg, rgba(255, 255, 255, 0.05) 0%, transparent 100%);
+        border-bottom: 1px solid var(--glass-border);
+        margin-bottom: 30px;
+    }
+    .profile-avatar {
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        background: var(--glass-bg);
+        border: 2px solid #ffffff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2.5rem;
+        font-weight: bold;
+        color: #ffffff;
+        margin: 0 auto 20px;
+        box-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
+        position: relative;
+    }
+    .profile-stats {
+        display: flex;
+        justify-content: center;
+        gap: 30px;
+        margin: 20px 0;
+    }
+    .stat-item {
+        text-align: center;
+    }
+    .stat-value {
+        display: block;
+        font-size: 1.2rem;
+        font-weight: 700;
+        color: white;
+    }
+    .stat-label {
+        font-size: 0.8rem;
+        color: #888;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+    .social-links {
+        display: flex;
+        justify-content: center;
+        gap: 15px;
+        margin-top: 15px;
+    }
+    .social-btn {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid var(--glass-border);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        text-decoration: none;
+        transition: all 0.3s;
+    }
+    .social-btn:hover {
+        background: #ffffff;
+        color: #000000;
+        transform: translateY(-3px);
+        box-shadow: 0 5px 15px rgba(255, 255, 255, 0.4);
+    }
+    .profile-actions {
+        display: flex;
+        justify-content: center;
+        gap: 15px;
+        margin-top: 25px;
+    }
+    .follow-btn {
+        min-width: 120px;
+        padding: 10px 25px;
+        border-radius: 25px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s;
+        border: 1px solid #ffffff;
+        background: transparent;
+        color: #ffffff;
+    }
+    .follow-btn:hover, .follow-btn.following {
+        background: #ffffff;
+        color: #000000;
+        box-shadow: 0 0 15px rgba(255, 255, 255, 0.3);
+    }
+    .follow-btn:hover {
+        transform: scale(1.05);
+    }
+    .book-btn {
+        background: var(--neon-blue);
+        color: white;
+        padding: 10px 25px;
+        border-radius: 25px;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.3s;
+        box-shadow: 0 0 15px rgba(0, 100, 255, 0.3);
+    }
+    .book-btn:hover {
+        box-shadow: 0 0 20px var(--neon-blue);
+        transform: scale(1.05);
+    }
+    .video-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 35px;
+        padding: 20px;
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+    .video-card {
+        background: var(--glass-bg);
+        border: 1px solid var(--glass-border);
+        border-radius: 15px;
+        overflow: hidden;
+        transition: transform 0.3s;
+    }
+    .video-card:hover {
+        transform: translateY(-5px);
+    }
+    .video-container {
+        position: relative;
+        width: 100%;
+        padding-top: 177.77%; /* 9:16 Aspect Ratio */
+        background: #000;
+    }
+    .video-container video {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+    .video-info {
+        padding: 15px;
+    }
+    .video-stats {
+        display: flex;
+        gap: 15px;
+        color: #888;
+        font-size: 0.9rem;
+    }
+    .video-stats i {
+        margin-right: 5px;
+    }
+    .video-overlay {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        font-size: 3rem;
+        color: white;
+        opacity: 0;
+        transition: opacity 0.3s;
+        pointer-events: none;
+    }
+    .video-container:hover .video-overlay {
+        opacity: 0.5;
+    }
+    .back-btn {
+        position: absolute;
+        top: 20px;
+        left: 20px;
+        width: 45px;
+        height: 45px;
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid var(--glass-border);
+        backdrop-filter: blur(10px);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        cursor: pointer;
+        transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        z-index: 100;
+        text-decoration: none;
+    }
+    .back-btn:hover {
+        background: rgba(255, 255, 255, 0.1);
+        transform: scale(1.1) translateX(-3px);
+        box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+        color: var(--neon-blue);
+        border-color: var(--neon-blue);
+    }
+
+    /* Map Styles Overhaul */
+    .map-section {
+        max-width: 1200px;
+        margin: 0 auto 50px;
+        padding: 0 20px;
+    }
+    .map-container {
+        height: 450px; /* Increased for better view */
+        width: 100%;
+        background: #000;
+        border: 1px solid rgba(255,255,255,0.1);
+        border-radius: 30px;
+        overflow: hidden;
+        position: relative;
+        box-shadow: 0 20px 50px rgba(0,0,0,0.5), 0 0 20px rgba(255,255,255,0.05);
+    }
+    #map {
+        width: 100%;
+        height: 100%;
+        filter: invert(1) hue-rotate(180deg) brightness(0.9) contrast(1.1) grayscale(0.2);
+        transition: all 0.5s ease;
+    }
+    #map:hover {
+        filter: invert(1) hue-rotate(180deg) brightness(1) contrast(1.1) grayscale(0);
+    }
+    
+    /* Premium Glassmorphism Buttons */
+    .directions-btn, .detect-location-btn {
+        position: absolute;
+        right: 25px;
+        z-index: 100;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px 24px;
+        border-radius: 30px;
+        font-weight: 700;
+        font-size: 0.9rem;
+        cursor: pointer;
+        backdrop-filter: blur(25px);
+        -webkit-backdrop-filter: blur(25px);
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        color: white;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+    
+    .directions-btn {
+        bottom: 25px;
+        background: rgba(0, 100, 255, 0.2);
+        border: 1px solid rgba(0, 100, 255, 0.4);
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3), inset 0 0 10px rgba(0, 100, 255, 0.2);
+    }
+    
+    .directions-btn:hover {
+        background: rgba(0, 100, 255, 0.4);
+        transform: translateY(-5px);
+        box-shadow: 0 15px 40px rgba(0, 100, 255, 0.5);
+    }
+    
+    .detect-location-btn {
+        bottom: 85px;
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    }
+    
+    .detect-location-btn:hover {
+        background: rgba(255, 255, 255, 0.15);
+        transform: scale(1.05);
+        border-color: rgba(255, 255, 255, 0.3);
+    }
+    .loading-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.5);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 200;
+        backdrop-filter: blur(5px);
+    }
+    .spinner {
+        width: 40px;
+        height: 40px;
+        border: 4px solid rgba(255,255,255,0.1);
+        border-left-color: var(--neon-blue);
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+    }
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+
+    .desktop-only { display: block; }
+    .mobile-only { display: none !important; }
+
+    /* Professional Mobile Refinement */
+    @media (max-width: 768px) {
+        .profile-header {
+            padding: 40px 15px 30px !important;
+            margin-bottom: 20px !important;
+        }
+        .profile-avatar {
+            width: 85px !important;
+            height: 85px !important;
+            font-size: 2rem !important;
+            margin-bottom: 15px !important;
+        }
+        .profile-header h1 {
+            font-size: 1.6rem !important;
+            letter-spacing: -1px !important;
+        }
+        .profile-stats {
+            gap: 20px !important;
+            margin: 15px 0 !important;
+        }
+        .stat-value {
+            font-size: 1.1rem !important;
+        }
+        .stat-label {
+            font-size: 0.7rem !important;
+            letter-spacing: 0.5px !important;
+        }
+        .pro-badge {
+            font-size: 0.6rem !important;
+            padding: 2px 8px !important;
+        }
+        .lead-pro-name {
+            font-size: 1rem !important;
+        }
+        .address-text {
+            font-size: 0.8rem !important;
+            gap: 10px !important;
+        }
+        .desktop-only { display: none !important; }
+        .mobile-only { display: flex !important; align-items: center; gap: 15px; }
+        .map-container {
+            height: 300px !important;
+            border-radius: 20px !important;
+        }
+        .directions-btn, .detect-location-btn {
+            padding: 10px 18px !important;
+            font-size: 0.8rem !important;
+            right: 15px !important;
+        }
+        .detect-location-btn { bottom: 75px !important; }
+        .directions-btn { bottom: 20px !important; }
+        
+        .working-hours-card {
+            padding: 15px !important;
+            margin: 5px auto 20px !important;
+            width: 90% !important;
+        }
+        .working-hours-card i { font-size: 1rem !important; }
+        .working-hours-card span { font-size: 1rem !important; }
+        .day-dot {
+            width: 24px !important;
+            height: 24px !important;
+            font-size: 0.65rem !important;
+        }
+
+        /* Minimized Video Grid for Mobile */
+        .video-grid {
+            grid-template-columns: repeat(3, 1fr) !important;
+            gap: 2px !important;
+            padding: 5px !important;
+        }
+        .video-card {
+            border-radius: 4px !important;
+            border: none !important;
+            box-shadow: none !important;
+        }
+        .video-info {
+            display: none !important; /* Hide caption/stats for a clean grid on mobile */
+        }
+        .video-container {
+            padding-top: 100% !important; /* Force square aspect ratio for grid feel */
+        }
+        
+        /* Minimizing Services Menu for Mobile */
+        .services-container {
+            display: flex !important;
+            overflow-x: auto !important;
+            scroll-snap-type: x mandatory !important;
+            gap: 15px !important;
+            padding: 10px 5px 25px !important;
+            margin: 0 -15px !important; /* Peek-a-boo effect */
+            scrollbar-width: none !important;
+        }
+        .services-container::-webkit-scrollbar { display: none !important; }
+        
+        .service-card {
+            flex: 0 0 160px !important; /* Compact fixed width */
+            scroll-snap-align: center !important;
+            padding: 15px !important;
+            flex-direction: column !important;
+            align-items: flex-start !important;
+            text-align: left !important;
+            height: auto !important;
+            min-height: 100px !important;
+        }
+        .service-card h4 {
+            font-size: 0.85rem !important;
+            margin-bottom: 8px !important;
+            white-space: normal !important;
+            display: -webkit-box !important;
+            -webkit-line-clamp: 2 !important;
+            -webkit-box-orient: vertical !important;
+            overflow: hidden !important;
+        }
+        .service-card .price-tag {
+            margin-top: auto !important;
+            font-size: 0.95rem !important;
+        }
+        .service-card .duration-tag {
+            font-size: 0.7rem !important;
+        }
+
+        /* Enhanced Video Grid Overlay for Mobile */
+        .video-grid {
+            grid-template-columns: repeat(3, 1fr) !important;
+            gap: 1px !important;
+            padding: 0 !important;
+        }
+        .video-card {
+            border-radius: 0 !important;
+            border: none !important;
+        }
+        .video-stats-overlay {
+            position: absolute !important;
+            bottom: 8px !important;
+            left: 8px !important;
+            display: flex !important;
+            gap: 10px !important;
+            background: rgba(0,0,0,0.6) !important;
+            backdrop-filter: blur(8px) !important;
+            -webkit-backdrop-filter: blur(8px) !important;
+            padding: 5px 12px !important;
+            border-radius: 25px !important;
+            color: white !important;
+            font-size: 0.85rem !important;
+            font-weight: 800 !important;
+            border: 1px solid rgba(255,255,255,0.2) !important;
+            z-index: 10 !important;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.4) !important;
+            transition: 0.3s !important;
+        }
+        .video-stats-overlay i { font-size: 0.75rem !important; margin-right: 3px !important; }
+        
+        .video-container::after {
+            content: "" !important;
+            position: absolute !important;
+            bottom: 0 !important;
+            left: 0 !important;
+            width: 100% !important;
+            height: 50% !important;
+            background: linear-gradient(transparent, rgba(0,0,0,0.7)) !important;
+            pointer-events: none !important;
+        }
+    }
+</style>
+
+<div class="profile-header">
+    <a href="javascript:history.back()" class="back-btn" title="{% masterpiece_trans 'Go Back' %}">
+        <i class="fas fa-arrow-left"></i>
+    </a>
+    <div class="profile-avatar" style="overflow: hidden;">
+        {% if barber.logo_url %}
+            <img src="{{ barber.logo_url }}" alt="{{ barber.shop_name }}" style="width: 100%; height: 100%; object-fit: cover;">
+        {% else %}
+            {{ barber.shop_name|make_list|first|upper }}
+        {% endif %}
+    </div>
+    <div style="display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 5px;">
+        <h1 class="gradient-text" style="font-size: 2rem; margin: 0;">{{ barber.shop_name }}</h1>
+        {% if barber.is_new %}
+        <span style="background: #ffffff; color: #000000; font-size: 0.7rem; padding: 2px 8px; border-radius: 4px; font-weight: 900; letter-spacing: 0.5px; border: 1px solid #000; transform: translateY(-2px);">NEW</span>
+        {% endif %}
+        <span id="profile-status-badge" class="status-badge {% if barber.is_open_now %}open{% else %}closed{% endif %}">
+            {% if barber.is_open_now %}{% masterpiece_trans "OPEN" %}{% else %}{% masterpiece_trans "CLOSED" %}{% endif %}
+        </span>
+    </div>
+    <div id="shop-status-message" style="font-size: 0.85rem; color: #aaa; margin-bottom: 1px; display: none;"></div>
+    
+    <!-- Lead Professional / Main Worker -->
+    <div style="margin: 8px 0 15px; display: flex; align-items: center; justify-content: center; gap: 8px;">
+        <div class="pro-badge">
+            <i class="fas fa-certificate" style="color: #00ffcc; font-size: 0.7rem;"></i>
+            <span>{% masterpiece_trans "LEAD PROFESSIONAL" %}</span>
+        </div>
+        <span class="lead-pro-name" style="color: #ffffff; font-weight: 700; font-size: 1.1rem; letter-spacing: 0.5px;">{{ barber.user.get_full_name|default:barber.user.username }}</span>
+    </div>
+
+    <style>
+        .pro-badge {
+            background: rgba(0, 255, 204, 0.1);
+            color: #00ffcc;
+            font-size: 0.65rem;
+            font-weight: 900;
+            padding: 3px 10px;
+            border-radius: 20px;
+            border: 1px solid rgba(0, 255, 204, 0.3);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+        .status-badge {
+            padding: 2px 10px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 800;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            transition: all 0.3s;
+        }
+        .status-badge.open {
+            background: rgba(51, 255, 51, 0.1);
+            color: #33ff33;
+            border: 1px solid #33ff33;
+            box-shadow: 0 0 10px rgba(51, 255, 51, 0.2);
+        }
+        .status-badge.closed {
+            background: rgba(255, 51, 51, 0.1);
+            color: #ff3333;
+            border: 1px solid #ff3333;
+        }
+    </style>
+    <p class="address-text" style="color: #aaa; margin-top: 5px; display: flex; align-items: center; justify-content: center; gap: 15px;">
+        <span class="desktop-only"><i class="fas fa-map-marker-alt" style="margin-right: 8px;"></i>{{ barber.address }}</span>
+        <span class="mobile-only"><i class="fas fa-map-marker-alt" style="margin-right: 8px;"></i>{{ barber.short_address }}</span>
+        <span style="display: flex; align-items: center; gap: 5px; color: rgba(255,255,255,0.5); font-size: 0.9rem;">
+            | 
+            {% if barber.shop_type == 'men' %}
+                <i class="fas fa-mars" style="color: var(--neon-blue);"></i> {% masterpiece_trans "Men's Barber" %}
+            {% else %}
+                <i class="fas fa-venus" style="color: #ff33cc;"></i> {% masterpiece_trans "Women's Salon" %}
+            {% endif %}
+        </span>
+    </p>
+    
+    <div class="profile-stats">
+        <div class="stat-item">
+            <span class="stat-value" id="follower-count">{{ follower_count }}</span>
+            <span class="stat-label">{% masterpiece_trans "Followers" %}</span>
+        </div>
+        <div class="stat-item">
+            <span class="stat-value"><i class="fas fa-star" style="color: #FFD700; font-size: 0.9rem; margin-right: 4px;"></i>{{ barber.rating|floatformat:1 }}</span>
+            <span class="stat-label">{% masterpiece_trans "Rating" %}</span>
+        </div>
+        <div class="stat-item">
+            <span class="stat-value">{{ videos.count }}</span>
+            <span class="stat-label">{% masterpiece_trans "Posts" %}</span>
+        </div>
+    </div>
+
+    {% if not barber.depends_on_owner and barber.open_time %}
+    <div class="working-hours-card" style="background: rgba(255,255,255,0.05); padding: 20px; border-radius: 15px; border: 1px solid rgba(255,255,255,0.1); display: inline-block; margin: 10px auto 25px;">
+        <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 12px; justify-content: center;">
+            <i class="far fa-clock" style="color: var(--neon-blue); font-size: 1.2rem;"></i>
+            <span style="font-weight: 600; font-size: 1.1rem;">{{ barber.open_time|time:"H:i" }} - {{ barber.close_time|time:"H:i" }}</span>
+        </div>
+        <div style="display: flex; gap: 6px; justify-content: center; flex-wrap: wrap;">
+            {% with days=barber.work_days|default:"" %}
+                <span class="day-dot {% if 'Mon' in days %}active{% endif %}" data-day="Mon">M</span>
+                <span class="day-dot {% if 'Tue' in days %}active{% endif %}" data-day="Tue">T</span>
+                <span class="day-dot {% if 'Wed' in days %}active{% endif %}" data-day="Wed">W</span>
+                <span class="day-dot {% if 'Thu' in days %}active{% endif %}" data-day="Thu">T</span>
+                <span class="day-dot {% if 'Fri' in days %}active{% endif %}" data-day="Fri">F</span>
+                <span class="day-dot {% if 'Sat' in days %}active{% endif %}" data-day="Sat">S</span>
+                <span class="day-dot {% if 'Sun' in days %}active{% endif %}" data-day="Sun">S</span>
+            {% endwith %}
+        </div>
+    </div>
+    <style>
+        .day-dot {
+            width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: bold; background: rgba(255,255,255,0.05); color: rgba(255,255,255,0.3); border: 1px solid rgba(255,255,255,0.05); transition: 0.3s;
+        }
+        .day-dot.active {
+            background: rgba(0, 100, 255, 0.15); color: var(--neon-blue); border-color: var(--neon-blue); box-shadow: 0 0 10px rgba(0, 100, 255, 0.2);
+        }
+        .day-dot.current-day {
+            border: 2px solid white;
+            color: white;
+            box-shadow: 0 0 8px rgba(255, 255, 255, 0.5);
+        }
+    </style>
+    {% endif %}
+
+    <div class="social-links">
+        {% if barber.instagram_link %}
+            <a href="{{ barber.instagram_link }}" target="_blank" class="social-btn"><i class="fab fa-instagram"></i></a>
+        {% endif %}
+        {% if barber.telegram_link %}
+            <a href="{{ barber.telegram_link }}" target="_blank" class="social-btn"><i class="fab fa-telegram-plane"></i></a>
+        {% endif %}
+        {% if barber.phone_number %}
+            <a href="tel:{{ barber.phone_number }}" class="social-btn"><i class="fas fa-phone"></i></a>
+        {% endif %}
+    </div>
+
+    <div class="profile-actions">
+        {% if user.is_authenticated and user != barber.user %}
+            <button class="follow-btn {% if is_following %}following{% endif %}" id="follow-toggle">
+                {% if is_following %}{% masterpiece_trans "Unfollow" %}{% else %}{% masterpiece_trans "Follow" %}{% endif %}
+            </button>
+        {% endif %}
+        {% if not request.user.is_barber %}
+            <a href="{% url 'bookings:book_appointment' barber.id %}" class="book-btn">{% masterpiece_trans "Book Now" %}</a>
+        {% endif %}
+    </div>
+</div>
+
+<div class="map-section">
+    <div class="map-container">
+        <div id="map"></div>
+        <div class="loading-overlay" id="map-loading">
+            <div class="spinner"></div>
+        </div>
+        <button class="detect-location-btn" id="detect-location">
+            <i class="fas fa-crosshairs"></i> {% masterpiece_trans "Detect My Location" %}
+        </button>
+        <button class="directions-btn" id="get-directions">
+            <i class="fas fa-directions"></i> {% masterpiece_trans "Get Directions" %}
+        </button>
+    </div>
+</div>
+
+{% if barber.images.all %}
+<div class="atmosphere-section" style="max-width: 1200px; margin: 0 auto 50px; padding: 0 20px;">
+    <h2 style="color: white; font-size: 1.5rem; margin-bottom: 25px; display: flex; align-items: center; gap: 15px;">
+        <i class="fas fa-images" style="color: var(--neon-blue);"></i> {% masterpiece_trans "Shop Atmosphere" %}
+        <div style="flex: 1; height: 1px; background: linear-gradient(to right, rgba(255,255,255,0.1), transparent);"></div>
+    </h2>
+    <div class="atmosphere-grid">
+        {% for img in barber.images.all %}
+        {% if not img.is_logo %}
+        <div class="atmosphere-card" onclick="openLightbox(this.querySelector('img').src)">
+            <img src="{{ img.image.url }}" alt="Atmosphere">
+        </div>
+        {% endif %}
+        {% endfor %}
+    </div>
+</div>
+
+<style>
+    .atmosphere-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 20px;
+    }
+    
+    @media (min-width: 1024px) {
+        .atmosphere-grid {
+            grid-template-columns: repeat(4, 1fr);
+            grid-template-rows: repeat(2, 250px);
+            gap: 25px;
+        }
+        /* Bento style featured first image */
+        .atmosphere-card:nth-child(1) {
+            grid-column: span 2;
+            grid-row: span 2;
+        }
+        .atmosphere-card:nth-child(1) img {
+            aspect-ratio: auto !important;
+            height: 100% !important;
+        }
+    }
+
+    .atmosphere-card {
+        position: relative;
+        padding: 10px;
+        background: rgba(255,255,255,0.03);
+        border: 1px solid rgba(255,255,255,0.08);
+        border-radius: 24px;
+        overflow: hidden;
+        transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+        cursor: pointer;
+        backdrop-filter: blur(15px);
+        -webkit-backdrop-filter: blur(15px);
+    }
+
+    .atmosphere-card::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: radial-gradient(circle at top left, rgba(255,255,255,0.1), transparent);
+        opacity: 0;
+        transition: 0.5s;
+    }
+
+    .atmosphere-card:hover::before {
+        opacity: 1;
+    }
+
+    .atmosphere-card:hover {
+        transform: translateY(-8px);
+        background: rgba(255,255,255,0.06);
+        border-color: rgba(255,255,255,0.3);
+        box-shadow: 0 20px 40px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.1);
+    }
+    
+    .atmosphere-card img {
+        width: 100%;
+        aspect-ratio: 1/1;
+        object-fit: cover;
+        border-radius: 16px;
+        transition: transform 0.8s cubic-bezier(0.23, 1, 0.32, 1);
+    }
+
+    .atmosphere-card:hover img {
+        transform: scale(1.08);
+    }
+
+    /* Eye Icon Overlay */
+    .atmosphere-card::after {
+        content: "\f06e";
+        font-family: "Font Awesome 6 Free";
+        font-weight: 900;
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%) scale(0.5);
+        color: white;
+        background: rgba(0, 100, 255, 0.6);
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        opacity: 0;
+        transition: 0.4s;
+        backdrop-filter: blur(5px);
+        border: 2px solid rgba(255,255,255,0.3);
+        box-shadow: 0 0 30px rgba(0, 100, 255, 0.5);
+    }
+
+    .atmosphere-card:hover::after {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1);
+    }
+    }
+    .atmosphere-card:hover img {
+        filter: brightness(1.1);
+    }
+
+    @media (max-width: 768px) {
+        .atmosphere-grid {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+        }
+        .atmosphere-card {
+            padding: 6px;
+            border-radius: 15px;
+        }
+        .atmosphere-card img {
+            border-radius: 10px;
+        }
+        .atmosphere-section h2 {
+            font-size: 1.2rem !important;
+            margin-bottom: 20px !important;
+        }
+    }
+</style>
+
+<!-- Simple Lightbox -->
+<div id="lightbox" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 9999; align-items: center; justify-content: center; backdrop-filter: blur(15px); cursor: pointer;" onclick="this.style.display='none'">
+    <div style="position: absolute; top: 30px; right: 30px; color: white; font-size: 2rem; opacity: 0.7; z-index: 10001;"><i class="fas fa-times"></i></div>
+    <img id="lightbox-img" src="" style="max-width: 90%; max-height: 90%; object-fit: contain; border: 1px solid rgba(255,255,255,0.3); border-radius: 12px; box-shadow: 0 0 50px rgba(0,0,0,1); position: relative; z-index: 10000;">
+</div>
+
+<script>
+    function openLightbox(src) {
+        document.getElementById('lightbox-img').src = src;
+        document.getElementById('lightbox').style.display = 'flex';
+    }
+</script>
+{% endif %}
+
+<div style="max-width: 1200px; margin: 0 auto 50px; padding: 0 20px;">
+    <h2 style="color: white; font-size: 1.5rem; margin-bottom: 25px; display: flex; align-items: center; gap: 15px;">
+        <i class="fas fa-concierge-bell" style="color: var(--neon-blue);"></i> {% masterpiece_trans "Services Menu" %}
+        <div style="flex: 1; height: 1px; background: linear-gradient(to right, rgba(255,255,255,0.1), transparent);"></div>
+    </h2>
+    <div class="services-container" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 30px;">
+        {% for service in barber.services.all %}
+            <div class="glass-panel service-card" style="padding: 20px; display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); transition: 0.3s; cursor: default;">
+                <div style="flex: 1;">
+                    <h4 style="margin: 0 0 5px; font-size: 1rem; color: white;">{% masterpiece_trans service.name %}</h4>
+                    <span class="duration-tag" style="font-size: 0.8rem; color: #888;">{{ service.duration_minutes }} {% masterpiece_trans "min" %}</span>
+                </div>
+                <div style="text-align: right;">
+                    <span class="price-tag" style="display: block; font-size: 1.1rem; font-weight: 700; color: var(--neon-blue); letter-spacing: 0.5px;">
+                        {% if service.currency == 'USD' %}${% endif %}{{ service.price|floatformat:0 }}{% if service.currency == 'UZS' %} UZS{% endif %}
+                    </span>
+                </div>
+            </div>
+        {% empty %}
+            <p style="grid-column: 1 / -1; text-align: center; color: #666; padding: 30px;">{% masterpiece_trans "No services listed yet." %}</p>
+        {% endfor %}
+    </div>
+</div>
+
+<div class="video-grid">
+    {% for video in videos %}
+        <div class="video-card" onclick="openInteractions({{ video.id }})" style="cursor: pointer;">
+            <div class="video-container">
+                <video muted loop playsinline class="profile-video">
+                    <source src="{{ video.video_file.url }}" type="video/mp4">
+                </video>
+                <div class="video-overlay"><i class="fas fa-play"></i></div>
+                <div class="video-stats-overlay mobile-only">
+                    <span><i class="fas fa-heart"></i> {{ video.like_count }}</span>
+                    <span><i class="fas fa-comment"></i> {{ video.comments.count }}</span>
+                </div>
+            </div>
+            <div class="video-info desktop-only">
+                <p style="color: #ddd; margin-bottom: 10px; font-size: 0.95rem;">{{ video.caption }}</p>
+                <div class="video-stats">
+                    <span><i class="fas fa-heart"></i> {{ video.like_count }}</span>
+                    <span><i class="fas fa-comment"></i> {{ video.comments.count }}</span>
+                </div>
+            </div>
+        </div>
+    {% empty %}
+        <div style="grid-column: 1 / -1; text-align: center; padding: 50px; color: #666;">
+            <i class="fas fa-video-slash" style="font-size: 3rem; margin-bottom: 15px; display: block;"></i>
+            <p>{% masterpiece_trans "No videos posted yet." %}</p>
+        </div>
+    {% endfor %}
+</div>
+
+<!-- Interaction Modal -->
+<div id="interaction-modal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 10001; align-items: center; justify-content: center; backdrop-filter: blur(20px);">
+    <div class="glass-panel" style="width: 90%; max-width: 500px; max-height: 80vh; overflow-y: auto; padding: 40px 30px; border-radius: 28px; position: relative; border: 1px solid rgba(255,255,255,0.1);">
+        <button onclick="closeInteractions()" style="position: absolute; top: 20px; right: 20px; background: none; border: none; color: white; font-size: 1.5rem; cursor: pointer; opacity: 0.5;"><i class="fas fa-times"></i></button>
+        
+        <h2 id="modal-caption" style="font-size: 1.1rem; margin-bottom: 30px; font-weight: 500; color: #fff; line-height: 1.5; padding-right: 30px;"></h2>
+        
+        <div style="display: flex; gap: 20px; margin-bottom: 30px; border-bottom: 1px solid rgba(255,255,255,0.05);">
+            <button id="tab-likes" onclick="switchTab('likes')" style="background: none; border: none; color: white; font-weight: 700; cursor: pointer; opacity: 1; border-bottom: 2px solid white; padding-bottom: 15px; font-size: 1rem;">{% masterpiece_trans "Likes" %} (<span id="count-likes">0</span>)</button>
+            <button id="tab-comments" onclick="switchTab('comments')" style="background: none; border: none; color: #888; font-weight: 700; cursor: pointer; opacity: 1; padding-bottom: 15px; font-size: 1rem;">{% masterpiece_trans "Comments" %} (<span id="count-comments">0</span>)</button>
+        </div>
+        
+        <div id="likes-list" style="display: block;">
+            <div id="likes-content"></div>
+        </div>
+        
+        <div id="comments-list" style="display: none;">
+            <div id="comments-content"></div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://api-maps.yandex.ru/2.1/?apikey={{ YANDEX_MAPS_API_KEY }}&lang=en_US&load=package.full" type="text/javascript"></script>
+
+<!-- Barber Data -->
+<div id="barber-data" style="display: none;"
+    data-id="{{ barber.id }}"
+    data-lat="{{ barber.location_lat|default:'41.2995'|safe }}"
+    data-lng="{{ barber.location_lng|default:'69.2401'|safe }}"
+    data-shop-name="{{ barber.shop_name }}"
+    data-address="{{ barber.address }}"
+    data-open-time="{{ barber.open_time|time:'H:i'|default:'' }}"
+    data-close-time="{{ barber.close_time|time:'H:i'|default:'' }}"
+    data-work-days="{{ barber.work_days|default:'' }}"
+    data-depends-on-owner="{{ barber.depends_on_owner|yesno:'true,false' }}"
+    data-is-open-now="{{ barber.is_open_now|yesno:'true,false' }}"
+    data-api-statuses-url="{% url 'shops:api_statuses' %}"
+    data-update-location-url="{% url 'accounts:update_location' %}"
+    data-follow-url="/social/follow/{{ barber.id }}/"
+    data-csrf="{{ csrf_token }}"
+    data-is-authenticated="{% if user.is_authenticated %}true{% else %}false{% endif %}"
+></div>
+
+<!-- Translation Data -->
+<div id="js-translations" style="display: none;"
+    data-open="{% masterpiece_trans 'OPEN' %}"
+    data-closed="{% masterpiece_trans 'CLOSED' %}"
+    data-follow="{% masterpiece_trans 'Follow' %}"
+    data-unfollow="{% masterpiece_trans 'Unfollow' %}"
+    data-no-schedule="{% masterpiece_trans 'No schedule available' %}"
+    data-closes-at="{% masterpiece_trans 'Closes at' %}"
+    data-opens-at="{% masterpiece_trans 'Opens at' %}"
+    data-today="{% masterpiece_trans 'today' %}"
+    data-tomorrow="{% masterpiece_trans 'tomorrow' %}"
+    data-closed-today="{% masterpiece_trans 'Closed for today' %}"
+    data-sun="{% masterpiece_trans 'Sunday' %}"
+    data-mon="{% masterpiece_trans 'Monday' %}"
+    data-tue="{% masterpiece_trans 'Tuesday' %}"
+    data-wed="{% masterpiece_trans 'Wednesday' %}"
+    data-thu="{% masterpiece_trans 'Thursday' %}"
+    data-fri="{% masterpiece_trans 'Friday' %}"
+    data-sat="{% masterpiece_trans 'Saturday' %}"
+></div>
+
+<script>
+    const MapApp = {
+        map: null,
+        trans: document.getElementById('js-translations').dataset,
+        data: document.getElementById('barber-data').dataset,
+        userPlacemark: null,
+        multiRoute: null,
+
+        get coords() {
+            return [parseFloat(this.data.lat), parseFloat(this.data.lng)];
+        },
+
+        get schedule() {
+            return {
+                openTime: this.data.openTime,
+                closeTime: this.data.closeTime,
+                workDays: this.data.workDays.split(',').filter(Boolean),
+                dependsOnOwner: this.data.dependsOnOwner === 'true',
+                isOpenNow: this.data.isOpenNow === 'true'
+            };
+        },
+
+        updateStatus: function() {
+            const badge = document.getElementById('profile-status-badge');
+            const messageEl = document.getElementById('shop-status-message');
+            if (!badge) return;
+
+            const setStatus = (isOpen, message) => {
+                badge.innerText = isOpen ? this.trans.open : this.trans.closed;
+                badge.className = `status-badge ${isOpen ? 'open' : 'closed'}`;
+                if (isOpen) {
+                    badge.style.background = "rgba(51, 255, 51, 0.1)";
+                    badge.style.color = "#33ff33";
+                    badge.style.border = "1px solid #33ff33";
+                    badge.style.boxShadow = "0 0 10px rgba(51, 255, 51, 0.3)";
+                } else {
+                    badge.style.background = "rgba(255, 51, 51, 0.1)";
+                    badge.style.color = "#ff3333";
+                    badge.style.border = "1px solid #ff3333";
+                    badge.style.boxShadow = "none";
+                }
+                if (messageEl) {
+                    messageEl.innerText = message || '';
+                    messageEl.style.display = message ? 'block' : 'none';
+                }
+            };
+
+            if (this.schedule.dependsOnOwner) {
+                fetch(this.data.apiStatusesUrl)
+                    .then(response => response.json())
+                    .then(data => {
+                        const isOpen = !!data[this.data.id];
+                        setStatus(isOpen, "");
+                    });
+                return;
+            }
+
+            if (!this.schedule.openTime || !this.schedule.closeTime || this.schedule.workDays.length === 0) {
+                setStatus(false, this.trans.noSchedule);
+                return;
+            }
+
+            const now = new Date();
+            const daysMap = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+            const currentDayStr = daysMap[now.getDay()];
+
+            document.querySelectorAll('.day-dot').forEach(el => {
+                if (el.getAttribute('data-day') === currentDayStr) {
+                    el.classList.add('current-day');
+                } else {
+                    el.classList.remove('current-day');
+                }
+            });
+
+            const currentHour = now.getHours();
+            const currentMinute = now.getMinutes();
+            const currentTimeStr = `${currentHour.toString().padStart(2, '0')}:${currentMinute.toString().padStart(2, '0')}`;
+            
+            const isOpenDay = this.schedule.workDays.includes(currentDayStr);
+            const isOpenTime = currentTimeStr >= this.schedule.openTime && currentTimeStr < this.schedule.closeTime;
+
+            if (isOpenDay && isOpenTime) {
+                setStatus(true, this.trans.closesAt + " " + this.schedule.closeTime);
+            } else {
+                let message = this.trans.closedToday;
+                if (isOpenDay && currentTimeStr < this.schedule.openTime) {
+                    message = this.trans.opensAt + " " + this.schedule.openTime + " " + this.trans.today;
+                } else {
+                    for (let i = 1; i <= 7; i++) {
+                        const nextDayIdx = (now.getDay() + i) % 7;
+                        const nextDayStr = daysMap[nextDayIdx];
+                        if (this.schedule.workDays.includes(nextDayStr)) {
+                            const dayNameNames = [this.trans.sun, this.trans.mon, this.trans.tue, this.trans.wed, this.trans.thu, this.trans.fri, this.trans.sat];
+                            const dayNameLabel = i === 1 ? this.trans.tomorrow : dayNameNames[nextDayIdx];
+                            message = this.trans.opensAt + " " + this.schedule.openTime + " " + dayNameLabel;
+                            break;
+                        }
+                    }
+                }
+                setStatus(false, message);
+            }
+        },
+
+        init: function() {
+            if (typeof ymaps !== 'undefined') {
+                ymaps.ready(() => this.initMap());
+            }
+            this.bindEvents();
+            this.updateStatus();
+            setInterval(() => this.updateStatus(), 60000);
+        },
+
+        initMap: function() {
+            this.map = new ymaps.Map("map", {
+                center: this.coords,
+                zoom: 16,
+                controls: [] // Remove all default controls for a clean look
+            });
+
+            // Create a custom SVG marker layout
+            const CustomIconLayout = ymaps.templateLayoutFactory.createClass(
+                '<div class="custom-marker">' +
+                '<div class="marker-ring"></div>' +
+                '<div class="marker-dot"></div>' +
+                '</div>'
+            );
+
+            // Add CSS for the custom marker to the page
+            const style = document.createElement('style');
+            style.innerHTML = `
+                .custom-marker {
+                    position: relative;
+                    width: 40px;
+                    height: 40px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                }
+                .marker-ring {
+                    position: absolute;
+                    width: 30px;
+                    height: 30px;
+                    background: rgba(0, 100, 255, 0.2);
+                    border: 2px solid #0064FF;
+                    border-radius: 50%;
+                    animation: pulse 2s infinite;
+                }
+                .marker-dot {
+                    width: 12px;
+                    height: 12px;
+                    background: #ffffff;
+                    border-radius: 50%;
+                    box-shadow: 0 0 15px #0064FF, 0 0 5px #ffffff;
+                    z-index: 2;
+                }
+                @keyframes pulse {
+                    0% { transform: scale(0.8); opacity: 1; }
+                    100% { transform: scale(1.5); opacity: 0; }
+                }
+            `;
+            document.head.appendChild(style);
+
+            const shopPlacemark = new ymaps.Placemark(this.coords, {
+                hintContent: this.data.shopName,
+                balloonContent: `<div style="color:#000; padding:5px;"><strong>${this.data.shopName}</strong><br>${this.data.shopAddress}</div>`
+            }, {
+                iconLayout: CustomIconLayout,
+                iconShape: {
+                    type: 'Circle',
+                    coordinates: [0, 0],
+                    radius: 20
+                }
+            });
+
+            this.map.geoObjects.add(shopPlacemark);
+        },
+
+        bindEvents: function() {
+            document.getElementById('detect-location').addEventListener('click', () => this.handleDetectLocation());
+            document.getElementById('get-directions').addEventListener('click', () => this.handleGetDirections());
+            
+            const followBtn = document.getElementById('follow-toggle');
+            if (followBtn) {
+                followBtn.addEventListener('click', () => this.toggleFollow());
+            }
+
+            document.querySelectorAll('.profile-video').forEach(video => {
+                const container = video.parentElement;
+                
+                // Desktop Hover
+                container.addEventListener('mouseenter', () => {
+                    if (window.innerWidth > 768) video.play();
+                });
+                container.addEventListener('mouseleave', () => {
+                    if (window.innerWidth > 768) video.pause();
+                });
+
+                // Intersection Observer for Mobile Auto-play
+                const observer = new IntersectionObserver((entries) => {
+                    entries.forEach(entry => {
+                        if (window.innerWidth <= 768) {
+                            if (entry.isIntersecting) {
+                                video.play().catch(e => console.log("Autoplay blocked"));
+                            } else {
+                                video.pause();
+                            }
+                        }
+                    });
+                }, { threshold: 0.7 });
+                observer.observe(video);
+            });
+        },
+
+        setLoading: function(show) {
+            document.getElementById('map-loading').style.display = show ? 'flex' : 'none';
+        },
+
+        handleDetectLocation: function() {
+            if (!navigator.geolocation) {
+                alert("Your browser does not support geolocation.");
+                return;
+            }
+
+            this.setLoading(true);
+            
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    const coords = [position.coords.latitude, position.coords.longitude];
+                    this.updateUserLocation(coords, true);
+                    this.syncLocationWithBackend(coords);
+                    this.setLoading(false);
+                },
+                (error) => {
+                    this.setLoading(false);
+                    let msg = "Unable to retrieve your location.";
+                    if (error.code === error.PERMISSION_DENIED) msg = "Location permission denied.";
+                    alert(msg);
+                },
+                { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 }
+            );
+        },
+
+        updateUserLocation: function(coords, shouldCenter = false) {
+            if (!this.map) return;
+
+            if (!this.userPlacemark) {
+                const UserIconLayout = ymaps.templateLayoutFactory.createClass(
+                    '<div class="user-marker">' +
+                    '<div class="marker-ring-user"></div>' +
+                    '<div class="marker-dot-user"></div>' +
+                    '</div>'
+                );
+
+                if (!document.getElementById('user-marker-style')) {
+                    const style = document.createElement('style');
+                    style.id = 'user-marker-style';
+                    style.innerHTML += `
+                        .user-marker {
+                            position: relative;
+                            width: 30px;
+                            height: 30px;
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                        }
+                        .marker-ring-user {
+                            position: absolute;
+                            width: 20px;
+                            height: 20px;
+                            background: rgba(255, 255, 255, 0.2);
+                            border: 2px solid #ffffff;
+                            border-radius: 50%;
+                        }
+                        .marker-dot-user {
+                            width: 8px;
+                            height: 8px;
+                            background: #00ff88;
+                            border-radius: 50%;
+                            box-shadow: 0 0 10px #00ff88;
+                            z-index: 2;
+                        }
+                    `;
+                    document.head.appendChild(style);
+                }
+
+                this.userPlacemark = new ymaps.Placemark(coords, {
+                    hintContent: 'You are here',
+                    balloonContent: 'Your current location'
+                }, {
+                    iconLayout: UserIconLayout,
+                    draggable: true
+                });
+                this.map.geoObjects.add(this.userPlacemark);
+                
+                this.userPlacemark.events.add('dragend', () => {
+                    const newCoords = this.userPlacemark.geometry.getCoordinates();
+                    this.syncLocationWithBackend(newCoords);
+                    if (this.multiRoute) this.updateDirections(newCoords);
+                });
+            } else {
+                this.userPlacemark.geometry.setCoordinates(coords);
+            }
+
+            if (shouldCenter) {
+                this.map.setCenter(coords, 16, { checkZoomRange: true, duration: 1000 });
+            }
+        },
+
+        handleGetDirections: function() {
+            if (this.userPlacemark) {
+                this.updateDirections(this.userPlacemark.geometry.getCoordinates());
+            } else {
+                this.setLoading(true);
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        const coords = [position.coords.latitude, position.coords.longitude];
+                        this.updateUserLocation(coords, true);
+                        this.updateDirections(coords);
+                        this.setLoading(false);
+                    },
+                    () => { this.setLoading(false); alert("Please allow location access to get directions."); },
+                    { enableHighAccuracy: true }
+                );
+            }
+        },
+
+        updateDirections: function(userCoords) {
+            if (this.multiRoute) this.map.geoObjects.remove(this.multiRoute);
+
+            this.multiRoute = new ymaps.multiRouter.MultiRoute({
+                referencePoints: [userCoords, this.coords],
+                params: { routingMode: 'auto' }
+            }, {
+                boundsAutoApply: true,
+                routeActiveStrokeWidth: 6,
+                routeActiveStrokeColor: "#0064FF",
+                wayPointVisible: true
+            });
+
+            this.map.geoObjects.add(this.multiRoute);
+        },
+
+        syncLocationWithBackend: function(coords) {
+            if (this.data.isAuthenticated !== 'true') return;
+            
+            fetch(this.data.updateLocationUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': this.data.csrf
+                },
+                body: JSON.stringify({
+                    latitude: coords[0],
+                    longitude: coords[1]
+                })
+            });
+        },
+
+        toggleFollow: function() {
+            fetch(this.data.followUrl, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': this.data.csrf,
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    const btn = document.getElementById('follow-toggle');
+                    const count = document.getElementById('follower-count');
+                    btn.classList.toggle('following', data.following);
+                    btn.innerText = data.following ? this.trans.unfollow : this.trans.follow;
+                    count.innerText = data.count;
+                }
+            });
+        }
+    };
+
+    async function openInteractions(videoId) {
+        const modal = document.getElementById('interaction-modal');
+        modal.style.display = 'flex';
+        
+        const likesContent = document.getElementById('likes-content');
+        const commentsContent = document.getElementById('comments-content');
+        likesContent.innerHTML = '<div style="text-align:center; padding: 20px; opacity: 0.5;">Loading...</div>';
+        commentsContent.innerHTML = '<div style="text-align:center; padding: 20px; opacity: 0.5;">Loading...</div>';
+        
+        try {
+            const response = await fetch(`/social/interactions/${videoId}/`);
+            const data = await response.json();
+            
+            // Integrated Video Player in Modal
+            const videoSource = document.querySelector(`.profile-video source[src*="${data.video_url}"]`) || document.querySelector(`video[data-video-id="${videoId}"] source`);
+            const videoUrl = data.video_url;
+
+            const modalHeader = document.querySelector('#interaction-modal .modal-card h3');
+            if (modalHeader && !document.getElementById('modal-video-container')) {
+                const videoContainer = document.createElement('div');
+                videoContainer.id = 'modal-video-container';
+                videoContainer.style.cssText = 'width: 100%; aspect-ratio: 9/16; background: #000; margin-bottom: 20px; border-radius: 15px; overflow: hidden; position: relative;';
+                videoContainer.innerHTML = `
+                    <video autoplay loop playsinline style="width: 100%; height: 100%; object-fit: cover;">
+                        <source src="${videoUrl}" type="video/mp4">
+                    </video>
+                `;
+                modalHeader.after(videoContainer);
+            } else if (document.getElementById('modal-video-container')) {
+                const modalVideo = document.querySelector('#modal-video-container video');
+                modalVideo.src = videoUrl;
+                modalVideo.play();
+            }
+
+            document.getElementById('modal-caption').innerText = data.caption || '';
+            document.getElementById('count-likes').innerText = data.like_count;
+            document.getElementById('count-comments').innerText = data.comment_count;
+            
+            // Populate Likes
+            const likesContent = document.getElementById('likes-content');
+            if (data.likes.length === 0) {
+                likesContent.innerHTML = '<p style="color: #666; text-align: center; padding: 20px;">{% masterpiece_trans "No likes yet" %}</p>';
+            } else {
+                likesContent.innerHTML = data.likes.map(like => `
+                    <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 15px; background: rgba(255,255,255,0.03); padding: 12px; border-radius: 15px;">
+                        <div style="width: 40px; height: 40px; border-radius: 50%; background: #333; overflow: hidden; display: flex; align-items: center; justify-content: center;">
+                            ${like.photo ? `<img src="${like.photo}" style="width:100%; height:100%; object-fit:cover;">` : `<i class="fas fa-user" style="color:#555;"></i>`}
+                        </div>
+                        <span style="font-weight: 600;">${like.user}</span>
+                    </div>
+                `).join('');
+            }
+            
+            // Populate Comments
+            const commentsContent = document.getElementById('comments-content');
+            if (data.comments.length === 0) {
+                commentsContent.innerHTML = '<p style="color: #666; text-align: center; padding: 20px;">{% masterpiece_trans "No comments yet" %}</p>';
+            } else {
+                commentsContent.innerHTML = data.comments.map(c => `
+                    <div style="margin-bottom: 20px; background: rgba(255,255,255,0.03); padding: 15px; border-radius: 15px;">
+                        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+                            <div style="width: 30px; height: 30px; border-radius: 50%; background: #333; overflow: hidden; display: flex; align-items: center; justify-content: center;">
+                                ${c.photo ? `<img src="${c.photo}" style="width:100%; height:100%; object-fit:cover;">` : `<i class="fas fa-user" style="color:#555; font-size: 0.8rem;"></i>`}
+                            </div>
+                            <span style="font-weight: 700; font-size: 0.9rem;">${c.user}</span>
+                            <span style="color: #555; font-size: 0.75rem;">${c.created_at}</span>
+                        </div>
+                        <p style="font-size: 0.95rem; margin-left: 40px; color: #ddd; line-height: 1.4;">${c.text}</p>
+                    </div>
+                `).join('');
+            }
+            
+        } catch (error) {
+            console.error('Error fetching interactions:', error);
+        }
+    }
+
+    function closeInteractions() {
+        document.getElementById('interaction-modal').style.display = 'none';
+    }
+
+    function switchTab(tab) {
+        const likesList = document.getElementById('likes-list');
+        const commentsList = document.getElementById('comments-list');
+        const tabLikes = document.getElementById('tab-likes');
+        const tabComments = document.getElementById('tab-comments');
+        
+        if (tab === 'likes') {
+            likesList.style.display = 'block';
+            commentsList.style.display = 'none';
+            tabLikes.style.borderBottom = '2px solid white';
+            tabLikes.style.color = 'white';
+            tabLikes.style.opacity = '1';
+            tabComments.style.borderBottom = 'none';
+            tabComments.style.color = '#888';
+        } else {
+            likesList.style.display = 'none';
+            commentsList.style.display = 'block';
+            tabComments.style.borderBottom = '2px solid white';
+            tabComments.style.color = 'white';
+            tabComments.style.opacity = '1';
+            tabLikes.style.borderBottom = 'none';
+            tabLikes.style.color = '#888';
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => MapApp.init());
+</script>
+{% endblock %}

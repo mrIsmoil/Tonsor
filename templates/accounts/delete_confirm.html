@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+{% load i18n %}
+
+{% block head_title %}{% trans "Confirm Deletion" %}{% endblock %}
+
+{% block content %}
+<div class="login-container">
+    <ul class="bg-bubbles">
+        <li></li><li></li><li></li><li></li><li></li>
+        <li></li><li></li><li></li><li></li><li></li>
+    </ul>
+
+    <div class="glass-panel login-card floating">
+        <h1 class="gradient-text" style="font-size: 2.5rem; margin-bottom: 20px;">{% trans "Are you sure?" %}</h1>
+        <p style="color: rgba(255,255,255,0.7); margin-bottom: 35px; font-size: 1.1rem; line-height: 1.5;">
+            {% trans "You are about to completely delete your account. This action is permanent and cannot be undone. All your data, bookings, and profile info will be permanently lost." %}
+        </p>
+
+        <form method="post" action="{% url 'accounts:delete_account' %}">
+            {% csrf_token %}
+            <button type="submit" class="btn-glow" style="width: 100%; border-color: #ff4757; color: #ff4757; font-size: 1.2rem; padding: 15px; background: rgba(255, 71, 87, 0.1); margin-bottom: 15px;">
+                <i class="fas fa-trash-alt"></i> {% trans "Yes, Delete My Account" %}
+            </button>
+        </form>
+
+        <a href="{% url 'accounts:profile' %}" class="btn-glow blue" style="display: block; text-align: center; text-decoration: none; width: 100%; font-size: 1.1rem; padding: 15px; box-sizing: border-box;">
+            {% trans "Cancel and Keep Account" %}
+        </a>
+    </div>
+</div>
+{% endblock %}

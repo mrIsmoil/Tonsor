@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+{% load i18n %}
+{% load account socialaccount %}
+
+{% block mobile_toggle %}
+<!-- Hidden on signup page -->
+{% endblock %}
+
+{% block nav_links %}
+<!-- Hidden on signup page -->
+{% endblock %}
+
+{% block nav_actions %}
+<!-- Hidden on signup page -->
+{% endblock %}
+
+{% block head_title %}{% trans "Sign Up" %}{% endblock %}
+
+{% block content %}
+<div class="login-container">
+    <!-- Animated Bubbles Background -->
+    <ul class="bg-bubbles">
+        <li></li><li></li><li></li><li></li><li></li>
+        <li></li><li></li><li></li><li></li><li></li>
+    </ul>
+
+    <div class="glass-panel login-card floating">
+        <h1 class="gradient-text" style="font-size: 2.5rem; margin-bottom: 10px;">{% trans "Join Us" %}</h1>
+        <p style="color: rgba(255,255,255,0.6); margin-bottom: 30px;">{% trans "Create your account to start your premium journey" %}</p>
+        
+        <div class="social-btns">
+            {% get_providers as socialaccount_providers %}
+            {% for provider in socialaccount_providers %}
+                {% if provider.id == "google" %}
+                    <a href="{% provider_login_url provider.id %}" class="btn-glow blue">
+                        <i class="fab fa-google"></i> {% trans "Sign up with Google" %}
+                    </a>
+                {% endif %}
+            {% endfor %}
+        </div>
+
+        <p style="margin-top: 20px; color: rgba(255,255,255,0.5);">
+            {% blocktrans %}Already have an account? Then please <a href="{{ login_url }}" style="color: #ffffff; text-decoration: none; font-weight: 600;">sign in</a>.{% endblocktrans %}
+        </p>
+        
+        <div style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--glass-border); font-size: 0.85rem; color: rgba(255,255,255,0.4);">
+            <i class="fas fa-user-plus"></i> {% trans "Fast & secure account creation." %}
+        </div>
+    </div>
+</div>
+{% endblock %}

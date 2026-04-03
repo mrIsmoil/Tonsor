@@ -1,0 +1,118 @@
+{% extends 'base.html' %}
+{% load masterpiece_i18n %}
+
+{% block content %}
+<div style="padding: 50px 20px;">
+    <h2 class="gradient-text floating" style="text-align: center;">{% masterpiece_trans "Search Barbers" %}</h2>
+    
+    <div style="max-width: 600px; margin: 30px auto;">
+        <form method="get" style="display: flex; gap: 10px;">
+            <input type="text" name="q" value="{{ query }}" placeholder="{% masterpiece_trans 'Search by shop name...' %}" style="flex: 1; padding: 10px; background: rgba(0,0,0,0.5); border: 1px solid #ffffff; color: white; border-radius: 5px;">
+            <button type="submit" class="btn-glow blue" style="padding: 10px 20px; text-transform: none;">{% masterpiece_trans "Search" %}</button>
+        </form>
+    </div>
+    
+    <div style="max-width: 800px; margin: 0 auto; display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 30px;">
+        {% for barber in barbers %}
+            <div class="glass-panel" style="padding: 20px; text-align: center;">
+                <a href="{% url 'shops:barber_profile' barber.id %}" style="text-decoration: none; color: inherit; display: block; transition: transform 0.3s;" onmouseover="this.style.transform='translateY(-5px)'" onmouseout="this.style.transform='translateY(0)'">
+                    <div style="position: relative; width: 60px; height: 60px; margin: 0 auto 15px auto;">
+                        <div style="width: 100%; height: 100%; border-radius: 50%; background: #333; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 1.5rem; color: #ffffff; overflow: hidden; border: 1px solid rgba(255,255,255,0.1);">
+                            {% if barber.logo_url %}
+                                <img src="{{ barber.logo_url }}" alt="{{ barber.shop_name }}" style="width: 100%; height: 100%; object-fit: cover;">
+                            {% else %}
+                                {{ barber.shop_name|make_list|first|upper }}
+                            {% endif %}
+                        </div>
+                        {% if barber.is_new %}
+                        <span style="position: absolute; top: -5px; right: -15px; background: #ffffff; color: #000000; font-size: 0.6rem; padding: 2px 6px; border-radius: 4px; font-weight: 900; letter-spacing: 0.5px; box-shadow: 0 2px 5px rgba(0,0,0,0.5); transform: rotate(15deg); border: 1px solid #000; z-index: 2;">{% masterpiece_trans "NEW" %}</span>
+                        {% endif %}
+                    </div>
+                    <div style="display: flex; align-items: center; justify-content: center; gap: 8px;">
+                        <h3 style="margin: 0;">{{ barber.shop_name }}</h3>
+                        <div style="display: flex; align-items: center; gap: 4px; background: rgba(255,188,0,0.1); padding: 2px 6px; border-radius: 6px; border: 1px solid rgba(255,188,0,0.2);">
+                            <i class="fas fa-star" style="color: #FFD700; font-size: 0.75rem;"></i>
+                            <span style="font-size: 0.75rem; font-weight: 800; color: white;">{{ barber.rating|floatformat:1 }}</span>
+                        </div>
+                        <div id="status-dot-{{ barber.id }}" class="status-dot-mini {% if barber.is_open_now %}open{% else %}closed{% endif %}" 
+                             title="{% if barber.is_open_now %}{% masterpiece_trans 'Open Now' %}{% else %}{% masterpiece_trans 'Closed' %}{% endif %}">
+                        </div>
+                    </div>
+                </a>
+                <style>
+                    .status-dot-mini {
+                        width: 10px;
+                        height: 10px;
+                        border-radius: 50%;
+                        transition: all 0.3s;
+                    }
+                    .status-dot-mini.open {
+                        background: #ffffff;
+                        box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+                    }
+                    .status-dot-mini.closed {
+                        background: #444444;
+                    }
+                </style>
+                <p style="color: #aaa; margin: 10px 0 5px;">
+                    {% if barber.short_address %}{{ barber.short_address }}{% else %}{% masterpiece_trans "Location Unknown" %}{% endif %}
+                </p>
+                <div style="display: flex; justify-content: center; margin-bottom: 10px; gap: 10px;">
+                    <span style="font-size: 0.75rem; padding: 4px 10px; border-radius: 20px; background: rgba(255,255,255,0.05); color: rgba(255,255,255,0.7); border: 1px solid rgba(255,255,255,0.15); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">
+                        {% if barber.shop_type == 'men' %}
+                            <i class="fas fa-mars" style="color: #ffffff; margin-right: 4px;"></i> {% masterpiece_trans "Men" %}
+                        {% else %}
+                            <i class="fas fa-venus" style="color: #cccccc; margin-right: 4px;"></i> {% masterpiece_trans "Women" %}
+                        {% endif %}
+                    </span>
+
+                </div>
+                {% if not request.user.is_barber %}
+                    <a href="{% url 'bookings:book_appointment' barber.id %}" class="btn-glow blue" style="display: block; text-decoration: none; margin-top: 15px; font-size: 0.9rem;">{% masterpiece_trans "Book" %}</a>
+                {% endif %}
+            </div>
+        {% empty %}
+            <p style="text-align: center; grid-column: 1 / -1;">{% masterpiece_trans "No barbers found." %}</p>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<!-- Translation Data -->
+<div id="js-translations" style="display: none;"
+    data-open-now="{% masterpiece_trans 'Open Now' %}"
+    data-closed="{% masterpiece_trans 'Closed' %}"
+    data-api-url="{% url 'shops:api_statuses' %}"
+></div>
+
+<script>
+    function updateShopStatuses() {
+        const trans = document.getElementById('js-translations').dataset;
+        fetch(trans.apiUrl)
+            .then(response => response.json())
+            .then(data => {
+                for (const [id, isOpen] of Object.entries(data)) {
+                    const dot = document.getElementById(`status-dot-${id}`);
+                    if (dot) {
+                        if (isOpen) {
+                            dot.style.background = "#ffffff";
+                            dot.style.boxShadow = "0 0 10px rgba(255, 255, 255, 0.5)";
+                            dot.title = trans.openNow;
+                        } else {
+                            dot.style.background = "#444444";
+                            dot.style.boxShadow = "none";
+                            dot.title = trans.closed;
+                        }
+                    }
+                }
+            })
+            .catch(error => console.error('Error fetching shop statuses:', error));
+    }
+
+    // Poll every 30 seconds
+    setInterval(updateShopStatuses, 30000);
+    // Initial update
+    updateShopStatuses();
+</script>
+{% endblock %}

@@ -1,0 +1,1151 @@
+{% extends 'base.html' %}
+{% load masterpiece_i18n static %}
+
+{% block nav_links %}
+<!-- Hidden on barber portal entry page -->
+{% endblock %}
+
+{% block nav_actions %}
+<!-- Hidden on barber portal entry page -->
+{% endblock %}
+
+{% block mobile_toggle %}
+    <div class="language-selector mobile-lang-selector" style="margin-right: 0; position: relative; z-index: 9999;">
+        <button class="lang-btn" onclick="this.nextElementSibling.classList.toggle('active'); event.stopPropagation();" style="background: rgba(255,255,255,0.05); border-radius: 12px; height: 38px; padding: 0 12px; display: flex; align-items: center; gap: 8px;">
+            <i class="fas fa-globe"></i>
+            <span class="curr-lang" style="font-size: 0.8rem; color: white;">
+                {% if request.session.masterpiece_lang == 'uz' %}UZ{% elif request.session.masterpiece_lang == 'ru' %}RU{% else %}EN{% endif %}
+            </span>
+        </button>
+        <div class="lang-dropdown" style="right: 0; top: calc(100% + 10px); z-index: 10000; position: absolute;">
+            <form action="{% url 'accounts:set_language_direct' %}" method="post">
+                {% csrf_token %}
+                <input name="next" type="hidden" value="{{ request.get_full_path }}">
+                <button type="submit" name="language" value="en" class="lang-opt">English</button>
+                <button type="submit" name="language" value="uz" class="lang-opt">O'zbekcha</button>
+                <button type="submit" name="language" value="ru" class="lang-opt">Русский</button>
+            </form>
+        </div>
+    </div>
+    <script>
+        // Ensure clicking outside closes the mobile lang dropdown
+        document.addEventListener('click', function() {
+            document.querySelectorAll('.mobile-lang-selector .lang-dropdown').forEach(d => d.classList.remove('active'));
+        });
+    </script>
+{% endblock %}
+
+{% block head_title %}{% masterpiece_trans "Barber Portal" %}{% endblock %}
+
+{% block content %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<link rel="stylesheet" type="text/css" href="https://npmcdn.com/flatpickr/dist/themes/dark.css">
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+
+<style>
+    /* Professional Design Tokens */
+    :root {
+        --neon-blue: #0066ff;
+        --glass-bg: rgba(255, 255, 255, 0.03);
+        --glass-border: rgba(255, 255, 255, 0.1);
+        --transition-smooth: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .gradient-text {
+        background: linear-gradient(135deg, #fff 0%, rgba(255,255,255,0.4) 100%);
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+        font-weight: 900;
+    }
+
+    .btn-glow {
+        position: relative;
+        padding: 14px 28px;
+        background: rgba(255,255,255,0.05);
+        color: white;
+        border: 1px solid rgba(255,255,255,0.1);
+        border-radius: 14px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: var(--transition-smooth);
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+    }
+
+    .btn-glow:hover {
+        background: rgba(255,255,255,0.1);
+        border-color: rgba(255,255,255,0.3);
+        transform: translateY(-2px);
+    }
+
+    .btn-glow.blue {
+        background: var(--neon-blue);
+        border: none;
+        box-shadow: 0 5px 20px rgba(0, 102, 255, 0.3);
+    }
+
+    .btn-glow.blue:hover {
+        background: #005ce6;
+        box-shadow: 0 8px 30px rgba(0, 102, 255, 0.5);
+    }
+
+    /* Reg Section Containers */
+    .reg-step {
+        animation: fadeInSlide 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    @keyframes fadeInSlide {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Shop Type Selection */
+    .shop-type-badge {
+        cursor: pointer;
+        user-select: none;
+    }
+    .shop-type-badge input { display: none; }
+    .shop-type-badge span {
+        display: block;
+        padding: 15px;
+        background: rgba(255,255,255,0.03);
+        border: 1px solid rgba(255,255,255,0.1);
+        border-radius: 12px;
+        text-align: center;
+        transition: var(--transition-smooth);
+        color: rgba(255,255,255,0.5);
+        font-weight: 700;
+    }
+    .shop-type-badge input:checked + span {
+        background: rgba(0, 102, 255, 0.1);
+        border-color: var(--neon-blue);
+        color: white;
+        box-shadow: 0 0 20px rgba(0, 102, 255, 0.2);
+    }
+
+    /* Photo Upload Interface */
+    .photo-input-group {
+        position: relative;
+        background: rgba(255,255,255,0.02);
+        border: 1px dashed rgba(255,255,255,0.15);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: var(--transition-smooth);
+        overflow: hidden;
+        color: rgba(255,255,255,0.3);
+    }
+    .photo-input-group:hover {
+        border-color: var(--neon-blue);
+        background: rgba(0,102,255,0.05);
+    }
+    .photo-input-group.has-file {
+        border-style: solid;
+        border-color: var(--neon-blue);
+    }
+    .photo-preview {
+        position: absolute;
+        top:0; left:0; width:100%; height:100%;
+        object-fit: cover;
+        display: none;
+    }
+    .photo-input-group input[type="file"] {
+        position: absolute;
+        opacity: 0;
+        width: 100%; height: 100%;
+        cursor: pointer;
+    }
+
+    /* Service Card & Logic */
+    .service-card {
+        background: rgba(255,255,255,0.03);
+        border: 1px solid rgba(255,255,255,0.08);
+        border-radius: 14px;
+        padding: 15px 20px;
+        margin-bottom: 12px;
+        cursor: pointer;
+        transition: var(--transition-smooth);
+    }
+    .service-card:hover { background: rgba(255,255,255,0.06); }
+    .service-card.selected {
+        background: rgba(0, 102, 255, 0.05);
+        border-color: var(--neon-blue);
+    }
+    .service-card .service-name { font-weight: 700; margin-bottom: 10px; }
+    .price-duration-container {
+        display: none;
+        margin-top: 15px;
+        padding-top: 15px;
+        border-top: 1px solid rgba(255,255,255,0.05);
+    }
+    .service-card.selected .price-duration-container { display: block; }
+    
+    .price-input, .duration-mins-input {
+        background: rgba(0,0,0,0.3);
+        border: 1px solid rgba(255,255,255,0.1);
+        border-radius: 8px;
+        padding: 10px;
+        color: white;
+        width: 100%;
+    }
+
+    /* Category Header */
+    .category-header {
+        background: rgba(255,255,255,0.03);
+        padding: 15px 20px;
+        border-radius: 12px;
+        cursor: pointer;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        transition: var(--transition-smooth);
+    }
+    .category-header:hover { background: rgba(255,255,255,0.08); }
+    .category-header .chevron { transition: transform 0.3s ease; }
+    .category-header.active { border-color: var(--neon-blue); }
+    .category-header.active .chevron { transform: rotate(180deg); }
+    .category-services { display: none; padding-top: 15px; }
+    .category-header.active + .category-services { display: block; }
+
+    /* Custom Checkbox */
+    .checkbox-visual { transition: var(--transition-smooth); }
+    .custom-checkbox {
+        display: flex; align-items: center; justify-content: flex-start; gap: 15px; cursor: pointer; color: rgba(255,255,255,0.9); margin-bottom: 25px; padding: 15px 20px; background: rgba(255,255,255,0.02); border-radius: 12px; border: 1px solid rgba(255,255,255,0.05); transition: 0.3s;
+    }
+    .custom-checkbox:hover { background: rgba(255,255,255,0.05); }
+    .custom-checkbox input:checked + .checkbox-visual {
+        background: var(--neon-blue);
+        border-color: var(--neon-blue);
+    }
+    .custom-checkbox input:checked + .checkbox-visual i { display: block !important; }
+
+    /* Day Badges */
+    .day-badge {
+        display: inline-block;
+        padding: 8px 15px;
+        background: rgba(255,255,255,0.03);
+        border: 1px solid rgba(255,255,255,0.1);
+        border-radius: 8px;
+        cursor: pointer;
+        color: rgba(255,255,255,0.6);
+        font-size: 0.9rem;
+        font-weight: 500;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        user-select: none;
+        text-align: center;
+        min-width: 50px;
+    }
+    .day-badge input { display: none; }
+    .day-badge:hover { background: rgba(255,255,255,0.1); color: white; }
+    .day-badge:has(input:checked) {
+        background: rgba(51, 51, 255, 0.15);
+        border-color: var(--neon-blue);
+        color: white;
+        box-shadow: 0 0 15px rgba(51, 51, 255, 0.3);
+        transform: translateY(-2px);
+    }
+
+    /* Yandex Suggest list dark theme */
+    [class*="suggest-list"] {
+        background-color: #1a1a2e !important;
+        border: 1px solid rgba(255,255,255,0.1) !important;
+        color: white !important;
+        z-index: 9999 !important;
+        border-radius: 8px !important;
+        margin-top: 5px !important;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.5) !important;
+        font-family: 'Inter', sans-serif !important;
+    }
+    [class*="suggest-item"] {
+        color: rgba(255,255,255,0.8) !important;
+        padding: 12px 15px !important;
+        cursor: pointer !important;
+    }
+
+    .custom-time {
+        width: 100%; padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); 
+        background: rgba(255,255,255,0.05); color: white; font-family: 'Inter', sans-serif;
+        font-size: 1.2rem; font-weight: 500; letter-spacing: 2px; text-align: center;
+    }
+
+    .time-picker-card {
+        display: flex; gap: 15px; align-items: center; margin-bottom: 40px; 
+        background: rgba(255,255,255,0.02); padding: 30px; border-radius: 24px; 
+        border: 1px solid rgba(255,255,255,0.08); transition: var(--transition-smooth);
+        box-shadow: inset 0 0 40px rgba(0,0,0,0.4);
+    }
+
+    .time-input-group {
+        flex: 1; text-align: center; position: relative;
+    }
+
+    .time-input-wrapper {
+        position: relative; background: rgba(0,0,0,0.3); border-radius: 16px;
+        border: 1px solid rgba(255,255,255,0.1); padding: 5px;
+        transition: var(--transition-smooth);
+        display: flex; align-items: center; justify-content: center; gap: 10px;
+    }
+
+    .time-input-wrapper:focus-within {
+        border-color: var(--neon-blue);
+        box-shadow: 0 0 15px rgba(0, 102, 255, 0.2);
+    }
+
+    .time-input-wrapper i {
+        font-size: 0.9rem; color: rgba(255,255,255,0.2); margin-left: 15px;
+    }
+
+    .custom-time {
+        width: 100%; height: 50px; text-align: center; background: none; 
+        border: none; font-size: 1.6rem; color: white; font-weight: 800;
+        font-family: 'JetBrains Mono', 'Courier New', monospace; letter-spacing: 2px;
+        cursor: pointer; padding-right: 15px;
+    }
+
+    .time-separator { color: rgba(255,255,255,0.1); font-size: 1.5rem; font-weight: 300; }
+
+    @media (max-width: 600px) {
+        .time-picker-card {
+            flex-direction: column;
+            padding: 25px;
+            gap: 20px;
+        }
+        .time-separator { display: none; }
+        .time-input-group { width: 100%; }
+    }
+    html, body {
+        overflow-x: hidden !important;
+        width: 100%;
+        position: relative;
+    }
+
+    /* Prevent any phantom nav overflow */
+    #navLinks, .nav-actions, .navbar {
+        max-width: 100vw;
+    }
+
+    #bg-canvas {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        z-index: -1;
+        background: #000;
+        pointer-events: none;
+    }
+
+    .login-container {
+        position: relative;
+        z-index: 1;
+        min-height: 100vh;
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+        padding: 20px;
+    }
+
+    /* Mobile Worker Rows */
+    .worker-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-bottom: 15px;
+        background: rgba(255,255,255,0.02);
+        padding: 15px;
+        border-radius: 14px;
+        border: 1px solid rgba(255,255,255,0.05);
+        align-items: center;
+        transition: var(--transition-smooth);
+    }
+    .worker-row input {
+        flex: 1;
+        min-width: 140px;
+        padding: 12px 15px;
+        background: rgba(0,0,0,0.3);
+        border: 1px solid rgba(255,255,255,0.1);
+        border-radius: 10px;
+        color: white;
+        font-size: 0.95rem;
+    }
+    .worker-row .btn-remove {
+        background: none;
+        border: none;
+        color: #ff4444;
+        cursor: pointer;
+        padding: 8px;
+        font-size: 1.1rem;
+        transition: 0.3s;
+    }
+    .worker-row .btn-remove:hover { transform: scale(1.1); color: #ff6666; }
+
+    @media (max-width: 600px) {
+        .login-container {
+            padding: 15px !important;
+        }
+        .login-card {
+            padding: 25px 20px !important;
+            border-radius: 20px !important;
+            margin: 0 !important;
+            width: 100% !important;
+            max-width: 100% !important;
+        }
+        .worker-row {
+            flex-direction: column;
+            align-items: flex-end;
+            padding: 12px;
+        }
+        .worker-row input {
+            width: 100%;
+            flex: none;
+        }
+        .wizard-footer {
+            flex-direction: column-reverse;
+            gap: 10px !important;
+        }
+        .wizard-footer .btn-glow {
+            width: 100% !important;
+        }
+    }
+</style>
+
+
+<div class="login-container">
+    <canvas id="bg-canvas"></canvas>
+
+    <div class="glass-panel login-card floating" style="max-width: 600px; width: 100%; transition: all 0.5s ease;">
+        {% if error %}
+        <div style="background: rgba(255,51,51,0.1); border: 1px solid rgba(255,51,51,0.2); color: #ff3333; padding: 15px; border-radius: 12px; margin-bottom: 25px; text-align: center; font-weight: 600; font-size: 0.9rem; animation: fadeIn 0.3s ease;">
+            <i class="fas fa-exclamation-circle"></i> {% masterpiece_trans error %}
+        </div>
+        {% endif %}
+        
+        <!-- Section 0: Choice Initial Stage -->
+        <div id="choice-section">
+            <h1 class="gradient-text" style="font-size: 2.8rem; margin-bottom: 15px; font-weight: 900;">{% masterpiece_trans "Barber Portal" %}</h1>
+            <p style="color: rgba(255,255,255,0.6); margin-bottom: 40px; font-size: 1.1rem;">{% masterpiece_trans "The professional gateway for the world's most elite barbers." %}</p>
+            
+            <div style="display: flex; flex-direction: column; gap: 20px;">
+                <button onclick="showSection('login-section')" class="btn-glow blue" style="width: 100%; padding: 20px; font-size: 1.1rem;">
+                    <i class="fas fa-sign-in-alt" style="margin-right: 12px;"></i> {% masterpiece_trans "Login to Shop" %}
+                </button>
+                <button onclick="showSection('reg-step-1')" class="btn-glow" style="width: 100%; padding: 20px; font-size: 1.1rem; background: rgba(255,255,255,0.05);">
+                    <i class="fas fa-user-plus" style="margin-right: 12px;"></i> {% masterpiece_trans "Create New Account" %}
+                </button>
+            </div>
+            
+            <p style="margin-top: 40px; font-size: 0.85rem; color: rgba(255,255,255,0.3); letter-spacing: 1px; text-transform: uppercase;">{% masterpiece_trans "Developed by MIM" %}</p>
+        </div>
+
+        <!-- Section 1: Login -->
+        <div id="login-section" style="display: none;">
+            <div style="text-align: left; margin-bottom: 30px;">
+                <button onclick="showSection('choice-section')" style="background: none; border: none; color: var(--neon-blue); cursor: pointer; font-size: 0.9rem; padding: 0; margin-bottom: 20px; display: flex; align-items: center; gap: 8px;">
+                    <i class="fas fa-arrow-left"></i> {% masterpiece_trans "Back" %}
+                </button>
+                <h2 class="gradient-text" style="font-size: 2rem; margin-bottom: 10px;">{% masterpiece_trans "Welcome Back" %}</h2>
+                <p style="color: rgba(255,255,255,0.5);">{% masterpiece_trans "Access your professional dashboard." %}</p>
+            </div>
+
+            <form method="post" action="{% url 'accounts:barber_entry' %}">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="login">
+                
+                <div style="position: relative; margin-bottom: 15px;">
+                    <i class="fas fa-store" style="position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: rgba(255,255,255,0.3);"></i>
+                    <input type="text" name="login_shop_name" placeholder="{% masterpiece_trans 'Shop Name' %}" required style="width: 100%; padding: 15px 15px 15px 45px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.3); color: white; font-size: 1rem;">
+                </div>
+                
+                <div style="position: relative; margin-bottom: 15px;">
+                    <i class="fas fa-envelope" style="position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: rgba(255,255,255,0.3);"></i>
+                    <input type="email" name="login_email" placeholder="{% masterpiece_trans 'Email Address' %}" required style="width: 100%; padding: 15px 15px 15px 45px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.3); color: white; font-size: 1rem;">
+                </div>
+                
+                <div style="position: relative; margin-bottom: 25px;">
+                    <i class="fas fa-lock" style="position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: rgba(255,255,255,0.3);"></i>
+                    <input type="password" name="login_password" placeholder="{% masterpiece_trans '6-Digit Pin' %}" required 
+                           pattern="\d{6}" maxlength="6" minlength="6" inputmode="numeric" 
+                           oninput="this.value = this.value.replace(/[^0-9]/g, '');"
+                           style="width: 100%; padding: 15px 15px 15px 45px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.3); color: white; font-size: 1.1rem; letter-spacing: 5px;">
+                </div>
+                
+                <button type="submit" class="btn-glow blue" style="width: 100%; padding: 16px;">{% masterpiece_trans "Login & Join Shop" %}</button>
+            </form>
+        </div>
+
+        <!-- Registration Wizard -->
+        <form id="reg-form" method="post" action="{% url 'accounts:barber_entry' %}" enctype="multipart/form-data">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="register">
+
+            <!-- Progress Indicator -->
+            <div id="reg-progress" style="display: none; margin-bottom: 40px;">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                    <span id="step-title" style="font-size: 0.8rem; text-transform: uppercase; letter-spacing: 2px; color: var(--neon-blue); font-weight: 800;">{% masterpiece_trans "Step" %} 1: {% masterpiece_trans "Profile Creation" %}</span>
+                    <span id="step-count" style="font-size: 0.8rem; color: rgba(255,255,255,0.4); font-weight: 600;">1 / 7</span>
+                </div>
+                <div style="height: 4px; width: 100%; background: rgba(255,255,255,0.05); border-radius: 2px; overflow: hidden;">
+                    <div id="progress-bar" style="height: 100%; width: 14%; background: var(--neon-blue); transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: 0 0 10px var(--neon-blue);"></div>
+                </div>
+            </div>
+
+            <!-- REG STEP 1: Personal Info -->
+            <div id="reg-step-1" class="reg-step" style="display: none;">
+                <div style="text-align: left; margin-bottom: 30px;">
+                    <button type="button" onclick="showSection('choice-section')" style="background: none; border: none; color: rgba(255,255,255,0.4); cursor: pointer; font-size: 0.9rem; padding: 0; margin-bottom: 20px; display: flex; align-items: center; gap: 8px;">
+                        <i class="fas fa-arrow-left"></i> {% masterpiece_trans "Cancel" %}
+                    </button>
+                    <h2 class="gradient-text" style="font-size: 2rem; margin-bottom: 10px;">{% masterpiece_trans "Let's Start" %}</h2>
+                    <p style="color: rgba(255,255,255,0.5);">{% masterpiece_trans "First, create your professional profile." %}</p>
+                </div>
+
+                <div style="display: flex; gap: 15px; margin-bottom: 15px;">
+                    <div style="flex: 1; position: relative;">
+                        <i class="fas fa-user" style="position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: rgba(255,255,255,0.3);"></i>
+                        <input type="text" name="first_name" placeholder="{% masterpiece_trans 'First Name' %}" required style="width: 100%; padding: 15px 15px 15px 45px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.2); color: white; font-size: 1rem;">
+                    </div>
+                    <div style="flex: 1; position: relative;">
+                        <i class="fas fa-user-tag" style="position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: rgba(255,255,255,0.3);"></i>
+                        <input type="text" name="last_name" placeholder="{% masterpiece_trans 'Last Name' %}" required style="width: 100%; padding: 15px 15px 15px 45px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.2); color: white; font-size: 1rem;">
+                    </div>
+                </div>
+
+                <div id="email-error" style="display: none; background: rgba(255,51,51,0.1); border: 1px solid rgba(255,51,51,0.2); color: #ff3333; padding: 12px; border-radius: 12px; margin-bottom: 20px; text-align: center; font-weight: 600; font-size: 0.85rem;">
+                    <i class="fas fa-exclamation-circle"></i> {% masterpiece_trans "A user with this email already exists." %}
+                </div>
+
+                <div style="position: relative; margin-bottom: 25px;">
+                    <i class="fas fa-envelope" style="position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: rgba(255,255,255,0.3);"></i>
+                    <input type="email" name="email" placeholder="{% masterpiece_trans 'Email Address' %}" required style="width: 100%; padding: 15px 15px 15px 45px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.2); color: white; font-size: 1rem;">
+                </div>
+                
+                <div style="position: relative; margin-bottom: 30px;">
+                    <i class="fas fa-lock" style="position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: rgba(255,255,255,0.3);"></i>
+                    <input type="password" name="password" placeholder="{% masterpiece_trans 'Create 6-Digit Pin' %}" required 
+                       pattern="\d{6}" maxlength="6" minlength="6" inputmode="numeric" 
+                       oninput="this.value = this.value.replace(/[^0-9]/g, '');"
+                       style="width: 100%; padding: 15px 15px 15px 45px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.2); color: white; font-size: 1.1rem; letter-spacing: 5px;">
+                </div>
+
+                <button type="button" onclick="validateAndNext(1, 2)" class="btn-glow" style="width: 100%; padding: 16px;">{% masterpiece_trans "Next" %}</button>
+            </div>
+
+            <!-- REG STEP 2: Shop Details -->
+            <div id="reg-step-2" class="reg-step" style="display: none;">
+                <div style="text-align: left; margin-bottom: 30px;">
+                    <h2 class="gradient-text" style="font-size: 2rem; margin-bottom: 10px;">{% masterpiece_trans "Shop Profile" %}</h2>
+                    <p style="color: rgba(255,255,255,0.5);">{% masterpiece_trans "Define your identity on the platform." %}</p>
+                </div>
+
+                <div style="position: relative; margin-bottom: 25px;">
+                    <i class="fas fa-store" style="position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: rgba(255,255,255,0.3);"></i>
+                    <input type="text" name="shop_name" placeholder="{% masterpiece_trans 'Shop Name' %}" required style="width: 100%; padding: 15px 15px 15px 45px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.2); color: white; font-size: 1rem;">
+                </div>
+                
+                <div style="margin-bottom: 30px;">
+                    <label style="display: block; margin-bottom: 15px; font-size: 0.9rem; color: rgba(255,255,255,0.4); text-transform: uppercase; letter-spacing: 1px;">{% masterpiece_trans "Establishment Type" %}</label>
+                    <div style="display: flex; gap: 12px;">
+                        <label class="shop-type-badge" style="flex: 1;">
+                            <input type="radio" name="shop_type" value="men" checked>
+                            <span style="display: block; padding: 15px 0;"><i class="fas fa-mars"></i> {% masterpiece_trans "Men's Barber" %}</span>
+                        </label>
+                        <label class="shop-type-badge" style="flex: 1;">
+                            <input type="radio" name="shop_type" value="women">
+                            <span style="display: block; padding: 15px 0;"><i class="fas fa-venus"></i> {% masterpiece_trans "Women's Salon" %}</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div style="display: flex; gap: 15px;">
+                    <button type="button" onclick="goToStep(1)" class="btn-glow" style="flex: 1; padding: 16px; background: rgba(255,255,255,0.03); border-color: rgba(255,255,255,0.1);">{% masterpiece_trans "Back" %}</button>
+                    <button type="button" onclick="validateAndNext(2, 3)" class="btn-glow blue" style="flex: 2; padding: 16px;">{% masterpiece_trans "Next Step" %}</button>
+                </div>
+            </div>
+
+            <!-- REG STEP 3: Team -->
+            <div id="reg-step-3" class="reg-step" style="display: none;">
+                <div style="text-align: left; margin-bottom: 30px;">
+                    <h2 class="gradient-text" style="font-size: 2rem; margin-bottom: 10px;">{% masterpiece_trans "Professional Team" %}</h2>
+                    <p style="color: rgba(255,255,255,0.5);">{% masterpiece_trans "Add the masters who work in your shop (optional)." %}</p>
+                </div>
+                <div id="workers_container" style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 15px;">
+                    <!-- Workers will be dynamically appended here -->
+                </div>
+                <button type="button" onclick="addWorkerRow()" style="width: 100%; padding: 12px; background: rgba(0, 100, 255, 0.1); color: var(--neon-blue); border: 1px dashed rgba(0, 100, 255, 0.3); border-radius: 8px; cursor: pointer; transition: 0.3s; font-weight: 600;">
+                    <i class="fas fa-plus"></i> {% masterpiece_trans "Add Worker" %}
+                </button>
+                <div style="display: flex; gap: 15px; margin-top: 30px;" class="wizard-footer">
+                    <button type="button" onclick="goToStep(2)" class="btn-glow" style="flex: 1; padding: 16px; background: rgba(255,255,255,0.03);">{% masterpiece_trans "Back" %}</button>
+                    <button type="button" onclick="validateAndNext(3, 4)" class="btn-glow blue" style="flex: 2; padding: 16px;">{% masterpiece_trans "Next Step" %}</button>
+                </div>
+            </div>
+
+            <!-- REG STEP 4: Location -->
+            <div id="reg-step-4" class="reg-step" style="display: none;">
+                <div style="text-align: left; margin-bottom: 20px;">
+                    <h2 class="gradient-text" style="font-size: 2rem; margin-bottom: 10px;">{% masterpiece_trans "Shop Location" %}</h2>
+                    <p style="color: rgba(255,255,255,0.5);">{% masterpiece_trans "Found your spot on the world stage." %}</p>
+                </div>
+
+                <div class="location-card" style="margin-bottom: 25px;">
+                    <div style="position: relative; margin-bottom: 15px;">
+                        <i class="fas fa-search-location" style="position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: var(--neon-blue);"></i>
+                        <input type="text" id="pac-input" name="location" placeholder="{% masterpiece_trans 'Search or click on the map to set location' %}" style="width: 100%; padding: 15px 15px 15px 45px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; color: white;">
+                    </div>
+                    <div id="map" style="height: 300px; border-radius: 12px; margin-top: 10px; border: 1px solid rgba(255,255,255,0.1);"></div>
+                    <input type="hidden" name="location_lat" id="location_lat" required>
+                    <input type="hidden" name="location_lng" id="location_lng" required>
+                    <div id="location-error" style="display: none; color: #ff3333; font-size: 0.85rem; margin-top: 10px; font-weight: 600; text-align: center;">
+                        <i class="fas fa-exclamation-circle"></i> {% masterpiece_trans "Please select your shop location on the map." %}
+                    </div>
+                </div>
+
+                <div style="display: flex; gap: 15px;">
+                    <button type="button" onclick="goToStep(3)" class="btn-glow" style="flex: 1; padding: 16px; background: rgba(255,255,255,0.03);">{% masterpiece_trans "Back" %}</button>
+                    <button type="button" onclick="validateAndNext(4, 5)" class="btn-glow blue" style="flex: 2; padding: 16px;">{% masterpiece_trans "Next Step" %}</button>
+                </div>
+            </div>
+
+            <!-- REG STEP 5: Visuals -->
+            <div id="reg-step-5" class="reg-step" style="display: none;">
+                <div style="text-align: left; margin-bottom: 30px;">
+                    <h2 class="gradient-text" style="font-size: 2rem; margin-bottom: 10px;">{% masterpiece_trans "Shop Atmosphere" %}</h2>
+                    <p style="color: rgba(255,255,255,0.5);">{% masterpiece_trans "Upload your logo and 4 showcasing photos." %}</p>
+                </div>
+
+                <div style="margin-bottom: 30px;">
+                    <label style="display: block; margin-bottom: 12px; font-size: 0.85rem; color: rgba(255,255,255,0.4); text-transform: uppercase; letter-spacing: 1px;">{% masterpiece_trans "Business Logo" %}</label>
+                    <div class="photo-input-group" style="aspect-ratio: 16/9; max-width: 100%; height: 180px; margin: 0 auto; border-radius: 16px;">
+                        <img class="photo-preview" id="logo-preview">
+                        <i class="fas fa-image" style="font-size: 2.5rem; opacity: 0.2;"></i>
+                        <span style="margin-top: 10px;">{% masterpiece_trans "Click to upload Logo" %}</span>
+                        <input type="file" name="shop_logo" accept="image/*" required onchange="previewImage(this, 'logo-preview')">
+                    </div>
+                </div>
+
+                <label style="display: block; margin-bottom: 12px; font-size: 0.85rem; color: rgba(255,255,255,0.4); text-transform: uppercase; letter-spacing: 1px;">{% masterpiece_trans "Shop Interior/Atmosphere" %}</label>
+                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px;">
+                    <div class="photo-input-group" style="height: 120px;">
+                        <img class="photo-preview" id="atm-1-preview">
+                        <i class="fas fa-camera"></i>
+                        <input type="file" name="shop_image_1" accept="image/*" required onchange="previewImage(this, 'atm-1-preview')">
+                    </div>
+                    <div class="photo-input-group" style="height: 120px;">
+                        <img class="photo-preview" id="atm-2-preview">
+                        <i class="fas fa-camera"></i>
+                        <input type="file" name="shop_image_2" accept="image/*" required onchange="previewImage(this, 'atm-2-preview')">
+                    </div>
+                    <div class="photo-input-group" style="height: 120px;">
+                        <img class="photo-preview" id="atm-3-preview">
+                        <i class="fas fa-camera"></i>
+                        <input type="file" name="shop_image_3" accept="image/*" required onchange="previewImage(this, 'atm-3-preview')">
+                    </div>
+                    <div class="photo-input-group" style="height: 120px;">
+                        <img class="photo-preview" id="atm-4-preview">
+                        <i class="fas fa-camera"></i>
+                        <input type="file" name="shop_image_4" accept="image/*" required onchange="previewImage(this, 'atm-4-preview')">
+                    </div>
+                </div>
+
+                <div style="display: flex; gap: 15px; margin-top: 30px;">
+                    <button type="button" onclick="goToStep(4)" class="btn-glow" style="flex: 1; padding: 16px; background: rgba(255,255,255,0.03);">{% masterpiece_trans "Back" %}</button>
+                    <button type="button" onclick="validateAndNext(5, 6)" class="btn-glow blue" style="flex: 2; padding: 16px;">{% masterpiece_trans "Next Step" %}</button>
+                </div>
+            </div>
+
+            <!-- REG STEP 6: Services -->
+            <div id="reg-step-6" class="reg-step" style="display: none;">
+                <div style="text-align: left; margin-bottom: 25px;">
+                    <h2 class="gradient-text" style="font-size: 2rem; margin-bottom: 10px;">{% masterpiece_trans "Service Menu" %}</h2>
+                    <p style="color: rgba(255,255,255,0.5);">{% masterpiece_trans "Select services and set your professional rates." %}</p>
+                </div>
+
+                <!-- Currency Selection -->
+                <div style="display: flex; justify-content: center; gap: 10px; margin-bottom: 25px; background: rgba(255,255,255,0.03); padding: 10px; border-radius: 12px;">
+                    <label class="currency-badge" style="flex: 1; text-align: center;">
+                        <input type="radio" name="currency" value="UZS" checked onchange="updateCurrencyLabels('UZS')">
+                        <span style="display: block; padding: 10px 0;">UZS</span>
+                    </label>
+                    <label class="currency-badge" style="flex: 1; text-align: center;">
+                        <input type="radio" name="currency" value="USD" onchange="updateCurrencyLabels('USD')">
+                        <span style="display: block; padding: 10px 0;">USD ($)</span>
+                    </label>
+                </div>
+
+                <div id="services-error" style="display: none; background: rgba(51,102,255,0.1); border: 1px solid rgba(51,102,255,0.2); color: #0066ff; padding: 12px; border-radius: 12px; margin-bottom: 20px; text-align: center; font-weight: 600; font-size: 0.85rem;">
+                    <i class="fas fa-info-circle"></i> {% masterpiece_trans "Please select at least one service to continue." %}
+                </div>
+
+                <div id="mens_services_section" style="max-height: 400px; overflow-y: auto; padding: 5px;">
+                    {% for category in MENS_SERVICES %}
+                    <div class="category-wrapper" style="margin-bottom: 10px;">
+                        <div class="category-header" onclick="this.classList.toggle('active')">
+                            <div style="display: flex; align-items: center; gap: 12px;">
+                                <i class="{{ category.icon }}" style="font-size: 1rem; color: var(--neon-blue);"></i>
+                                <span style="font-weight: 700; font-size: 0.95rem;">{% masterpiece_trans category.category %}</span>
+                            </div>
+                            <i class="fas fa-chevron-down chevron"></i>
+                        </div>
+                        <div class="category-services">
+                            {% for service in category.services %}
+                            <div class="service-card" onclick="toggleServiceCard(this)">
+                                <input type="checkbox" name="selected_services" value="{{ service.key }}" style="display: none;">
+                                <div class="service-name">{% masterpiece_trans service.name %}</div>
+                                <div class="price-duration-container">
+                                    <div style="display: flex; gap: 10px;">
+                                        <div style="flex: 1.5; position: relative;">
+                                            <input type="number" name="service_price_{{ service.key }}" placeholder="{% masterpiece_trans 'Price' %}" onclick="event.stopPropagation()" class="price-input" style="padding-left: 35px;">
+                                            <span class="currency-symbol-label" style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); font-size: 0.7rem; font-weight: 800; color: rgba(255,255,255,0.4);">UZS</span>
+                                        </div>
+                                        <div style="flex: 1; position: relative;">
+                                            <input type="number" name="service_duration_mins_{{ service.key }}" value="30" onclick="event.stopPropagation()" class="duration-mins-input" style="padding-right: 30px;">
+                                            <span style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); font-size: 0.7rem; color: rgba(255,255,255,0.3);">min</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <div id="womens_services_section" style="display: none; max-height: 400px; overflow-y: auto; padding: 5px;">
+                    {% for category in WOMENS_SERVICES %}
+                    <div class="category-wrapper" style="margin-bottom: 10px;">
+                        <div class="category-header women" onclick="this.classList.toggle('active')">
+                            <div style="display: flex; align-items: center; gap: 12px;">
+                                <i class="{{ category.icon }}" style="font-size: 1rem; color: #ff33cc;"></i>
+                                <span style="font-weight: 700; font-size: 0.95rem;">{% masterpiece_trans category.category %}</span>
+                            </div>
+                            <i class="fas fa-chevron-down chevron"></i>
+                        </div>
+                        <div class="category-services">
+                            {% for service in category.services %}
+                            <div class="service-card" onclick="toggleServiceCard(this)">
+                                <input type="checkbox" name="selected_services" value="{{ service.key }}" style="display: none;">
+                                <div class="service-name">{% masterpiece_trans service.name %}</div>
+                                <div class="price-duration-container">
+                                    <div style="display: flex; gap: 10px;">
+                                        <div style="flex: 1.5; position: relative;">
+                                            <input type="number" name="service_price_{{ service.key }}" placeholder="{% masterpiece_trans 'Price' %}" onclick="event.stopPropagation()" class="price-input" style="padding-left: 35px;">
+                                            <span class="currency-symbol-label" style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); font-size: 0.7rem; font-weight: 800; color: rgba(255,255,255,0.4);">UZS</span>
+                                        </div>
+                                        <div style="flex: 1; position: relative;">
+                                            <input type="number" name="service_duration_mins_{{ service.key }}" value="30" onclick="event.stopPropagation()" class="duration-mins-input" style="padding-right: 30px;">
+                                            <span style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); font-size: 0.7rem; color: rgba(255,255,255,0.3);">min</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <div style="display: flex; gap: 15px; margin-top: 25px;">
+                    <button type="button" onclick="goToStep(5)" class="btn-glow" style="flex: 1; padding: 16px; background: rgba(255,255,255,0.03);">{% masterpiece_trans "Back" %}</button>
+                    <button type="button" onclick="validateAndNext(6, 7)" class="btn-glow blue" style="flex: 2; padding: 16px;">{% masterpiece_trans "Next Step" %}</button>
+                </div>
+            </div>
+
+            <!-- REG STEP 7: Schedule -->
+            <div id="reg-step-7" class="reg-step" style="display: none;">
+                <div style="text-align: left; margin-bottom: 30px;">
+                    <h2 class="gradient-text" style="font-size: 2rem; margin-bottom: 10px;">{% masterpiece_trans "Business Hours" %}</h2>
+                    <p style="color: rgba(255,255,255,0.5);">{% masterpiece_trans "Final step. Set your shop's weekly availability." %}</p>
+                </div>
+
+                <label class="custom-checkbox" style="margin-bottom: 30px; background: rgba(255,255,255,0.03); padding: 15px; border-radius: 12px; display: flex; align-items: center; gap: 12px; cursor: pointer;">
+                    <input type="checkbox" name="depends_on_owner" id="depends_on_owner_checkbox" style="display: none;">
+                    <div class="checkbox-visual" style="width: 22px; height: 22px; border: 2px solid rgba(255,255,255,0.2); border-radius: 6px; display: flex; align-items: center; justify-content: center;">
+                        <i class="fas fa-check" style="font-size: 12px; color: var(--neon-blue); display: none;"></i>
+                    </div>
+                    <span style="font-size: 0.95rem; color: rgba(255,255,255,0.8);">{% masterpiece_trans "Manual Availability (Toggle Open/Closed myself)" %}</span>
+                </label>
+
+                <div id="fixed_schedule_inputs">
+                    <div style="display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-bottom: 30px;">
+                        {% for day in "Mon,Tue,Wed,Thu,Fri,Sat,Sun"|split:"," %}
+                        <label class="day-badge" style="padding: 10px 15px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; cursor: pointer; transition: 0.3s;">
+                            <input type="checkbox" name="work_days" value="{{ day }}" checked style="display: none;">
+                            <span style="font-size: 0.85rem; font-weight: 600;">{% masterpiece_trans day %}</span>
+                        </label>
+                        {% endfor %}
+                    </div>
+
+                    <div class="time-picker-card">
+                        <div class="time-input-group">
+                            <label style="display: block; margin-bottom: 12px; font-size: 0.75rem; color: rgba(255,255,255,0.4); text-transform: uppercase; letter-spacing: 1.5px; font-weight: 700;">{% masterpiece_trans "Opens" %}</label>
+                            <div class="time-input-wrapper">
+                                <i class="far fa-clock"></i>
+                                <input type="text" name="open_time" id="open_time" required class="custom-time" placeholder="09:00">
+                            </div>
+                        </div>
+                        <div class="time-separator">—</div>
+                        <div class="time-input-group">
+                            <label style="display: block; margin-bottom: 12px; font-size: 0.75rem; color: rgba(255,255,255,0.4); text-transform: uppercase; letter-spacing: 1.5px; font-weight: 700;">{% masterpiece_trans "Closes" %}</label>
+                            <div class="time-input-wrapper">
+                                <i class="far fa-clock"></i>
+                                <input type="text" name="close_time" id="close_time" required class="custom-time" placeholder="21:00">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="display: flex; gap: 15px;">
+                    <button type="button" onclick="goToStep(6)" class="btn-glow" style="flex: 1; padding: 18px; background: rgba(255,255,255,0.03);">{% masterpiece_trans "Back" %}</button>
+                    <button type="submit" class="btn-glow blue" style="flex: 2; padding: 18px; font-weight: 900; letter-spacing: 1px;">{% masterpiece_trans "Complete Registration" %}</button>
+                </div>
+            </div>
+        </form>
+
+        <!-- Removed "Already have an account?" section -->
+    </div>
+</div>
+
+<!-- Yandex Maps Script with Dynamic Language Support -->
+<script src="https://api-maps.yandex.ru/2.1/?apikey={{ YANDEX_MAPS_API_KEY }}&lang={% if request.session.masterpiece_lang == 'uz' %}uz_UZ{% elif request.session.masterpiece_lang == 'ru' %}ru_RU{% else %}en_US{% endif %}&load=package.full" type="text/javascript"></script>
+
+<!-- Global Home Animation System (Neural Silk) -->
+<script src="{% static 'js/home_animation.js' %}"></script>
+
+<script>
+    // Navigation core
+    window.showSection = function(id) {
+        // Elements might not exist yet if called too early, but they should be in DOM
+        const choice = document.getElementById('choice-section');
+        const login = document.getElementById('login-section');
+        const progress = document.getElementById('reg-progress');
+        
+        if (choice) choice.style.display = 'none';
+        if (login) login.style.display = 'none';
+        if (progress) progress.style.display = 'none';
+        
+        document.querySelectorAll('.reg-step').forEach(s => s.style.display = 'none');
+
+        const target = document.getElementById(id);
+        if (target) {
+            target.style.display = 'block';
+            if (id.startsWith('reg-step-')) {
+                if (progress) progress.style.display = 'block';
+                const stepNum = parseInt(id.replace('reg-step-', ''));
+                window.updateProgressUI(stepNum);
+                
+                // Specific Step Initializations
+                if (stepNum === 4 && window.myMap) {
+                    setTimeout(() => window.myMap.container.fitToViewport(), 300);
+                }
+            }
+        }
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+
+    window.goToStep = function(n) {
+        window.showSection('reg-step-' + n);
+    };
+
+    window.updateProgressUI = function(currentStep) {
+        const totalSteps = 7;
+        const titles = [
+            "{% masterpiece_trans 'Profile Creation' %}",
+            "{% masterpiece_trans 'Shop Identity' %}",
+            "{% masterpiece_trans 'Team Roster' %}",
+            "{% masterpiece_trans 'Location' %}",
+            "{% masterpiece_trans 'Atmosphere' %}",
+            "{% masterpiece_trans 'Services' %}",
+            "{% masterpiece_trans 'Availability' %}"
+        ];
+        
+        // Fix character encoding by decoding strings
+        const decode = (txt) => {
+            const doc = new DOMParser().parseFromString(txt, "text/html");
+            return doc.documentElement.textContent;
+        };
+
+        const titleEl = document.getElementById('step-title');
+        const countEl = document.getElementById('step-count');
+        const barEl = document.getElementById('progress-bar');
+        
+        if (titleEl) {
+            const stepTxt = decode("{% masterpiece_trans 'Step' %}");
+            const titleTxt = decode(titles[currentStep - 1] || "");
+            titleEl.textContent = stepTxt + " " + currentStep + ": " + titleTxt;
+        }
+        if (countEl) countEl.innerText = currentStep + ' / ' + totalSteps;
+        if (barEl) barEl.style.width = (currentStep / totalSteps * 100) + '%';
+    };
+    window.validateAndNext = async function(current, next) {
+        const currentSection = document.getElementById('reg-step-' + current);
+        if (!currentSection) return window.goToStep(next);
+        
+        const inputs = currentSection.querySelectorAll('input[required]');
+        let valid = true;
+        inputs.forEach(i => {
+            if (!i.value) { 
+                i.style.borderColor = '#ff4444'; 
+                valid = false; 
+            }
+            else i.style.borderColor = 'rgba(255,255,255,0.1)';
+        });
+
+        if (!valid) return;
+
+        // Check for email uniqueness (Step 1)
+        if (current === 1) {
+            const emailInput = currentSection.querySelector('input[name="email"]');
+            const emailErr = document.getElementById('email-error');
+            if (emailInput && emailInput.value) {
+                try {
+                    const response = await fetch("{% url 'accounts:check_email_exists' %}?email=" + encodeURIComponent(emailInput.value));
+                    const data = await response.json();
+                    if (data.exists) {
+                        if (emailErr) emailErr.style.display = 'block';
+                        emailInput.style.borderColor = '#ff4444';
+                        return; // Stop navigation
+                    } else {
+                        if (emailErr) emailErr.style.display = 'none';
+                        emailInput.style.borderColor = 'rgba(255,255,255,0.1)';
+                    }
+                } catch (e) {
+                    console.error("Error checking email:", e);
+                }
+            }
+        }
+
+        // Special check for Step 4 (Location)
+        if (current === 4) {
+            const lat = document.getElementById('location_lat');
+            const err = document.getElementById('location-error');
+            if (lat && !lat.value) {
+                if (err) err.style.display = 'block';
+                return;
+            } else if (err) {
+                err.style.display = 'none';
+            }
+        }
+
+        // Service check (Step 6) - Changed to a one-time reminder
+        if (current === 6) {
+            const selectedCount = document.querySelectorAll('input[name="selected_services"]:checked').length;
+            const servicesErr = document.getElementById('services-error');
+            if (selectedCount === 0) {
+                // If 0 services, show reminder. If it's already shown, allow them to proceed.
+                if (servicesErr && servicesErr.style.display !== 'block') {
+                    servicesErr.style.display = 'block';
+                    return; 
+                }
+            } else if (servicesErr) {
+                servicesErr.style.display = 'none';
+            }
+        }
+
+        window.goToStep(next);
+    };
+
+    // Worker management
+    window.addWorkerRow = function(fn = '', ln = '') {
+        const container = document.getElementById('workers_container');
+        if (!container) return;
+        const div = document.createElement('div');
+        div.className = "worker-row";
+        div.innerHTML = `
+            <input type="text" name="worker_first_name" value="${fn}" placeholder="{% masterpiece_trans 'First Name' %}" required>
+            <input type="text" name="worker_last_name" value="${ln}" placeholder="{% masterpiece_trans 'Last Name' %}" required>
+            <button type="button" onclick="this.parentElement.remove()" class="btn-remove" title="{% masterpiece_trans 'Remove' %}">
+                <i class="fas fa-trash"></i>
+            </button>
+        `;
+        container.appendChild(div);
+    };
+
+    // Visuals Preview
+    window.previewImage = function(input, previewId) {
+        const preview = document.getElementById(previewId);
+        if (input.files && input.files[0]) {
+            const reader = new FileReader();
+            reader.onload = e => {
+                preview.src = e.target.result;
+                preview.style.display = 'block';
+                input.parentElement.classList.add('has-file');
+            }
+            reader.readAsDataURL(input.files[0]);
+        }
+    };
+
+    // Service Toggling
+    window.toggleServiceCard = function(card) {
+        const checkbox = card.querySelector('input[type="checkbox"]');
+        if (checkbox) {
+            checkbox.checked = !checkbox.checked;
+            card.classList.toggle('selected', checkbox.checked);
+        }
+    };
+
+    window.updateCurrencyLabels = function(val) {
+        document.querySelectorAll('.currency-symbol-label').forEach(l => {
+            l.innerText = (val === 'USD') ? '$' : 'UZS';
+        });
+    };
+
+    // Initialize logic
+    document.addEventListener("DOMContentLoaded", function() {
+        // Toggle Schedule
+        const flexCheck = document.getElementById('depends_on_owner_checkbox');
+        const schedInputs = document.getElementById('fixed_schedule_inputs');
+        const openIn = document.getElementById('open_time');
+        const closeIn = document.getElementById('close_time');
+
+        if (flexCheck && schedInputs) {
+            const toggleRequired = () => {
+                schedInputs.style.opacity = flexCheck.checked ? "0.3" : "1";
+                schedInputs.style.pointerEvents = flexCheck.checked ? "none" : "auto";
+                if (openIn) openIn.required = !flexCheck.checked;
+                if (closeIn) closeIn.required = !flexCheck.checked;
+            };
+            flexCheck.addEventListener('change', toggleRequired);
+            toggleRequired(); // Initial state
+        }
+
+        // Toggle Shop Type Logic
+        document.querySelectorAll('input[name="shop_type"]').forEach(r => {
+            r.addEventListener('change', () => {
+                const isWomen = r.value === 'women';
+                const mens = document.getElementById('mens_services_section');
+                const womens = document.getElementById('womens_services_section');
+                if (mens) mens.style.display = isWomen ? 'none' : 'block';
+                if (womens) womens.style.display = isWomen ? 'block' : 'none';
+            });
+        });
+
+         if (typeof flatpickr !== 'undefined') {
+            flatpickr(".custom-time", {
+                enableTime: true,
+                noCalendar: true,
+                dateFormat: "H:i",
+                time_24hr: true,
+                disableMobile: true,
+                minuteIncrement: 5,
+                shorthandCurrentMonth: true
+            });
+        }
+
+        if (typeof ymaps !== 'undefined') {
+            ymaps.ready(function() {
+                const mapEl = document.getElementById("map");
+                if (!mapEl) return;
+
+                window.myMap = new ymaps.Map("map", {
+                    center: [41.2995, 69.2401], zoom: 12, controls: ['zoomControl']
+                });
+                const marker = new ymaps.Placemark([41.2995, 69.2401], {}, { draggable: true });
+                window.myMap.geoObjects.add(marker);
+                
+                marker.events.add('dragend', function() {
+                    const coords = marker.geometry.getCoordinates();
+                    updateCoords(coords);
+                });
+
+                window.myMap.events.add('click', function(e) {
+                    const coords = e.get('coords');
+                    marker.geometry.setCoordinates(coords);
+                    updateCoords(coords);
+                });
+
+                window.myMap.events.add('tap', function(e) {
+                    const coords = e.get('coords');
+                    marker.geometry.setCoordinates(coords);
+                    updateCoords(coords);
+                });
+
+                function updateCoords(coords) {
+                    const latIn = document.getElementById('location_lat');
+                    const lngIn = document.getElementById('location_lng');
+                    const pacIn = document.getElementById('pac-input');
+                    if (latIn) latIn.value = coords[0];
+                    if (lngIn) lngIn.value = coords[1];
+                    
+                    if (pacIn) {
+                        pacIn.value = "..."; 
+                        ymaps.geocode(coords, { 
+                            kind: 'house',
+                            results: 1 
+                        }).then(function (res) {
+                            const firstGeoObject = res.geoObjects.get(0);
+                            let address = "";
+                            if (firstGeoObject) {
+                                address = firstGeoObject.getAddressLine() || 
+                                          firstGeoObject.properties.get('text') || 
+                                          firstGeoObject.properties.get('name');
+                            }
+                            
+                            // If address is still just coordinates (contains only numbers, dots, and comma)
+                            if (!address || /^[\d\s.,]+$/.test(address)) {
+                                return ymaps.geocode(coords, { results: 1 });
+                            } else {
+                                pacIn.value = address;
+                            }
+                        }).then(function (res) {
+                            if (res && !pacIn.value) {
+                                const firstGeoObject = res.geoObjects.get(0);
+                                if (firstGeoObject) {
+                                    let address = firstGeoObject.getAddressLine() || 
+                                                  firstGeoObject.properties.get('text') || 
+                                                  firstGeoObject.properties.get('name');
+                                    
+                                    if (address && !/^[\d\s.,]+$/.test(address)) {
+                                        pacIn.value = address;
+                                    } else {
+                                        pacIn.value = "{% masterpiece_trans 'Location Selected' %}";
+                                    }
+                                } else {
+                                    pacIn.value = "{% masterpiece_trans 'Location Selected' %}";
+                                }
+                            }
+                        }).catch(err => {
+                            console.error("Geocoding failed:", err);
+                            pacIn.value = "{% masterpiece_trans 'Location Selected' %}";
+                        });
+                    }
+                }
+
+                const suggestInput = document.getElementById('pac-input');
+                if (suggestInput) {
+                    const suggestView = new ymaps.SuggestView('pac-input');
+                    suggestView.events.add('select', function(e) {
+                        const addr = e.get('item').value;
+                        ymaps.geocode(addr).then(res => {
+                            const firstGeoObject = res.geoObjects.get(0);
+                            const coords = firstGeoObject.geometry.getCoordinates();
+                            window.myMap.setCenter(coords, 15);
+                            marker.geometry.setCoordinates(coords);
+                            const latIn = document.getElementById('location_lat');
+                            const lngIn = document.getElementById('location_lng');
+                            if (latIn) latIn.value = coords[0];
+                            if (lngIn) lngIn.value = coords[1];
+                            
+                            // Ensure pacIn also shows the full address from the geocode, not just suggest text
+                            const pacIn = document.getElementById('pac-input');
+                            if (pacIn) {
+                                pacIn.value = firstGeoObject.getAddressLine() || addr;
+                            }
+                        });
+                    });
+                }
+            });
+        }
+        
+        // Initial view
+        window.showSection('choice-section');
+    });
+</script>
+{% endblock %}

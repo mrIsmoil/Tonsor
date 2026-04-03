@@ -1,0 +1,126 @@
+{% extends "accounts/home.html" %}
+{% load i18n %}
+{% load static %}
+
+{% block content %}
+<div class="login-container">
+    <div class="bg-bubbles">
+        <li></li><li></li><li></li><li></li><li></li>
+        <li></li><li></li><li></li><li></li><li></li>
+    </div>
+
+    <div class="glass-panel login-card reveal-content" style="max-width: 550px; padding: 3rem;">
+        <h1 class="gradient-text" style="font-size: 2.5rem; margin-bottom: 10px;">{% trans "Final Step" %}</h1>
+        <p style="color: var(--text-muted); margin-bottom: 40px; font-weight: 500;">
+            {% trans "Complete your profile to unlock the full ecosystem." %}
+        </p>
+
+        <form method="POST" enctype="multipart/form-data" id="completeProfileForm">
+            {% csrf_token %}
+            
+            <!-- Profile Photo Section -->
+            <div class="photo-upload-container" style="margin-bottom: 40px;">
+                <div class="photo-preview-wrapper" style="position: relative; width: 140px; height: 140px; margin: 0 auto;">
+                    <div id="photoPreview" style="width: 100%; height: 100%; border-radius: 50%; background: rgba(255,255,255,0.05); border: 2px dashed rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center; overflow: hidden; transition: 0.3s;">
+                        <i class="fas fa-user-plus" style="font-size: 2.5rem; color: rgba(255,255,255,0.3);"></i>
+                    </div>
+                    <label for="profile_photo" style="position: absolute; bottom: 5px; right: 5px; background: white; width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 10px 20px rgba(0,0,0,0.3); transition: 0.3s;">
+                        <i class="fas fa-camera" style="color: black; font-size: 1rem;"></i>
+                    </label>
+                    <input type="file" name="profile_photo" id="profile_photo" accept="image/*" style="display: none;" onchange="previewImage(this)">
+                </div>
+                <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 15px;">{% trans "Upload Profile Photo" %}</p>
+            </div>
+
+            <!-- Gender Selection Section -->
+            <div style="text-align: left; margin-bottom: 30px;">
+                <label style="display: block; font-size: 0.9rem; font-weight: 600; color: white; margin-bottom: 15px; letter-spacing: 1px; text-transform: uppercase;">
+                    {% trans "Select Gender" %}
+                </label>
+                <div class="gender-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px;">
+                    <div class="gender-card" onclick="selectGender('male', this)" style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); border-radius: 20px; padding: 20px 10px; cursor: pointer; transition: 0.4s cubic-bezier(0.16, 1, 0.3, 1); text-align: center;">
+                        <i class="fas fa-mars" style="font-size: 1.5rem; margin-bottom: 10px; color: var(--accent-blue);"></i>
+                        <span style="display: block; font-size: 0.85rem; font-weight: 600;">{% trans "Male" %}</span>
+                    </div>
+                    <div class="gender-card" onclick="selectGender('female', this)" style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); border-radius: 20px; padding: 20px 10px; cursor: pointer; transition: 0.4s cubic-bezier(0.16, 1, 0.3, 1); text-align: center;">
+                        <i class="fas fa-venus" style="font-size: 1.5rem; margin-bottom: 10px; color: var(--accent-red);"></i>
+                        <span style="display: block; font-size: 0.85rem; font-weight: 600;">{% trans "Female" %}</span>
+                    </div>
+                    <div class="gender-card" onclick="selectGender('other', this)" style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); border-radius: 20px; padding: 20px 10px; cursor: pointer; transition: 0.4s cubic-bezier(0.16, 1, 0.3, 1); text-align: center;">
+                        <i class="fas fa-transgender-alt" style="font-size: 1.5rem; margin-bottom: 10px; color: #a55eea;"></i>
+                        <span style="display: block; font-size: 0.85rem; font-weight: 600;">{% trans "Other" %}</span>
+                    </div>
+                </div>
+                <input type="hidden" name="gender" id="genderInput" required>
+            </div>
+
+            <!-- Age Input Section -->
+            <div style="text-align: left; margin-bottom: 40px;">
+                <label for="age" style="display: block; font-size: 0.9rem; font-weight: 600; color: white; margin-bottom: 10px; letter-spacing: 1px; text-transform: uppercase;">
+                    {% trans "Your Age" %}
+                </label>
+                <input type="number" name="age" id="age" class="premium-input" placeholder="e.g. 25" min="1" max="120" required>
+            </div>
+
+            <button type="submit" class="btn-glow large-cta" style="width: 100%; border-radius: 20px; background: white; color: black; border: none;">
+                {% trans "ENTER ECOSYSTEM" %}
+            </button>
+        </form>
+    </div>
+</div>
+
+<style>
+    .gender-card:hover {
+        background: rgba(255,255,255,0.08) !important;
+        transform: translateY(-5px);
+        border-color: rgba(255,255,255,0.3) !important;
+    }
+    .gender-card.active {
+        background: white !important;
+        border-color: white !important;
+    }
+    .gender-card.active i, .gender-card.active span {
+        color: black !important;
+    }
+    
+    .photo-preview-wrapper label:hover {
+        transform: scale(1.1);
+        background: var(--accent-blue);
+    }
+    .photo-preview-wrapper label:hover i {
+        color: white;
+    }
+
+    input[type=number]::-webkit-inner-spin-button, 
+    input[type=number]::-webkit-outer-spin-button { 
+        -webkit-appearance: none; 
+        margin: 0; 
+    }
+</style>
+
+<script>
+    function previewImage(input) {
+        if (input.files && input.files[0]) {
+            var reader = new FileReader();
+            reader.onload = function(e) {
+                var preview = document.getElementById('photoPreview');
+                preview.innerHTML = '<img src="' + e.target.result + '" style="width: 100%; height: 100%; object-fit: cover;">';
+                preview.style.borderStyle = 'solid';
+                preview.style.borderColor = 'white';
+            }
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+
+    function selectGender(gender, element) {
+        // Remove active class from all cards
+        document.querySelectorAll('.gender-card').forEach(card => {
+            card.classList.remove('active');
+        });
+        // Add active class to selected card
+        element.classList.add('active');
+        // Update hidden input
+        document.getElementById('genderInput').value = gender;
+    }
+</script>
+{% endblock %}

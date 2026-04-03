@@ -1,0 +1,688 @@
+{% extends 'base.html' %}
+{% load masterpiece_i18n %}
+
+{% block nav_dashboard %}
+<!-- Hidden on client page -->
+{% endblock %}
+
+{% block nav_dashboard_mobile %}
+<!-- Hidden on client page -->
+{% endblock %}
+
+{% block content %}
+<style>
+    .feed-container {
+        max-width: 500px;
+        margin: 0 auto;
+        padding-top: 20px;
+        padding-bottom: 120px;
+    }
+
+    .feed-card {
+        background: #000;
+        border-radius: 48px;
+        overflow: hidden;
+        margin-bottom: 40px;
+        position: relative;
+        box-shadow: 0 50px 100px rgba(0,0,0,0.8);
+        transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+        border: 1px solid rgba(255,255,255,0.05);
+    }
+
+    .video-wrapper {
+        position: relative;
+        width: 100%;
+        padding-top: 177.77%; /* 9:16 Aspect Ratio */
+        background: #000;
+        cursor: pointer;
+    }
+
+    .feed-video {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    /* Immersive Overlays */
+    .barber-overlay {
+        position: absolute;
+        top: 20px;
+        left: 20px;
+        z-index: 100;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        background: rgba(0,0,0,0.3);
+        padding: 8px 16px 8px 8px;
+        border-radius: 40px;
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border: 1px solid rgba(255,255,255,0.1);
+        text-decoration: none;
+        color: white;
+        transition: 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .barber-overlay:hover {
+        background: rgba(0,0,0,0.5);
+        transform: translateX(5px);
+    }
+
+    .barber-avatar {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        background: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+        border: 1.5px solid rgba(255,255,255,0.2);
+    }
+
+    .barber-name {
+        font-weight: 700;
+        font-size: 0.9rem;
+        letter-spacing: -0.2px;
+    }
+
+    /* Premium Interaction Bar */
+    .interaction-bar {
+        position: absolute;
+        right: 15px;
+        bottom: 120px;
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+        z-index: 100;
+    }
+
+    .action-circle {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .action-btn {
+        width: 50px;
+        height: 50px;
+        background: rgba(255, 255, 255, 0.08);
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 1.2rem;
+        cursor: pointer;
+        transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .action-btn:hover {
+        background: white;
+        color: black;
+        transform: scale(1.1) rotate(5deg);
+    }
+
+    .action-count {
+        font-size: 0.75rem;
+        font-weight: 800;
+        color: rgba(255,255,255,0.9);
+        text-shadow: 0 2px 10px rgba(0,0,0,0.8);
+    }
+
+    .action-btn.liked i { color: #ff4757; }
+    .action-btn.saved i { color: #00d2ff; }
+
+    /* Cinematic Info Overlay */
+    .info-overlay {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        padding: 80px 25px 45px;
+        background: linear-gradient(0deg, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.4) 60%, transparent 100%);
+        z-index: 90;
+        color: white;
+    }
+
+    .post-caption {
+        font-size: 1.05rem;
+        font-weight: 500;
+        line-height: 1.4;
+        margin-bottom: 0;
+        max-width: 85%;
+        letter-spacing: -0.2px;
+        text-shadow: 0 2px 15px rgba(0,0,0,0.5);
+    }
+
+    .book-btn-overlay {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        z-index: 100;
+        background: white;
+        color: black;
+        padding: 10px 22px;
+        border-radius: 25px;
+        font-weight: 900;
+        text-decoration: none;
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 1.2px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+        transition: 0.4s;
+    }
+
+    .book-btn-overlay:hover {
+        transform: scale(1.05);
+        background: #f0f0f0;
+    }
+
+    .video-progress-container {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        height: 2px;
+        background: rgba(255,255,255,0.1);
+        z-index: 110;
+    }
+
+    .video-progress-bar {
+        height: 100%;
+        background: #fff;
+        box-shadow: 0 0 10px #fff;
+        width: 0%;
+    }
+
+    @media (max-width: 768px) {
+        .feed-container { max-width: 100%; padding: 0; }
+        .feed-card { border-radius: 0; margin-bottom: 2px; border: none; }
+        .barber-overlay { top: 15px; left: 15px; }
+        .book-btn-overlay { top: 15px; right: 15px; }
+    }
+
+    /* Video Overlay Controls */
+    .video-controls-overlay {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        font-size: 4rem;
+        color: white;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.3s;
+        z-index: 100;
+    }
+
+    .video-controls-overlay.active {
+        opacity: 0.6;
+        animation: heartPop 0.8s ease-out;
+    }
+
+    @keyframes heartPop {
+        0% { transform: translate(-50%, -50%) scale(0.5); opacity: 0; }
+        50% { transform: translate(-50%, -50%) scale(1.2); opacity: 0.8; }
+        100% { transform: translate(-50%, -50%) scale(1); opacity: 0; }
+    }
+
+    /* Mute Indicator */
+    .mute-indicator {
+        position: absolute;
+        top: 85px;
+        right: 35px;
+        z-index: 100;
+        color: white;
+        font-size: 1.2rem;
+        opacity: 0.6;
+        cursor: pointer;
+        transition: 0.3s;
+    }
+    .mute-indicator:hover {
+        opacity: 1;
+        transform: scale(1.1);
+    }
+
+    /* Premium Quick Nav Buttons */
+    .quick-nav-container {
+        display: flex;
+        gap: 12px;
+        overflow-x: auto;
+        padding: 5px 20px 20px;
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+        margin-top: -10px;
+    }
+    
+    .quick-nav-container::-webkit-scrollbar {
+        display: none;
+    }
+
+    .quick-nav-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        padding: 12px 22px;
+        background: rgba(255, 255, 255, 0.04);
+        backdrop-filter: blur(15px);
+        -webkit-backdrop-filter: blur(15px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 20px;
+        color: white;
+        text-decoration: none;
+        font-size: 0.8rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        white-space: nowrap;
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    }
+
+    .quick-nav-btn i {
+        font-size: 0.9rem;
+        opacity: 0.5;
+        transition: 0.3s;
+    }
+
+    .quick-nav-btn:hover {
+        background: rgba(255, 255, 255, 0.1);
+        border-color: rgba(255, 255, 255, 0.3);
+        transform: translateY(-5px) scale(1.05);
+        box-shadow: 0 15px 35px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.05);
+        color: #fff;
+    }
+
+    .quick-nav-btn:hover i {
+        opacity: 1;
+        transform: scale(1.1);
+    }
+
+    .quick-nav-btn:active {
+        transform: translateY(-2px) scale(0.98);
+    }
+
+    @media (max-width: 480px) {
+        .feed-container { padding-top: 10px; }
+        .feed-card { border-radius: 30px; margin-bottom: 30px; }
+        .interaction-bar { right: 15px; bottom: 100px; gap: 20px; }
+        .action-btn { width: 50px; height: 50px; font-size: 1.2rem; }
+        .info-overlay { padding: 30px 20px; }
+        .post-caption { font-size: 0.95rem; }
+        .barber-overlay { top: 15px; left: 15px; padding: 8px 15px 8px 8px; }
+        .barber-avatar { width: 35px; height: 35px; }
+        .book-btn-overlay { top: 15px; right: 15px; padding: 8px 18px; font-size: 0.75rem; }
+    }
+</style>
+
+
+<div class="feed-container">
+    {% if not request.user.is_barber %}
+    <!-- Premium Welcome Header -->
+    <div class="reveal-content" style="padding: 30px 20px 50px; text-align: left;">
+        <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 40px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 30px;">
+            <div>
+                <h1 style="font-size: clamp(2.2rem, 8vw, 3.2rem); font-weight: 900; letter-spacing: -3px; margin-bottom: 10px; line-height: 0.9; background: linear-gradient(to bottom, #fff, #888); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;">
+                    {% masterpiece_trans "Welcome," %}<br>{{ request.user.first_name|default:request.user.email|slice:":10" }}
+                </h1>
+                <p style="color: #555; font-size: 1rem; font-weight: 400; letter-spacing: 0.5px;">{% masterpiece_trans "Explore the ecosystem of mastery." %}</p>
+            </div>
+            <a href="{% url 'accounts:profile' %}" class="nav-avatar-circle" style="width: 55px; height: 55px; margin: 0; border: 2px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.02);">
+                {% if request.user.profile_photo %}
+                    <img src="{{ request.user.profile_photo.url }}" alt="{{ request.user.first_name }}">
+                {% else %}
+                    <span style="font-size: 1.3rem; font-weight: 800;">{{ request.user.email|first|upper }}</span>
+                {% endif %}
+            </a>
+        </div>
+
+
+        <!-- Quick Navigation -->
+        <div class="quick-nav-container">
+            <a href="{% url 'bookings:search_barbers' %}" class="quick-nav-btn">
+                <i class="fas fa-search"></i> {% masterpiece_trans "Explore All" %}
+            </a>
+            <a href="{% url 'bookings:my_appointments' %}" class="quick-nav-btn">
+                <i class="fas fa-calendar-check"></i> {% masterpiece_trans "Reservations" %}
+            </a>
+            <a href="{% url 'accounts:profile' %}" class="quick-nav-btn">
+                <i class="fas fa-bookmark"></i> {% masterpiece_trans "Saved Styles" %}
+            </a>
+        </div>
+    </div>
+    {% endif %}
+
+
+    <!-- Rating Notifications (Compact) -->
+    {% if unrated_appointments %}
+    <div class="reveal-content" style="margin-bottom: 40px; padding: 0 20px;">
+        <div style="background: linear-gradient(135deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02)); border: 1px solid rgba(255,255,255,0.1); border-radius: 24px; padding: 20px; backdrop-filter: blur(20px);">
+            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 15px;">
+                <i class="fas fa-star" style="color: #ffd700; font-size: 0.8rem;"></i>
+                <span style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 2px; color: #888; font-weight: 700;">{% masterpiece_trans "Grooming Feedback" %}</span>
+            </div>
+            
+            {% for app in unrated_appointments %}
+            <div style="display: flex; align-items: center; justify-content: space-between; padding: 15px; background: rgba(255,255,255,0.03); border-radius: 16px; margin-bottom: 10px; border: 1px solid rgba(255,255,255,0.05);">
+                <div>
+                    <h4 style="margin: 0; font-size: 0.95rem; font-weight: 700;">{{ app.barber.shop_name }}</h4>
+                    <p style="margin: 2px 0 0; font-size: 0.75rem; color: #666;">{{ app.service.name }}</p>
+                </div>
+                <form action="{% url 'bookings:rate_appointment' app.id %}" method="post" style="display: flex; gap: 8px;">
+                    {% csrf_token %}
+                    <button type="submit" name="rating" value="good" style="background: rgba(0, 255, 136, 0.1); border: 1px solid rgba(0, 255, 136, 0.3); color: #00ff88; width: 38px; height: 38px; border-radius: 12px; cursor: pointer; transition: 0.3s;" onmouseover="this.style.background='rgba(0, 255, 136, 0.2)'" onmouseout="this.style.background='rgba(0, 255, 136, 0.1)'"><i class="fas fa-thumbs-up" style="font-size: 0.8rem;"></i></button>
+                    <button type="submit" name="rating" value="bad" style="background: rgba(255, 71, 87, 0.1); border: 1px solid rgba(255, 71, 87, 0.3); color: #ff4757; width: 38px; height: 38px; border-radius: 12px; cursor: pointer; transition: 0.3s;" onmouseover="this.style.background='rgba(255, 71, 87, 0.2)'" onmouseout="this.style.background='rgba(255, 71, 87, 0.1)'"><i class="fas fa-thumbs-down" style="font-size: 0.8rem;"></i></button>
+                </form>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+
+    {% for video in videos %}
+    <div class="feed-card reveal-content" data-post-id="{{ video.id }}">
+        <!-- Barber Header -->
+        <a href="{% url 'shops:barber_profile' video.barber.id %}" class="barber-overlay">
+            <div class="barber-avatar">
+                {% if video.barber.logo_url %}
+                    <img src="{{ video.barber.logo_url }}" alt="{{ video.barber.shop_name }}" style="width: 100%; height: 100%; object-fit: cover;">
+                {% else %}
+                    <span style="color: black; font-weight: 900;">{{ video.barber.shop_name|make_list|first|upper }}</span>
+                {% endif %}
+            </div>
+            <span class="barber-name">{{ video.barber.shop_name }}</span>
+        </a>
+
+        {% if not request.user.is_barber %}
+            <a href="{% url 'bookings:book_appointment' video.barber.id %}" class="book-btn-overlay">{% masterpiece_trans "Book Now" %}</a>
+        {% endif %}
+
+        <!-- Video Content -->
+        <div class="video-wrapper">
+            <video autoplay muted loop playsinline class="feed-video" data-video-id="{{ video.id }}">
+                <source src="{{ video.video_file.url }}" type="video/mp4">
+            </video>
+            
+            <div class="video-controls-overlay" id="overlay-{{ video.id }}">
+                <i class="fas fa-play"></i>
+            </div>
+
+            <div class="mute-indicator mute-toggle" data-video-id="{{ video.id }}">
+                <i class="fas fa-volume-mute"></i>
+            </div>
+
+            <!-- Vertical Social Bar -->
+            <div class="interaction-bar">
+                <div class="action-circle">
+                    <button class="action-btn like-btn {% if video.is_liked %}liked{% endif %}" data-video-id="{{ video.id }}">
+                        <i class="{% if video.is_liked %}fas{% else %}far{% endif %} fa-heart"></i>
+                    </button>
+                    <span class="action-count">{{ video.like_count }}</span>
+                </div>
+                
+                <div class="action-circle">
+                    <button class="action-btn comment-toggle" data-video-id="{{ video.id }}">
+                        <i class="far fa-comment"></i>
+                    </button>
+                    <span class="action-count">{{ video.comments.count }}</span>
+                </div>
+
+                <div class="action-circle">
+                    <button class="action-btn save-post-btn {% if video.is_saved %}saved{% endif %}" data-video-id="{{ video.id }}">
+                        <i class="{% if video.is_saved %}fas{% else %}far{% endif %} fa-bookmark"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Capture Info Overlay -->
+            <div class="info-overlay">
+                <p class="post-caption">{{ video.caption }}</p>
+            </div>
+
+            <!-- Sleek Progress Bar -->
+            <div class="video-progress-container">
+                <div class="video-progress-bar" id="progress-{{ video.id }}"></div>
+            </div>
+        </div>
+
+        <!-- Inline Comments (Appears and expands) -->
+        <div class="comments-section-inline" id="comments-{{ video.id }}" style="display: none; padding: 30px; background: rgba(0,0,0,0.5); border-top: 1px solid rgba(255,255,255,0.05);">
+            <div class="comments-list" style="max-height: 250px; overflow-y: auto; margin-bottom: 25px; padding-right: 15px;">
+                {% for comment in video.comments.all %}
+                <div class="comment-item" id="comment-{{ comment.id }}" style="margin-bottom: 20px; display: flex; gap: 15px;">
+                    <div style="width: 32px; height: 32px; border-radius: 50%; background: rgba(255,255,255,0.1); flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; font-weight: 700; color: #fff;">
+                        {{ comment.user.email|first|upper }}
+                    </div>
+                    <div>
+                        <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 5px;">
+                            <span style="font-weight: 700; font-size: 0.9rem; color: #fff;">{{ comment.user.email|slice:":5" }}</span>
+                            <span style="font-size: 0.75rem; color: #666;">{{ comment.created_at|timesince }}</span>
+                        </div>
+                        <p style="font-size: 0.95rem; color: #bbb; line-height: 1.4;">{{ comment.text }}</p>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            <form class="comment-form-new" data-video-id="{{ video.id }}" style="display: flex; gap: 15px;">
+                <input type="text" placeholder="{% masterpiece_trans 'Add a comment...' %}" required style="flex: 1; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 25px; padding: 12px 20px; color: white; outline: none; transition: 0.3s;" onfocus="this.style.borderColor='white'">
+                <button type="submit" style="background: white; border: none; width: 45px; height: 45px; border-radius: 50%; color: black; cursor: pointer; transition: 0.3s;"><i class="fas fa-paper-plane"></i></button>
+            </form>
+        </div>
+    </div>
+    {% empty %}
+    <div style="text-align: center; padding: 100px 20px; color: #666;">
+        <i class="fas fa-video-slash" style="font-size: 3rem; margin-bottom: 20px; display: block;"></i>
+        <p style="font-size: 1.2rem;">{% masterpiece_trans "The feed is empty. Follow some barbers to see their masterpieces!" %}</p>
+    </div>
+    {% endfor %}
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Like logic
+    document.querySelectorAll('.like-btn').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            const videoId = this.dataset.videoId;
+            const icon = this.querySelector('i');
+            const countSpan = this.parentElement.querySelector('.action-count');
+            
+            this.style.transform = 'scale(1.3)';
+            setTimeout(() => this.style.transform = 'scale(1)', 200);
+
+            fetch(`/social/like/${videoId}/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}',
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(res => res.json())
+            .then(data => {
+                countSpan.innerText = data.count;
+                if (data.liked) {
+                    this.classList.add('liked');
+                    icon.className = 'fas fa-heart';
+                    // Show heart popup
+                    const overlay = document.getElementById(`overlay-${videoId}`);
+                    overlay.querySelector('i').className = 'fas fa-heart';
+                    overlay.style.color = '#ff4757';
+                    overlay.classList.add('active');
+                    setTimeout(() => overlay.classList.remove('active'), 800);
+                } else {
+                    this.classList.remove('liked');
+                    icon.className = 'far fa-heart';
+                }
+            });
+        });
+    });
+
+    // Save logic
+    document.querySelectorAll('.save-post-btn').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            const videoId = this.dataset.videoId;
+            const icon = this.querySelector('i');
+            
+            this.style.transform = 'scale(1.3)';
+            setTimeout(() => this.style.transform = 'scale(1)', 200);
+
+            fetch(`/social/save-post/${videoId}/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}',
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.saved) {
+                    this.classList.add('saved');
+                    icon.className = 'fas fa-bookmark';
+                } else {
+                    this.classList.remove('saved');
+                    icon.className = 'far fa-bookmark';
+                }
+            });
+        });
+    });
+
+    // Comment toggle
+    document.querySelectorAll('.comment-toggle').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            const videoId = this.dataset.videoId;
+            const commentsSection = document.getElementById(`comments-${videoId}`);
+            if (commentsSection.style.display === 'none') {
+                commentsSection.style.display = 'block';
+                commentsSection.style.animation = 'fadeIn 0.4s forwards';
+            } else {
+                commentsSection.style.display = 'none';
+            }
+        });
+    });
+
+    // Video playback management
+    const videos = document.querySelectorAll('.feed-video');
+    
+    // Intersection Observer to auto-play/pause videos
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.play().catch(e => console.log('Auto-play blocked'));
+            } else {
+                entry.target.pause();
+            }
+        });
+    }, { threshold: 0.6 });
+
+    videos.forEach(video => {
+        observer.observe(video);
+        
+        const videoId = video.dataset.videoId;
+        const progressBar = document.getElementById(`progress-${videoId}`);
+        const overlay = document.getElementById(`overlay-${videoId}`);
+        const overlayIcon = overlay.querySelector('i');
+        
+        video.addEventListener('timeupdate', () => {
+            const percent = (video.currentTime / video.duration) * 100;
+            progressBar.style.width = `${percent}%`;
+        });
+
+        video.addEventListener('click', () => {
+            if (video.paused) {
+                video.play();
+                overlayIcon.className = 'fas fa-play';
+            } else {
+                video.pause();
+                overlayIcon.className = 'fas fa-pause';
+            }
+            overlay.style.color = 'white';
+            overlay.classList.add('active');
+            setTimeout(() => {
+                if (!video.paused) overlay.classList.remove('active');
+            }, 800);
+        });
+    });
+
+    // Mute toggle
+    document.querySelectorAll('.mute-toggle').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            const videoId = this.dataset.videoId;
+            const video = document.querySelector(`.feed-video[data-video-id="${videoId}"]`);
+            const icon = this.querySelector('i');
+            
+            video.muted = !video.muted;
+            icon.className = video.muted ? 'fas fa-volume-mute' : 'fas fa-volume-up';
+        });
+    });
+
+    // Comment form submission
+    document.querySelectorAll('.comment-form-new').forEach(form => {
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const videoId = this.dataset.videoId;
+            const input = this.querySelector('input');
+            const list = document.querySelector(`#comments-${videoId} .comments-list`);
+
+            const formData = new FormData();
+            formData.append('text', input.value);
+
+            fetch(`/social/comment/${videoId}/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}',
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: formData
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    const comment = document.createElement('div');
+                    comment.style.cssText = 'margin-bottom: 20px; display: flex; gap: 15px; animation: fadeIn 0.3s forwards;';
+                    comment.innerHTML = `
+                        <div style="width: 32px; height: 32px; border-radius: 50%; background: rgba(255,255,255,0.1); flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; font-weight: 700; color: #fff;">
+                            ${data.user.charAt(0).toUpperCase()}
+                        </div>
+                        <div>
+                            <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 5px;">
+                                <span style="font-weight: 700; font-size: 0.9rem; color: #fff;">${data.user}</span>
+                                <span style="font-size: 0.75rem; color: #666;">${data.created_at}</span>
+                            </div>
+                            <p style="font-size: 0.95rem; color: #bbb; line-height: 1.4;">${data.text}</p>
+                        </div>
+                    `;
+                    list.appendChild(comment);
+                    list.scrollTop = list.scrollHeight;
+                    input.value = '';
+                    
+                    // Update count
+                    const countSpan = document.querySelector(`.action-circle:has(.comment-toggle[data-video-id="${videoId}"]) .action-count`);
+                    if (countSpan) countSpan.innerText = parseInt(countSpan.innerText) + 1;
+                }
+            });
+        });
+    });
+});
+</script>
+<style>
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+</style>
+{% endblock %}

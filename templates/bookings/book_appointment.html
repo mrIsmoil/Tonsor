@@ -1,0 +1,376 @@
+{% extends 'base.html' %}
+{% load masterpiece_i18n %}
+
+{% block content %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<link rel="stylesheet" type="text/css" href="https://npmcdn.com/flatpickr/dist/themes/dark.css">
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+
+<div style="padding: 50px 20px; display: flex; justify-content: center;">
+    <div class="glass-panel floating" style="width: 100%; max-width: 600px; padding: 40px;">
+        <h2 class="gradient-text" style="margin-bottom: 20px; text-align: center;">{% masterpiece_trans "Book with" %} {{ barber.shop_name }}</h2>
+        <p style="text-align: center; color: rgba(255,255,255,0.6); margin-bottom: 30px;">
+            <i class="fas fa-info-circle"></i> {% masterpiece_trans "Opening Hours" %}: 
+            {% if not barber.depends_on_owner and barber.open_time %}
+                {{ barber.open_time|time:"H:i" }} - {{ barber.close_time|time:"H:i" }}
+            {% else %}
+                {% masterpiece_trans "Flexible" %}
+            {% endif %}
+        </p>
+
+        {% if error %}
+            <div style="background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.3); color: #ffffff; padding: 15px; border-radius: 8px; margin-bottom: 25px; text-align: center; font-weight: 500;">
+                <i class="fas fa-exclamation-circle"></i> {{ error }}
+            </div>
+        {% endif %}
+
+        <form method="post" id="bookingForm">
+            {% csrf_token %}
+            <div style="margin-bottom: 35px;">
+                <label style="display: block; margin-bottom: 12px; font-weight: 500; letter-spacing: 0.5px; color: rgba(255,255,255,0.8);">{% masterpiece_trans "Select Service" %}</label>
+                
+                <div class="custom-select-container">
+                    <input type="hidden" name="service_id" id="service_id_input" required>
+                    
+                    <div class="custom-select-trigger" id="custom_select_trigger">
+                        <div class="selected-service-display" id="selected_service_display">
+                            {% masterpiece_trans "-- Choose a Service --" %}
+                        </div>
+                        <i class="fas fa-chevron-down dropdown-icon"></i>
+                    </div>
+                    
+                    <div class="custom-select-dropdown" id="custom_select_dropdown">
+                        <div class="custom-options">
+                            {% for service in services %}
+                             <div class="custom-option" data-value="{{ service.id }}" data-name="{% masterpiece_trans service.name %}">
+                                <div class="opt-left">
+                                    <span class="opt-name">{% masterpiece_trans service.name %}</span>
+                                    <span class="opt-duration"><i class="far fa-clock"></i> {{ service.duration_minutes }} {% masterpiece_trans "min" %}</span>
+                                </div>
+                                <div class="opt-right">
+                                    <span class="opt-price">{% if service.currency == 'USD' %}${% endif %}{{ service.price|floatformat:0 }}{% if service.currency == 'UZS' %} UZS{% endif %}</span>
+                                </div>
+                            </div>
+                            {% empty %}
+                            <div class="custom-option" data-value="" data-name="{% masterpiece_trans 'General Appointment' %}">
+                                <span class="opt-name">{% masterpiece_trans 'General Appointment' %}</span>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+                
+                <style>
+                    .custom-select-container {
+                        position: relative;
+                        width: 100%;
+                        user-select: none;
+                        font-family: 'Inter', sans-serif;
+                    }
+                    .custom-select-trigger {
+                        display: flex;
+                        justify-content: space-between;
+                        align-items: center;
+                        padding: 16px 20px;
+                        background: rgba(255,255,255,0.03);
+                        border: 1px solid rgba(255,255,255,0.15);
+                        border-radius: 12px;
+                        cursor: pointer;
+                        transition: all 0.3s ease;
+                    }
+                    .custom-select-trigger:hover, .custom-select-container.open .custom-select-trigger {
+                        background: rgba(255,255,255,0.06);
+                        border-color: #ffffff;
+                        box-shadow: 0 5px 20px rgba(255,255,255,0.1);
+                    }
+                    .selected-service-display {
+                        font-size: 1.05rem;
+                        font-weight: 500;
+                        color: rgba(255,255,255,0.9);
+                    }
+                    .dropdown-icon {
+                        transition: transform 0.3s ease;
+                        color: rgba(255,255,255,0.5);
+                    }
+                    .custom-select-container.open .dropdown-icon {
+                        transform: rotate(180deg);
+                    }
+
+                    .custom-select-dropdown {
+                        position: absolute;
+                        top: calc(100% + 10px);
+                        left: 0;
+                        right: 0;
+                        background: #0f0f0f; /* very dark to contrast overlay */
+                        border: 1px solid rgba(255,255,255,0.15);
+                        border-radius: 12px;
+                        box-shadow: 0 15px 40px rgba(0,0,0,0.6);
+                        z-index: 100;
+                        opacity: 0;
+                        visibility: hidden;
+                        transform: translateY(-10px);
+                        transition: all 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
+                        overflow: hidden;
+                    }
+                    .custom-select-container.open .custom-select-dropdown {
+                        opacity: 1;
+                        visibility: visible;
+                        transform: translateY(0);
+                    }
+
+                    .custom-options {
+                        max-height: 280px;
+                        overflow-y: auto;
+                    }
+                    .custom-options::-webkit-scrollbar {
+                        width: 6px;
+                    }
+                    .custom-options::-webkit-scrollbar-thumb {
+                        background: rgba(255,255,255,0.2);
+                        border-radius: 10px;
+                    }
+
+                    .custom-option {
+                        display: flex;
+                        justify-content: space-between;
+                        align-items: center;
+                        padding: 16px 20px;
+                        cursor: pointer;
+                        border-bottom: 1px solid rgba(255,255,255,0.05);
+                        transition: background 0.2s ease;
+                    }
+                    .custom-option:last-child {
+                        border-bottom: none;
+                    }
+                    .custom-option:hover, .custom-option.selected {
+                        background: rgba(255,255,255,0.08);
+                    }
+                    .custom-option.selected {
+                        border-left: 3px solid #ffffff;
+                    }
+                    .opt-left {
+                        display: flex;
+                        flex-direction: column;
+                        gap: 5px;
+                    }
+                    .opt-name {
+                        font-size: 1.05rem;
+                        font-weight: 600;
+                        color: rgba(255,255,255,0.9);
+                    }
+                    .opt-duration {
+                        font-size: 0.85rem;
+                        color: rgba(255,255,255,0.4);
+                        font-weight: 500;
+                    }
+                    .opt-price {
+                        font-size: 1.15rem;
+                        font-weight: 700;
+                        color: white;
+                    }
+                </style>
+            </div>
+
+            {% if barber.employees.exists %}
+            <div style="margin-bottom: 35px;">
+                <label style="display: block; margin-bottom: 12px; font-weight: 500; letter-spacing: 0.5px; color: rgba(255,255,255,0.8);">{% masterpiece_trans "Select Worker (Optional)" %}</label>
+                
+                <div class="custom-select-container" id="worker_select_container">
+                    <input type="hidden" name="employee_id" id="worker_id_input" value="">
+                    
+                    <div class="custom-select-trigger" id="custom_worker_trigger">
+                        <div class="selected-service-display" id="selected_worker_display">
+                            <span style="font-weight:600; color:white;">{% masterpiece_trans "Any Available Worker" %}</span>
+                        </div>
+                        <i class="fas fa-chevron-down dropdown-icon"></i>
+                    </div>
+                    
+                    <div class="custom-select-dropdown">
+                        <div class="custom-options">
+                            <div class="custom-option worker-option selected" data-value="" data-name="{% masterpiece_trans 'Any Available Worker' %}">
+                                <div class="opt-left">
+                                    <span class="opt-name">{% masterpiece_trans "Any Available Worker" %}</span>
+                                </div>
+                            </div>
+                            {% for worker in barber.employees.all %}
+                            <div class="custom-option worker-option" data-value="{{ worker.id }}" data-name="{{ worker.first_name }} {{ worker.last_name }}">
+                                <div class="opt-left">
+                                    <span class="opt-name">{{ worker.first_name }} {{ worker.last_name }}</span>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <div style="display: flex; gap: 20px; margin-bottom: 25px; flex-wrap: wrap;">
+                <div style="flex: 1; min-width: 200px;">
+                    <label style="display: block; margin-bottom: 12px; font-weight: 500; letter-spacing: 0.5px; color: rgba(255,255,255,0.8);">{% masterpiece_trans "Date" %}</label>
+                    <div style="position: relative;">
+                        <input type="text" name="date" id="date_picker" required readonly style="width: 100%; padding: 12px 15px; background: rgba(255,255,255,0.05); color: white; border-radius: 10px; border: 1px solid #ffffff; font-size: 1.05rem;" placeholder="{% masterpiece_trans 'Select Date' %}">
+                        <i class="far fa-calendar-alt" style="position: absolute; right: 15px; top: 50%; transform: translateY(-50%); color: rgba(255,255,255,0.3); pointer-events: none;"></i>
+                    </div>
+                </div>
+                <div style="flex: 1; min-width: 200px;">
+                    <label style="display: block; margin-bottom: 12px; font-weight: 500; letter-spacing: 0.5px; color: rgba(255,255,255,0.8);">{% masterpiece_trans "Time" %}</label>
+                    <div style="position: relative;">
+                        <input type="text" name="time" id="time_picker" required readonly style="width: 100%; padding: 12px 15px; background: rgba(255,255,255,0.05); color: white; border-radius: 10px; border: 1px solid #ffffff; font-size: 1.05rem;" placeholder="{% masterpiece_trans 'Select Time' %}">
+                        <i class="far fa-clock" style="position: absolute; right: 15px; top: 50%; transform: translateY(-50%); color: rgba(255,255,255,0.3); pointer-events: none;"></i>
+                    </div>
+                </div>
+            </div>
+
+            <div style="margin-bottom: 35px;">
+                <label style="display: block; margin-bottom: 12px; font-weight: 500; letter-spacing: 0.5px; color: rgba(255,255,255,0.8);">{% masterpiece_trans "Comment (optional)" %}</label>
+                <textarea name="comment" rows="3" style="width: 100%; padding: 15px; background: rgba(255,255,255,0.05); color: white; border-radius: 10px; border: 1px solid rgba(255,255,255,0.1); resize: none; font-size: 1rem;" placeholder="{% masterpiece_trans 'Any special requests?' %}"></textarea>
+            </div>
+
+            <button type="submit" class="btn-glow blue" style="width: 100%; padding: 15px; border-radius: 12px; font-weight: 600; font-size: 1.1rem; letter-spacing: 1px;">{% masterpiece_trans "Confirm Booking" %}</button>
+        </form>
+    </div>
+</div>
+
+<!-- Appointment Data -->
+<div id="booking-data" style="display: none;"
+    data-work-days="{{ barber.work_days|default:'' }}"
+    data-open-time="{{ barber.open_time|time:'H:i'|default:'' }}"
+    data-close-time="{{ barber.close_time|time:'H:i'|default:'' }}"
+    data-depends-on-owner="{{ barber.depends_on_owner|yesno:'true,false' }}"
+></div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const bData = document.getElementById('booking-data').dataset;
+        const workDaysRaw = bData.workDays;
+        const openTimeRaw = bData.openTime;
+        const closeTimeRaw = bData.closeTime;
+        const dependsOnOwner = bData.dependsOnOwner === "true";
+
+        // Map day names to Flatpickr indices (0 = Sunday, 1 = Monday, etc.)
+        const dayMap = { 'Sun': 0, 'Mon': 1, 'Tue': 2, 'Wed': 3, 'Thu': 4, 'Fri': 5, 'Sat': 6 };
+        let enabledDays = [];
+        if (workDaysRaw) {
+            enabledDays = workDaysRaw.split(',').map(d => dayMap[d.trim()]);
+        } else if (!dependsOnOwner) {
+            enabledDays = [1, 2, 3, 4, 5, 6, 0];
+        }
+
+        const datePicker = flatpickr("#date_picker", {
+            minDate: "today",
+            dateFormat: "Y-m-d",
+            enable: [
+                function(date) {
+                    if (enabledDays.length === 0) return true;
+                    return enabledDays.includes(date.getDay());
+                }
+            ]
+        });
+
+        const timePickerConfig = {
+            enableTime: true,
+            noCalendar: true,
+            dateFormat: "H:i",
+            time_24hr: true,
+            minuteIncrement: 15
+        };
+
+        if (!dependsOnOwner && openTimeRaw && closeTimeRaw) {
+            timePickerConfig.minTime = openTimeRaw;
+            timePickerConfig.maxTime = closeTimeRaw;
+        }
+
+        const timePicker = flatpickr("#time_picker", timePickerConfig);
+
+            // Custom Select Dropdown Logic for Service
+            const selectContainer = document.querySelector('.custom-select-container:not(#worker_select_container)');
+            const selectTrigger = document.getElementById('custom_select_trigger');
+            const serviceDisplay = document.getElementById('selected_service_display');
+            const hiddenInput = document.getElementById('service_id_input');
+            const options = selectContainer ? selectContainer.querySelectorAll('.custom-option') : [];
+
+            if (selectTrigger && selectContainer) {
+                selectTrigger.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    selectContainer.classList.toggle('open');
+                });
+
+                options.forEach(option => {
+                    option.addEventListener('click', () => {
+                        options.forEach(opt => opt.classList.remove('selected'));
+                        option.classList.add('selected');
+                        
+                        const val = option.getAttribute('data-value');
+                        const name = option.getAttribute('data-name');
+                        const priceEl = option.querySelector('.opt-price');
+                        const price = priceEl ? priceEl.textContent : '';
+                        
+                        hiddenInput.value = val;
+                        if (price) {
+                            serviceDisplay.innerHTML = `<span style="font-weight:600; color:white;">${name}</span> <span style="opacity:0.7; font-size:0.95em; margin-left:8px;">${price}</span>`;
+                        } else {
+                            serviceDisplay.innerHTML = `<span style="font-weight:600; color:white;">${name}</span>`;
+                        }
+                        
+                        selectContainer.classList.remove('open');
+                    });
+                });
+
+                if (options.length > 0) {
+                    options[0].click();
+                }
+
+                document.addEventListener('click', (e) => {
+                    if (!selectContainer.contains(e.target)) {
+                        selectContainer.classList.remove('open');
+                    }
+                });
+            }
+
+            // Custom Select Dropdown Logic for Worker
+            const workerSelectContainer = document.getElementById('worker_select_container');
+            const workerSelectTrigger = document.getElementById('custom_worker_trigger');
+            const workerDisplay = document.getElementById('selected_worker_display');
+            const workerHiddenInput = document.getElementById('worker_id_input');
+            const workerOptions = document.querySelectorAll('.worker-option');
+
+            if (workerSelectTrigger && workerSelectContainer) {
+                workerSelectTrigger.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    workerSelectContainer.classList.toggle('open');
+                });
+
+                workerOptions.forEach(option => {
+                    option.addEventListener('click', () => {
+                        workerOptions.forEach(opt => opt.classList.remove('selected'));
+                        option.classList.add('selected');
+                        
+                        const val = option.getAttribute('data-value');
+                        const name = option.getAttribute('data-name');
+                        
+                        workerHiddenInput.value = val;
+                        workerDisplay.innerHTML = `<span style="font-weight:600; color:white;">${name}</span>`;
+                        
+                        workerSelectContainer.classList.remove('open');
+                    });
+                });
+
+                document.addEventListener('click', (e) => {
+                    if (!workerSelectContainer.contains(e.target)) {
+                        workerSelectContainer.classList.remove('open');
+                    }
+                });
+            }
+    });
+</script>
+
+<style>
+    .glass-panel select:focus, .glass-panel input:focus, .glass-panel textarea:focus {
+        background: rgba(255,255,255,0.1);
+        border-color: var(--neon-blue);
+        outline: none;
+        box-shadow: 0 0 15px rgba(0, 100, 255, 0.2);
+    }
+</style>
+{% endblock %}

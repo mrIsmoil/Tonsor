@@ -1,0 +1,823 @@
+{% extends 'base.html' %}
+{% load masterpiece_i18n %}
+
+{% block content %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<link rel="stylesheet" type="text/css" href="https://npmcdn.com/flatpickr/dist/themes/dark.css">
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<div style="display: flex; justify-content: center; padding: 50px 20px;">
+    <div class="glass-panel" style="width: 100%; max-width: 600px;">
+        <h2 class="gradient-text" style="margin-bottom: 30px;">{% masterpiece_trans "Barber Setup" %}</h2>
+        
+        {% if error %}
+        <div style="background: rgba(255,51,51,0.1); border: 1px solid rgba(255,51,51,0.2); color: #ff3333; padding: 15px; border-radius: 12px; margin-bottom: 25px; text-align: center; font-weight: 600; font-size: 0.9rem;">
+            <i class="fas fa-exclamation-circle"></i> {% masterpiece_trans error %}
+        </div>
+        {% endif %}
+
+        <div id="services-error" style="display: none; background: rgba(51,102,255,0.1); border: 1px solid rgba(51,102,255,0.2); color: #0066ff; padding: 15px; border-radius: 12px; margin-bottom: 25px; text-align: center; font-weight: 600; font-size: 0.9rem;">
+            <i class="fas fa-info-circle"></i> {% masterpiece_trans "Please select at least one service to continue." %}
+        </div>
+
+        <form method="post" enctype="multipart/form-data" id="setup-form">
+            {% csrf_token %}
+            <div style="margin-bottom: 20px;">
+                <label style="display: block; margin-bottom: 10px;">{% masterpiece_trans "Shop Name" %}</label>
+                <input type="text" name="shop_name" required style="width: 100%; padding: 10px; border-radius: 5px; background: rgba(0,0,0,0.5); border: 1px solid var(--neon-blue); color: white;">
+            </div>
+            <div style="margin-bottom: 25px;">
+                <label style="display: block; margin-bottom: 12px; font-size: 0.9rem; color: rgba(255,255,255,0.7); text-align: center; font-weight: 500; letter-spacing: 0.5px;">{% masterpiece_trans "Shop Category" %}:</label>
+                <div style="display: flex; justify-content: center; gap: 10px; flex-wrap: wrap;">
+                    <label class="shop-type-badge">
+                        <input type="radio" name="shop_type" value="men" checked>
+                        <span><i class="fas fa-mars"></i> {% masterpiece_trans "Men's Barber" %}</span>
+                    </label>
+                    <label class="shop-type-badge">
+                        <input type="radio" name="shop_type" value="women">
+                        <span><i class="fas fa-venus"></i> {% masterpiece_trans "Women's Salon" %}</span>
+                    </label>
+                </div>
+            </div>
+            <style>
+                .gallery-section {
+                    background: rgba(255,255,255,0.02);
+                    padding: 25px;
+                    border-radius: 16px;
+                    border: 1px solid rgba(255,255,255,0.05);
+                    margin-bottom: 25px;
+                    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+                }
+                .gallery-grid {
+                    display: grid;
+                    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+                    gap: 15px;
+                    margin-top: 20px;
+                }
+                .photo-input-group {
+                    position: relative;
+                    aspect-ratio: 1;
+                    background: rgba(255, 255, 255, 0.03);
+                    border: 1px dashed rgba(255, 255, 255, 0.2);
+                    border-radius: 12px;
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    justify-content: center;
+                    cursor: pointer;
+                    transition: all 0.3s;
+                    overflow: hidden;
+                    text-align: center;
+                    padding: 10px;
+                }
+                .photo-input-group:hover {
+                    border-color: var(--neon-blue);
+                    background: rgba(0, 100, 255, 0.05);
+                    transform: translateY(-2px);
+                }
+                .photo-input-group i {
+                    font-size: 1.5rem;
+                    color: rgba(255,255,255,0.3);
+                    margin-bottom: 8px;
+                }
+                .photo-input-group span {
+                    font-size: 0.7rem;
+                    color: rgba(255,255,255,0.5);
+                    text-transform: uppercase;
+                    letter-spacing: 0.5px;
+                }
+                .photo-input-group input[type="file"] {
+                    position: absolute;
+                    top: 0; left: 0; width: 100%; height: 100%;
+                    opacity: 0;
+                    cursor: pointer;
+                }
+                .photo-input-group.has-file {
+                    border-style: solid;
+                    border-color: var(--neon-blue);
+                    background: rgba(0, 100, 255, 0.1);
+                }
+                .photo-input-group.has-file i {
+                    color: var(--neon-blue);
+                }
+                .photo-preview {
+                    position: absolute;
+                    top: 0; left: 0; width: 100%; height: 100%;
+                    object-fit: cover;
+                    display: none;
+                }
+            </style>
+
+            <div class="gallery-section">
+                <h2 style="margin-bottom: 5px; color: var(--neon-blue); font-size: 1.4rem; text-align: center; font-weight: 700;">{% masterpiece_trans "Shop Gallery & Logo" %}</h2>
+                <p style="text-align: center; color: rgba(255,255,255,0.5); font-size: 0.85rem; margin-bottom: 20px;">{% masterpiece_trans "Show your shop atmosphere with real photos." %}</p>
+                
+                <div style="margin-bottom: 25px;">
+                    <label style="display: block; margin-bottom: 15px; color: rgba(255,255,255,0.8); font-size: 0.9rem; font-weight: 600;">{% masterpiece_trans "Shop Main Photo (Logo)" %}</label>
+                    <div class="photo-input-group" style="aspect-ratio: 16/9; max-width: 300px; margin: 0 auto;">
+                        <img class="photo-preview" id="logo-preview">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                        <span>{% masterpiece_trans "Choose Photo" %}</span>
+                        <input type="file" name="shop_logo" accept="image/*" required onchange="previewImage(this, 'logo-preview')">
+                    </div>
+                </div>
+
+                <label style="display: block; margin-bottom: 15px; color: rgba(255,255,255,0.8); font-size: 0.9rem; font-weight: 600;">{% masterpiece_trans "Atmospheric Shop Photos" %}</label>
+                <div class="gallery-grid">
+                    <div class="photo-input-group">
+                        <img class="photo-preview" id="atm-1-preview">
+                        <i class="fas fa-camera"></i>
+                        <span>1</span>
+                        <input type="file" name="shop_image_1" accept="image/*" required onchange="previewImage(this, 'atm-1-preview')">
+                    </div>
+                    <div class="photo-input-group">
+                        <img class="photo-preview" id="atm-2-preview">
+                        <i class="fas fa-camera"></i>
+                        <span>2</span>
+                        <input type="file" name="shop_image_2" accept="image/*" required onchange="previewImage(this, 'atm-2-preview')">
+                    </div>
+                    <div class="photo-input-group">
+                        <img class="photo-preview" id="atm-3-preview">
+                        <i class="fas fa-camera"></i>
+                        <span>3</span>
+                        <input type="file" name="shop_image_3" accept="image/*" required onchange="previewImage(this, 'atm-3-preview')">
+                    </div>
+                    <div class="photo-input-group">
+                        <img class="photo-preview" id="atm-4-preview">
+                        <i class="fas fa-camera"></i>
+                        <span>4</span>
+                        <input type="file" name="shop_image_4" accept="image/*" required onchange="previewImage(this, 'atm-4-preview')">
+                    </div>
+                </div>
+            </div>
+
+            <script>
+                function previewImage(input, previewId) {
+                    const preview = document.getElementById(previewId);
+                    const group = input.parentElement;
+                    if (input.files && input.files[0]) {
+                        const reader = new FileReader();
+                        reader.onload = function(e) {
+                            preview.src = e.target.result;
+                            preview.style.display = 'block';
+                            group.classList.add('has-file');
+                        }
+                        reader.readAsDataURL(input.files[0]);
+                    }
+                }
+            </script>
+
+            <style>
+                .shop-type-badge {
+                    display: inline-block;
+                    padding: 10px 18px;
+                    background: rgba(255,255,255,0.03);
+                    border: 1px solid rgba(255,255,255,0.1);
+                    border-radius: 10px;
+                    cursor: pointer;
+                    color: rgba(255,255,255,0.6);
+                    font-size: 0.95rem;
+                    font-weight: 500;
+                    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+                    user-select: none;
+                    text-align: center;
+                }
+                .shop-type-badge input {
+                    display: none;
+                }
+                .shop-type-badge:hover {
+                    background: rgba(255,255,255,0.1);
+                    color: white;
+                }
+                .shop-type-badge:has(input:checked) {
+                    background: rgba(0, 100, 255, 0.15);
+                    border-color: var(--neon-blue);
+                    color: white;
+                    box-shadow: 0 0 15px rgba(0, 100, 255, 0.3);
+                    transform: translateY(-2px);
+                }
+                .shop-type-badge i {
+                    margin-right: 6px;
+                }
+
+                /* Remove number arrows for a professional look */
+                input::-webkit-outer-spin-button,
+                input::-webkit-inner-spin-button {
+                    -webkit-appearance: none;
+                    margin: 0;
+                }
+                input[type=number] {
+                    -moz-appearance: textfield;
+                    appearance: textfield;
+                }
+
+                /* Advanced Service Card Styling */
+                .service-card {
+                    display: flex;
+                    flex-direction: column;
+                    padding: 18px 22px;
+                    background: rgba(255,255,255,0.03);
+                    border: 1px solid rgba(255,255,255,0.06);
+                    border-radius: 16px;
+                    cursor: pointer;
+                    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+                    margin-bottom: 15px;
+                    user-select: none;
+                    position: relative;
+                    overflow: hidden;
+                    backdrop-filter: blur(10px);
+                    z-index: 1;
+                }
+                .service-card::before {
+                    content: '';
+                    position: absolute;
+                    left: 0;
+                    top: 0;
+                    bottom: 0;
+                    width: 0;
+                    background: #ffffff;
+                    transition: width 0.3s ease;
+                    opacity: 0.9;
+                    border-radius: 16px 0 0 16px;
+                }
+                #womens_services_section .service-card::before {
+                    background: #cccccc;
+                }
+                .service-card:hover {
+                    background: rgba(255,255,255,0.06);
+                    border-color: rgba(255,255,255,0.15);
+                    transform: translateX(5px);
+                }
+                .service-card.selected {
+                    background: linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05));
+                    border-color: #ffffff;
+                    transform: translateX(0) scale(1.02);
+                    z-index: 5;
+                }
+                .service-card.selected::before {
+                    width: 4px;
+                }
+                
+                /* Men's Theme Glow */
+                #mens_services_section .service-card.selected {
+                    border-color: #ffffff;
+                    box-shadow: 0 15px 45px rgba(255, 255, 255, 0.15);
+                }
+                
+                /* Women's Theme Glow */
+                #womens_services_section .service-card.selected {
+                    border-color: #cccccc;
+                    box-shadow: 0 15px 45px rgba(255, 255, 255, 0.12);
+                }
+
+                .service-card .service-name {
+                    font-size: 1.15rem;
+                    font-weight: 700;
+                    color: rgba(255,255,255,0.4);
+                    transition: all 0.3s;
+                    line-height: 1.4;
+                    text-align: left;
+                    padding-left: 5px;
+                }
+                .service-card.selected .service-name {
+                    color: white;
+                    text-shadow: 0 0 10px rgba(255,255,255,0.2);
+                }
+
+                /* Container for Price and Duration */
+                .price-duration-container {
+                    display: flex;
+                    gap: 15px;
+                    align-items: center;
+                    max-height: 0;
+                    opacity: 0;
+                    pointer-events: none;
+                    transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+                    transform: translateY(-10px);
+                    margin-top: 0;
+                }
+                .service-card.selected .price-duration-container {
+                    max-height: 200px; 
+                    opacity: 1;
+                    pointer-events: auto;
+                    transform: translateY(0);
+                    margin-top: 18px;
+                    padding-top: 15px;
+                    border-top: 1px solid rgba(255,255,255,0.05);
+                }
+                
+                /* Advanced Input Contrast */
+                .service-card.selected .price-input,
+                .service-card.selected .duration-hours-input,
+                .service-card.selected .duration-mins-input {
+                    background: rgba(0,0,0,0.4) !important;
+                    border-color: rgba(255,255,255,0.15) !important;
+                    box-shadow: inset 0 2px 4px rgba(0,0,0,0.5);
+                }
+                .service-card.selected .price-input:focus,
+                .service-card.selected .duration-hours-input:focus,
+                .service-card.selected .duration-mins-input:focus {
+                    background: rgba(0,0,0,0.6) !important;
+                    border-color: var(--neon-blue) !important;
+                    box-shadow: 0 0 15px rgba(0,100,255,0.2), inset 0 2px 4px rgba(0,0,0,0.5);
+                }
+
+                /* Label Contrast Polish */
+                .currency-symbol-label {
+                    color: rgba(255,255,255,0.8) !important;
+                    font-weight: 900 !important;
+                    letter-spacing: 0.5px;
+                }
+                .price-duration-container span {
+                    color: rgba(255,255,255,0.6) !important;
+                    font-weight: 800 !important;
+                }
+
+                /* Category Header Styling */
+                .category-header {
+                    display: flex;
+                    align-items: center;
+                    justify-content: space-between;
+                    padding: 18px 25px;
+                    background: rgba(255,255,255,0.04);
+                    border: 1px solid rgba(255,255,255,0.08);
+                    border-radius: 12px;
+                    cursor: pointer;
+                    margin-bottom: 12px;
+                    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+                    user-select: none;
+                }
+                .category-header:hover {
+                    background: rgba(255,255,255,0.08);
+                    border-color: rgba(255,255,255,0.15);
+                }
+                .category-header.active {
+                    background: rgba(51, 51, 255, 0.08);
+                    border-color: var(--neon-blue);
+                    box-shadow: 0 0 20px rgba(0, 100, 255, 0.15);
+                    margin-bottom: 20px;
+                }
+                .category-header h5 {
+                    margin: 0;
+                    font-size: 1.1rem;
+                    font-weight: 600;
+                    color: rgba(255,255,255,0.8);
+                    transition: color 0.3s;
+                }
+                .category-header.active h5 {
+                    color: white;
+                }
+                .category-header .chevron {
+                    font-size: 0.9rem;
+                    color: rgba(255,255,255,0.3);
+                    transition: transform 0.4s;
+                }
+                .category-header.active .chevron {
+                    transform: rotate(180deg);
+                    color: var(--neon-blue);
+                }
+
+                /* Container for services that expands/collapses */
+                .category-services {
+                    max-height: 0;
+                    overflow: hidden;
+                    transition: max-height 0.5s ease-out, opacity 0.3s ease;
+                    opacity: 0;
+                    padding-left: 10px;
+                    border-left: 2px solid rgba(0, 100, 255, 0.1);
+                    margin-bottom: 0;
+                }
+                .category-header.active + .category-services {
+                    max-height: 1500px;
+                    opacity: 1;
+                    margin-bottom: 30px;
+                    padding-bottom: 15px;
+                }
+
+                .category-icon-wrapper {
+                    width: 42px;
+                    height: 42px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    background: rgba(255, 255, 255, 0.05);
+                    border-radius: 10px;
+                    transition: all 0.3s;
+                    border: 1px solid rgba(255, 255, 255, 0.1);
+                }
+                .category-header:hover .category-icon-wrapper {
+                    background: rgba(255, 255, 255, 0.1);
+                    transform: scale(1.05);
+                }
+                .category-header.active .category-icon-wrapper {
+                    background: var(--neon-blue);
+                    color: white;
+                    box-shadow: 0 0 15px rgba(0, 100, 255, 0.4);
+                }
+                .category-header.active.women .category-icon-wrapper {
+                    background: #ff33cc;
+                    box-shadow: 0 0 15px rgba(255, 51, 204, 0.4);
+                    border-color: #ff33cc;
+                }
+                .category-icon-wrapper i {
+                    font-size: 1.1rem;
+                    color: rgba(255, 255, 255, 0.6);
+                }
+                .category-header.active .category-icon-wrapper i {
+                    color: white;
+                }
+            </style>
+
+            <div id="mens_services_section" style="margin-bottom: 25px; background: rgba(255,255,255,0.02); padding: 25px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.05); box-shadow: 0 10px 30px rgba(0,0,0,0.2);">
+                <h2 style="margin-bottom: 10px; color: var(--neon-blue); font-size: 1.5rem; text-align: center; font-weight: 700; letter-spacing: -0.5px;">{% masterpiece_trans "Services & Pricing" %}</h2>
+                
+                <!-- Currency Toggle -->
+                <div style="display: flex; justify-content: center; gap: 10px; margin-bottom: 30px;">
+                    <label class="currency-badge">
+                        <input type="radio" name="currency" value="UZS" checked onchange="updateCurrencyLabels('UZS')">
+                        <span>UZS</span>
+                    </label>
+                    <label class="currency-badge">
+                        <input type="radio" name="currency" value="USD" onchange="updateCurrencyLabels('USD')">
+                        <span>USD ($)</span>
+                    </label>
+                </div>
+
+                <style>
+                    .currency-badge {
+                        padding: 8px 20px;
+                        background: rgba(255,255,255,0.03);
+                        border: 1px solid rgba(255,255,255,0.1);
+                        border-radius: 20px;
+                        cursor: pointer;
+                        color: rgba(255,255,255,0.5);
+                        font-size: 0.85rem;
+                        font-weight: 600;
+                        transition: 0.3s;
+                    }
+                    .currency-badge input { display: none; }
+                    .currency-badge:has(input:checked) {
+                        background: rgba(0, 100, 255, 0.2);
+                        border-color: var(--neon-blue);
+                        color: white;
+                        box-shadow: 0 0 15px rgba(0, 100, 255, 0.3);
+                    }
+                </style>
+                <p style="font-size: 0.9rem; color: rgba(255,255,255,0.5); text-align: center; margin-bottom: 30px;">{% masterpiece_trans "Select the services you offer and set your prices." %}</p>
+
+                {% for category in MENS_SERVICES %}
+                <div class="category-wrapper">
+                    <div class="category-header" onclick="this.classList.toggle('active')">
+                        <div style="display: flex; align-items: center; gap: 15px;">
+                            <div class="category-icon-wrapper">
+                                <i class="{{ category.icon }}"></i>
+                            </div>
+                            <h5>{{ category.category }}</h5>
+                        </div>
+                        <i class="fas fa-chevron-down chevron"></i>
+                    </div>
+                    
+                    <div class="category-services">
+                        <div style="display: flex; flex-direction: column; gap: 8px;">
+                            {% for service in category.services %}
+                            <div class="service-card" onclick="toggleServiceCard(this)">
+                                <input type="checkbox" name="selected_services" value="{{ service.key }}" style="display: none;">
+                                <div class="service-name">{{ service.name }}</div>
+                                
+                                <div class="price-duration-container" style="display: flex; gap: 10px; align-items: center;">
+                                    <div style="flex: 1.2; position: relative;">
+                                        <input type="number" 
+                                               name="service_price_{{ service.key }}" 
+                                               placeholder="{% masterpiece_trans 'Price' %}" 
+                                               onclick="event.stopPropagation()"
+                                               class="price-input"
+                                               style="width: 100%; padding: 12px 10px; padding-left: 42px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.05); color: white; font-size: 0.95rem; font-weight: 600; text-align: right; transition: 0.3s;">
+                                        <span class="currency-symbol-label" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); font-size: 0.7rem; color: rgba(255,255,255,0.4); font-weight: 800; letter-spacing: 0.5px;">UZS</span>
+                                    </div>
+                                    <div style="flex: 1.8; display: flex; gap: 6px;">
+                                        <div style="flex: 1; position: relative; min-width: 65px;">
+                                            <input type="number" 
+                                                   name="service_duration_hours_{{ service.key }}" 
+                                                   placeholder="h" 
+                                                   onclick="event.stopPropagation()"
+                                                   class="duration-hours-input"
+                                                   value="0" min="0"
+                                                   style="width: 100%; padding: 12px 22px 12px 8px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.05); color: white; font-size: 0.95rem; font-weight: 600; text-align: right; transition: 0.3s;">
+                                            <span style="position: absolute; right: 7px; top: 50%; transform: translateY(-50%); font-size: 0.7rem; color: rgba(255,255,255,0.3); font-weight: 700;">h</span>
+                                        </div>
+                                        <div style="flex: 1; position: relative; min-width: 65px;">
+                                            <input type="number" 
+                                                   name="service_duration_mins_{{ service.key }}" 
+                                                   placeholder="m" 
+                                                   onclick="event.stopPropagation()"
+                                                   class="duration-mins-input"
+                                                   value="30" min="0" max="59"
+                                                   style="width: 100%; padding: 12px 22px 12px 8px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.05); color: white; font-size: 0.95rem; font-weight: 600; text-align: right; transition: 0.3s;">
+                                            <span style="position: absolute; right: 7px; top: 50%; transform: translateY(-50%); font-size: 0.7rem; color: rgba(255,255,255,0.3); font-weight: 700;">m</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            <div id="womens_services_section" style="margin-bottom: 25px; background: rgba(255,255,255,0.02); padding: 25px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.05); box-shadow: 0 10px 30px rgba(0,0,0,0.2); display: none;">
+                <h2 style="margin-bottom: 10px; color: #ff33cc; font-size: 1.5rem; text-align: center; font-weight: 700; letter-spacing: -0.5px;">{% masterpiece_trans "Salon Services & Pricing" %}</h2>
+                
+                <!-- Currency Toggle (Women) -->
+                <div style="display: flex; justify-content: center; gap: 10px; margin-bottom: 30px;">
+                    <label class="currency-badge women">
+                        <input type="radio" name="currency_women" value="UZS" checked onchange="updateCurrencyLabels('UZS')">
+                        <span>UZS</span>
+                    </label>
+                    <label class="currency-badge women">
+                        <input type="radio" name="currency_women" value="USD" onchange="updateCurrencyLabels('USD')">
+                        <span>USD ($)</span>
+                    </label>
+                </div>
+
+                <style>
+                    .currency-badge.women:has(input:checked) {
+                        background: rgba(255, 51, 204, 0.2);
+                        border-color: #ff33cc;
+                        box-shadow: 0 0 15px rgba(255, 51, 204, 0.3);
+                    }
+                </style>
+                <p style="font-size: 0.9rem; color: rgba(255,255,255,0.5); text-align: center; margin-bottom: 30px;">{% masterpiece_trans "Select the salon services you offer and set your prices." %}</p>
+
+                {% for category in WOMENS_SERVICES %}
+                <div class="category-wrapper">
+                    <div class="category-header women" onclick="this.classList.toggle('active')" style="border-color: rgba(255, 51, 204, 0.1);">
+                        <div style="display: flex; align-items: center; gap: 15px;">
+                            <div class="category-icon-wrapper">
+                                <i class="{{ category.icon }}"></i>
+                            </div>
+                            <h5>{{ category.category }}</h5>
+                        </div>
+                        <i class="fas fa-chevron-down chevron"></i>
+                    </div>
+                    
+                    <div class="category-services">
+                        <div style="display: flex; flex-direction: column; gap: 8px;">
+                            {% for service in category.services %}
+                            <div class="service-card" onclick="toggleServiceCard(this)" style="border-color: rgba(255, 51, 204, 0.05);">
+                                <input type="checkbox" name="selected_services" value="{{ service.key }}" style="display: none;">
+                                <div class="service-name">{{ service.name }}</div>
+                                
+                                <div class="price-duration-container" style="display: flex; gap: 10px; align-items: center;">
+                                    <div style="flex: 1.2; position: relative;">
+                                        <input type="number" 
+                                               name="service_price_{{ service.key }}" 
+                                               placeholder="{% masterpiece_trans 'Price' %}" 
+                                               onclick="event.stopPropagation()"
+                                               class="price-input"
+                                               style="width: 100%; padding: 12px 10px; padding-left: 42px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.05); color: white; font-size: 0.95rem; font-weight: 600; text-align: right; transition: 0.3s;">
+                                        <span class="currency-symbol-label" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); font-size: 0.7rem; color: rgba(255,255,255,0.4); font-weight: 800; letter-spacing: 0.5px;">UZS</span>
+                                    </div>
+                                    <div style="flex: 1.8; display: flex; gap: 6px;">
+                                        <div style="flex: 1; position: relative; min-width: 65px;">
+                                            <input type="number" 
+                                                   name="service_duration_hours_{{ service.key }}" 
+                                                   placeholder="h" 
+                                                   onclick="event.stopPropagation()"
+                                                   class="duration-hours-input"
+                                                   value="0" min="0"
+                                                   style="width: 100%; padding: 12px 22px 12px 8px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.05); color: white; font-size: 0.95rem; font-weight: 600; text-align: right; transition: 0.3s;">
+                                            <span style="position: absolute; right: 7px; top: 50%; transform: translateY(-50%); font-size: 0.7rem; color: rgba(255,255,255,0.3); font-weight: 700;">h</span>
+                                        </div>
+                                        <div style="flex: 1; position: relative; min-width: 65px;">
+                                            <input type="number" 
+                                                   name="service_duration_mins_{{ service.key }}" 
+                                                   placeholder="m" 
+                                                   onclick="event.stopPropagation()"
+                                                   class="duration-mins-input"
+                                                   value="30" min="0" max="59"
+                                                   style="width: 100%; padding: 12px 22px 12px 8px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.05); color: white; font-size: 0.95rem; font-weight: 600; text-align: right; transition: 0.3s;">
+                                            <span style="position: absolute; right: 7px; top: 50%; transform: translateY(-50%); font-size: 0.7rem; color: rgba(255,255,255,0.3); font-weight: 700;">m</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            <h4 style="margin-bottom: 20px; color: rgba(255,255,255,0.9); font-size: 1.15rem; text-align: center; font-weight: 600;">{% masterpiece_trans "Working Hours" %}</h4>
+                
+                <label class="custom-checkbox" style="justify-content: flex-start; text-align: left; padding: 15px 20px;">
+                    <input type="checkbox" name="depends_on_owner" id="depends_on_owner_checkbox" style="display: none;">
+                    <div style="position: relative; width: 22px; height: 22px; flex-shrink: 0;">
+                        <div class="checkbox-visual" style="position: absolute; width: 100%; height: 100%; border: 2px solid rgba(255,255,255,0.2); border-radius: 6px; display: flex; align-items: center; justify-content: center; transition: all 0.3s ease; background: rgba(0,0,0,0.4);">
+                            <i class="fas fa-check" style="color: white; font-size: 12px; opacity: 0; transform: scale(0.5); transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);"></i>
+                        </div>
+                    </div>
+                    <span style="font-size: 0.95rem; font-weight: 500; letter-spacing: 0.3px; line-height: 1.4;">{% masterpiece_trans "My hours are flexible (I open/close manually)" %}</span>
+                </label>
+
+                <div id="fixed_schedule_inputs" style="transition: opacity 0.4s ease;">
+                    <label style="display: block; margin-bottom: 12px; font-size: 0.9rem; color: rgba(255,255,255,0.7); text-align: center; font-weight: 500; letter-spacing: 0.5px;">{% masterpiece_trans "Select Work Days" %}:</label>
+                    <div style="display: flex; justify-content: center; gap: 10px; margin-bottom: 25px; flex-wrap: wrap;" id="work_days_group">
+                        <label class="day-badge"><input type="checkbox" name="work_days" value="Mon" checked> {% masterpiece_trans "Mon" %}</label>
+                        <label class="day-badge"><input type="checkbox" name="work_days" value="Tue" checked> {% masterpiece_trans "Tue" %}</label>
+                        <label class="day-badge"><input type="checkbox" name="work_days" value="Wed" checked> {% masterpiece_trans "Wed" %}</label>
+                        <label class="day-badge"><input type="checkbox" name="work_days" value="Thu" checked> {% masterpiece_trans "Thu" %}</label>
+                        <label class="day-badge"><input type="checkbox" name="work_days" value="Fri" checked> {% masterpiece_trans "Fri" %}</label>
+                        <label class="day-badge"><input type="checkbox" name="work_days" value="Sat" checked> {% masterpiece_trans "Sat" %}</label>
+                        <label class="day-badge"><input type="checkbox" name="work_days" value="Sun"> {% masterpiece_trans "Sun" %}</label>
+                    </div>
+
+                    <div style="display: flex; gap: 20px; justify-content: space-between;">
+                        <div style="flex: 1; text-align: center;">
+                            <label style="display: block; margin-bottom: 10px; font-size: 0.85rem; color: #888; font-weight: 500; letter-spacing: 0.5px;">{% masterpiece_trans "Opening Time" %}</label>
+                            <div style="position: relative;">
+                                <input type="text" name="open_time" id="open_time" required class="custom-time" placeholder="--:--">
+                                <i class="far fa-clock" style="position: absolute; right: 15px; top: 50%; transform: translateY(-50%); color: rgba(255,255,255,0.5); pointer-events: none; font-size: 1.2rem;"></i>
+                            </div>
+                        </div>
+                        <div style="flex: 1; text-align: center;">
+                            <label style="display: block; margin-bottom: 10px; font-size: 0.85rem; color: #888; font-weight: 500; letter-spacing: 0.5px;">{% masterpiece_trans "Closing Time" %}</label>
+                            <div style="position: relative;">
+                                <input type="text" name="close_time" id="close_time" required class="custom-time" placeholder="--:--">
+                                <i class="far fa-clock" style="position: absolute; right: 15px; top: 50%; transform: translateY(-50%); color: rgba(255,255,255,0.5); pointer-events: none; font-size: 1.2rem;"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <button type="submit" class="btn-glow blue" style="width: 100%;">{% masterpiece_trans "Complete Setup" %}</button>
+        </form>
+    </div>
+</div>
+
+<style>
+    /* Premium Styling for Working Hours Component */
+    .custom-checkbox {
+        display: flex; align-items: center; justify-content: flex-start; gap: 15px; cursor: pointer; color: rgba(255,255,255,0.9); margin-bottom: 25px; padding: 15px 20px; background: rgba(255,255,255,0.02); border-radius: 12px; border: 1px solid rgba(255,255,255,0.05); transition: 0.3s;
+    }
+    .custom-checkbox:hover {
+        background: rgba(255,255,255,0.05);
+    }
+    .custom-checkbox input:checked + div .checkbox-visual {
+        background: var(--neon-blue) !important;
+        border-color: var(--neon-blue) !important;
+        box-shadow: 0 0 15px rgba(51, 51, 255, 0.4);
+    }
+    .custom-checkbox input:checked + div .checkbox-visual i {
+        opacity: 1 !important;
+        transform: scale(1) !important;
+    }
+    .day-badge {
+        display: inline-block;
+        padding: 8px 15px;
+        background: rgba(255,255,255,0.03);
+        border: 1px solid rgba(255,255,255,0.1);
+        border-radius: 8px;
+        cursor: pointer;
+        color: rgba(255,255,255,0.6);
+        font-size: 0.9rem;
+        font-weight: 500;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        user-select: none;
+        text-align: center;
+        min-width: 50px;
+    }
+    .day-badge input {
+        display: none;
+    }
+    .day-badge:hover {
+        background: rgba(255,255,255,0.1);
+        color: white;
+    }
+    .day-badge:has(input:checked) {
+        background: rgba(51, 51, 255, 0.15);
+        border-color: var(--neon-blue);
+        color: white;
+        box-shadow: 0 0 15px rgba(51, 51, 255, 0.3);
+        transform: translateY(-2px);
+    }
+    .custom-time {
+        width: 100%; 
+        padding: 12px 40px 12px 15px; 
+        border-radius: 8px; 
+        border: 1px solid rgba(255,255,255,0.2); 
+        background: rgba(255,255,255,0.05); 
+        color: white;
+        font-family: 'Inter', sans-serif;
+        font-size: 1.2rem;
+        font-weight: 500;
+        letter-spacing: 2px;
+        transition: 0.3s;
+        text-align: center;
+        box-shadow: inset 0 2px 4px rgba(0,0,0,0.3);
+    }
+    .custom-time:focus {
+        border-color: var(--neon-blue);
+        box-shadow: 0 0 15px rgba(51, 51, 255, 0.3), inset 0 2px 4px rgba(0,0,0,0.3);
+        outline: none;
+        background: rgba(255,255,255,0.1);
+    }
+    .flatpickr-calendar {
+        font-family: 'Inter', sans-serif;
+    }
+</style>
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const flexibleCheckbox = document.getElementById("depends_on_owner_checkbox");
+        const scheduleInputs = document.getElementById("fixed_schedule_inputs");
+        const timeInputs = scheduleInputs.querySelectorAll(".custom-time");
+        const shopTypeRadios = document.querySelectorAll('input[name="shop_type"]');
+        const mensServicesSection = document.getElementById("mens_services_section");
+        
+        // Update currency labels
+        window.updateCurrencyLabels = function(currency) {
+            const labels = document.querySelectorAll('.currency-symbol-label');
+            labels.forEach(label => {
+                label.textContent = (currency === 'USD') ? '$' : 'UZS';
+            });
+        };
+
+        // Global function for card clicking
+        window.toggleServiceCard = function(card) {
+            const checkbox = card.querySelector('input[type="checkbox"]');
+            const priceInput = card.querySelector('.price-input');
+            const hoursInput = card.querySelector('.duration-hours-input');
+            const minsInput = card.querySelector('.duration-mins-input');
+            
+            card.classList.toggle('selected');
+            checkbox.checked = card.classList.contains('selected');
+            
+            if (checkbox.checked) {
+                priceInput.focus();
+            } else {
+                priceInput.value = '';
+                hoursInput.value = '0';
+                minsInput.value = '30';
+            }
+        };
+
+        function toggleSchedule() {
+            if (flexibleCheckbox.checked) {
+                scheduleInputs.style.opacity = "0.3";
+                scheduleInputs.style.pointerEvents = "none";
+                timeInputs.forEach(i => i.removeAttribute('required'));
+            } else {
+                scheduleInputs.style.opacity = "1";
+                scheduleInputs.style.pointerEvents = "auto";
+                timeInputs.forEach(i => i.setAttribute('required', 'required'));
+            }
+        }
+
+        function toggleServices() {
+            const selectedType = document.querySelector('input[name="shop_type"]:checked').value;
+            if (selectedType === 'men') {
+                mensServicesSection.style.display = "block";
+                womensServicesSection.style.display = "none";
+            } else {
+                mensServicesSection.style.display = "none";
+                womensServicesSection.style.display = "block";
+            }
+        }
+        
+        const womensServicesSection = document.getElementById("womens_services_section");
+        flexibleCheckbox.addEventListener("change", toggleSchedule);
+        shopTypeRadios.forEach(r => r.addEventListener("change", toggleServices));
+        
+        toggleSchedule(); // Initialize
+        toggleServices(); // Initialize
+
+        flatpickr(".custom-time", {
+            enableTime: true,
+            noCalendar: true,
+            dateFormat: "H:i",
+            time_24hr: true,
+            disableMobile: "true"
+        });
+
+        // Form Validation for services
+        const setupForm = document.getElementById('setup-form');
+        if (setupForm) {
+            setupForm.addEventListener('submit', function(e) {
+                const selectedCount = document.querySelectorAll('input[name="selected_services"]:checked').length;
+                const err = document.getElementById('services-error');
+                if (selectedCount === 0) {
+                    e.preventDefault();
+                    if (err) {
+                        err.style.display = 'block';
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                    }
+                } else if (err) {
+                    err.style.display = 'none';
+                }
+            });
+        }
+    });
+</script>
+    </div>
+</div>
+{% endblock %}

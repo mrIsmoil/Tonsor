@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+{% load masterpiece_i18n %}
+
+{% block content %}
+<section style="padding: 150px 20px; text-align: center;">
+    <h1 class="gradient-text" style="font-size: 3rem; margin-bottom: 20px;">{% masterpiece_trans "Choose Your Path" %}</h1>
+    <p style="color: #888; margin-bottom: 50px;">{% masterpiece_trans "Define your experience in the Tonsor ecosystem." %}</p>
+    
+    <div style="display: flex; justify-content: center; gap: 30px; flex-wrap: wrap;">
+        <a href="{% url 'accounts:login' %}" class="glass-panel" style="padding: 40px; width: 300px; text-decoration: none; border: 1px solid rgba(255,255,255,0.1); border-radius: 20px; transition: 0.3s;" onmouseover="this.style.transform='translateY(-10px)'" onmouseout="this.style.transform='translateY(0)'">
+            <i class="fas fa-user" style="font-size: 3rem; color: white; margin-bottom: 20px; display: block;"></i>
+            <h2 style="color: white; margin-bottom: 15px;">{% masterpiece_trans "Client Portal" %}</h2>
+            <p style="color: #666; font-size: 0.9rem; margin-bottom: 25px;">{% masterpiece_trans "Access the most exclusive barbershops in the network and optimize your grooming schedule." %}</p>
+            <span class="btn-glow blue" style="display: inline-block;">{% masterpiece_trans "Enter as Client" %}</span>
+        </a>
+        
+        <a href="{% url 'accounts:barber_entry' %}" class="glass-panel" style="padding: 40px; width: 300px; text-decoration: none; border: 1px solid rgba(255,255,255,0.1); border-radius: 20px; transition: 0.3s;" onmouseover="this.style.transform='translateY(-10px)'" onmouseout="this.style.transform='translateY(0)'">
+            <i class="fas fa-scissors" style="font-size: 3rem; color: white; margin-bottom: 20px; display: block;"></i>
+            <h2 style="color: white; margin-bottom: 15px;">{% masterpiece_trans "Barber Portal" %}</h2>
+            <p style="color: #666; font-size: 0.9rem; margin-bottom: 25px;">{% masterpiece_trans "Scale your business with professional tools and showcase your identity to elite clientele." %}</p>
+            <span class="btn-glow blue" style="display: inline-block;">{% masterpiece_trans "Enter as Barber" %}</span>
+        </a>
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,173 @@
+{% extends 'base.html' %}
+{% load masterpiece_i18n static %}
+
+{% block mobile_toggle %}
+<div class="mobile-nav-custom">
+    <div class="language-selector">
+        <button class="lang-btn lang-toggle-trigger" style="padding: 6px 10px; font-size: 0.75rem;">
+            <i class="fas fa-globe"></i>
+            <span class="curr-lang">
+                {% if request.session.masterpiece_lang == 'uz' %}UZ{% elif request.session.masterpiece_lang == 'ru'
+                %}RU{% else %}EN{% endif %}
+            </span>
+        </button>
+        <div class="lang-dropdown">
+            <form action="{% url 'accounts:set_language_direct' %}" method="post">
+                {% csrf_token %}
+                <input name="next" type="hidden" value="{{ request.get_full_path }}">
+                <button type="submit" name="language" value="en" class="lang-opt">EN</button>
+                <button type="submit" name="language" value="uz" class="lang-opt">UZ</button>
+                <button type="submit" name="language" value="ru" class="lang-opt">RU</button>
+            </form>
+        </div>
+    </div>
+    <a href="#portal-selection" class="btn-glow small"
+        style="margin-left: 10px; padding: 6px 15px; font-size: 0.75rem; letter-spacing: 1px;">
+        {% masterpiece_trans "Start" %}
+    </a>
+</div>
+{% endblock %}
+
+{% block nav_links %}
+{% endblock %}
+
+{% block nav_actions %}
+<div class="nav-actions desktop-only">
+    <a href="#portal-selection" class="btn-glow small">{% masterpiece_trans "Get Started" %}</a>
+</div>
+{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<div class="hero-section"
+    style="text-align: center; padding: 160px 20px 80px; min-height: 95vh; display: flex; flex-direction: column; justify-content: center; align-items: center; position: relative; z-index: 2;">
+    <div class="reveal-content">
+        <div class="subtle-reveal"
+            style="display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 30px;">
+            <span style="height: 1px; width: 30px; background: rgba(255,255,255,0.2);"></span>
+            <span
+                style="font-size: 0.85rem; text-transform: uppercase; letter-spacing: 4px; color: var(--text-muted-light); font-weight: 600;">{% masterpiece_trans "Developed by MIM" %}</span>
+            <span style="height: 1px; width: 30px; background: rgba(255,255,255,0.2);"></span>
+        </div>
+        <h1 class="gradient-text"
+            style="font-size: clamp(4rem, 12vw, 8rem); margin-bottom: 24px; font-weight: 900; letter-spacing: -4px; line-height: 0.9;">
+            {% masterpiece_trans "Pure Mastery." %}
+        </h1>
+        <p
+            style="font-size: clamp(1.1rem, 2vw, 1.45rem); margin-bottom: 50px; color: var(--text-muted-light); max-width: 800px; margin-left: auto; margin-right: auto; line-height: 1.7; font-weight: 400; letter-spacing: -0.01em;">
+            {% masterpiece_trans "Tonsor is an exclusive digital ecosystem for the world's most elite barbers and discerning clients. Experience precision grooming through an uncompromising lens." %}
+        </p>
+        <div class="subtle-reveal" style="margin-bottom: 80px;">
+            <a href="#features" class="btn-glow large-cta">
+                <span>{% masterpiece_trans "Start Experience" %}</span>
+                <i class="fas fa-chevron-down" style="margin-left: 15px; font-size: 0.7rem; opacity: 0.7;"></i>
+            </a>
+        </div>
+
+        <!-- Elite Stats -->
+        <div class="subtle-reveal elite-stats">
+            <div style="text-align: center;">
+                <div style="font-size: 1.8rem; font-weight: 800; color: var(--text-primary);">500+</div>
+                <div style="font-size: 0.7rem; text-transform: uppercase; color: var(--text-muted); letter-spacing: 2px;">{% masterpiece_trans "Master Barbers" %}</div>
+            </div>
+            <div style="text-align: center;">
+                <div style="font-size: 1.8rem; font-weight: 800; color: var(--text-primary);">12k+</div>
+                <div style="font-size: 0.7rem; text-transform: uppercase; color: var(--text-muted); letter-spacing: 2px;">{% masterpiece_trans "Monthly Sessions" %}</div>
+            </div>
+            <div style="text-align: center;">
+                <div style="font-size: 1.8rem; font-weight: 800; color: var(--text-primary);">99.9%</div>
+                <div style="font-size: 0.7rem; text-transform: uppercase; color: var(--text-muted); letter-spacing: 2px;">{% masterpiece_trans "Precision Rate" %}</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Features Section -->
+<section id="features" class="feature-section" style="padding: 160px 5% 100px;">
+    <div style="text-align: center; margin-bottom: 120px;">
+        <h2 class="reveal-on-scroll gradient-text"
+            style="font-size: clamp(2.5rem, 6vw, 4.5rem); font-weight: 900; letter-spacing: -2.5px; margin-bottom: 25px;">
+            {% masterpiece_trans "Engineered for Artists." %}</h2>
+        <p class="reveal-on-scroll"
+            style="color: var(--text-muted-light); font-size: 1.35rem; max-width: 700px; margin: 0 auto; line-height: 1.5; font-weight: 400;">
+            {% masterpiece_trans "A dual-sided ecosystem designed to elevate the barbering craft to a global standard." %}</p>
+    </div>
+
+    <div class="feature-grid">
+        <div class="feature-card reveal-on-scroll">
+            <div class="card-icon"><i class="fas fa-user-check"></i></div>
+            <h3>{% masterpiece_trans "The Client Path" %}</h3>
+            <p>{% masterpiece_trans "Discover an elite network of verified master barbers. Book your next masterpiece with 0% friction, manage your style history, and explore trends." %}</p>
+            <ul
+                style="list-style: none; margin-top: 25px; color: #666; font-size: 0.95rem; padding: 0; line-height: 2;">
+                <li><i class="fas fa-microchip" style="margin-right: 12px; font-size: 0.8rem; opacity: 0.5;"></i> {% masterpiece_trans "Smart Proximity Discovery" %}</li>
+                <li><i class="fas fa-bell" style="margin-right: 12px; font-size: 0.8rem; opacity: 0.5;"></i> {% masterpiece_trans "Adaptive Session Reminders" %}</li>
+            </ul>
+        </div>
+
+        <div class="feature-card reveal-on-scroll">
+            <div class="card-icon"><i class="fas fa-bezier-curve"></i></div>
+            <h3>{% masterpiece_trans "The Barber Edge" %}</h3>
+            <p>{% masterpiece_trans "Secure your legacy on a platform built for professionals. High-fidelity video portfolios meet advanced shop analytics and revenue scaling tools." %}</p>
+            <ul
+                style="list-style: none; margin-top: 25px; color: #666; font-size: 0.95rem; padding: 0; line-height: 2;">
+                <li><i class="fas fa-chart-pie" style="margin-right: 12px; font-size: 0.8rem; opacity: 0.5;"></i> {% masterpiece_trans "Master Financial Tracking" %}</li>
+                <li><i class="fas fa-video" style="margin-right: 12px; font-size: 0.8rem; opacity: 0.5;"></i> {% masterpiece_trans "Global Portfolio Distribution" %}</li>
+            </ul>
+        </div>
+        <div class="feature-card reveal-on-scroll">
+            <div class="card-icon"><i class="fas fa-award"></i></div>
+            <h3>{% masterpiece_trans "Curated Excellence" %}</h3>
+            <p>{% masterpiece_trans "Tonsor is a closed network. Every professional on this platform is vetted for artistic skill, shop hygiene, and elite client interaction." %}</p>
+            <ul
+                style="list-style: none; margin-top: 25px; color: #666; font-size: 0.95rem; padding: 0; line-height: 2;">
+                <li><i class="fas fa-id-badge" style="margin-right: 12px; font-size: 0.8rem; opacity: 0.5;"></i> {% masterpiece_trans "Vetted Professional Network" %}</li>
+                <li><i class="fas fa-star" style="margin-right: 12px; font-size: 0.8rem; opacity: 0.5;"></i> {% masterpiece_trans "Premium Waitlist Priority" %}</li>
+            </ul>
+        </div>
+        <div class="feature-card reveal-on-scroll">
+            <div class="card-icon"><i class="fas fa-bolt"></i></div>
+            <h3>{% masterpiece_trans "State-of-the-Art" %}</h3>
+            <p>{% masterpiece_trans "Under the hood resides a custom-built infrastructure optimized for speed. 60FPS fluid interactions and precision map discovery come standard." %}</p>
+            <ul
+                style="list-style: none; margin-top: 25px; color: #666; font-size: 0.95rem; padding: 0; line-height: 2;">
+                <li><i class="fas fa-rocket" style="margin-right: 12px; font-size: 0.8rem; opacity: 0.5;"></i> {% masterpiece_trans "Ultra-Low Latency Booking" %}</li>
+                <li><i class="fas fa-layer-group" style="margin-right: 12px; font-size: 0.8rem; opacity: 0.5;"></i> {% masterpiece_trans "Advanced Geospatial Logic" %}</li>
+            </ul>
+        </div>
+    </div>
+</section>
+
+<!-- Portal Selection Section -->
+<section id="portal-selection" class="portal-selection-section"
+    style="padding: 160px 5%; position: relative; z-index: 1;">
+    <div style="text-align: center; margin-bottom: 100px;">
+        <h2 class="reveal-on-scroll gradient-text"
+            style="font-size: clamp(3rem, 8vw, 5rem); font-weight: 900; letter-spacing: -3px; margin-bottom: 20px;">{% masterpiece_trans "Choose Your Path." %}</h2>
+        <p class="reveal-on-scroll" style="color: var(--text-muted-light); font-size: 1.25rem;">{% masterpiece_trans "Define your experience in the Tonsor ecosystem." %}</p>
+    </div>
+
+    <div class="portal-grid">
+        <div class="portal-card client reveal-on-scroll">
+            <div class="portal-visual" style="color: rgba(255,255,255,0.7);">
+                <i class="fas fa-couch"></i>
+            </div>
+            <div class="portal-content">
+                <h3>{% masterpiece_trans "Client Portal" %}</h3>
+                <p style="margin-bottom: 50px;">{% masterpiece_trans "Access the most exclusive barbershops in the network and optimize your grooming schedule." %}</p>
+                <a href="{% url 'accounts:login' %}?portal=client" class="btn-glow">{% masterpiece_trans "Enter as Client" %}</a>
+            </div>
+        </div>
+        <div class="portal-card barber reveal-on-scroll">
+            <div class="portal-visual" style="color: rgba(255,255,255,0.7);">
+                <i class="fas fa-hand-scissors"></i>
+            </div>
+            <div class="portal-content">
+                <h3>{% masterpiece_trans "Business Portal" %}</h3>
+                <p style="margin-bottom: 50px;">{% masterpiece_trans "Scale your business with professional tools and showcase your identity to elite clientele." %}</p>
+                <a href="{% url 'accounts:barber_entry' %}?portal=business" class="btn-glow blue">{% masterpiece_trans "Enter as Business" %}</a>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,55 @@
+{% extends 'base.html' %}
+{% load i18n %}
+{% load account socialaccount %}
+
+{% block mobile_toggle %}
+<!-- Hidden on login page -->
+{% endblock %}
+
+{% block nav_links %}
+<!-- Hidden on login page -->
+{% endblock %}
+
+{% block nav_actions %}
+<!-- Hidden on login page -->
+{% endblock %}
+
+{% block head_title %}{% trans "Sign In" %}{% endblock %}
+
+{% block content %}
+<div class="login-container">
+    <!-- Animated Bubbles Background -->
+    <ul class="bg-bubbles">
+        <li></li><li></li><li></li><li></li><li></li>
+        <li></li><li></li><li></li><li></li><li></li>
+    </ul>
+
+    <div class="glass-panel login-card floating">
+        <h1 class="gradient-text" style="font-size: 2.5rem; margin-bottom: 10px;">{% trans "Welcome" %}</h1>
+        <p style="color: var(--text-muted-light); margin-bottom: 30px;">{% trans "Login to access your premium barber experience" %}</p>
+        
+        <div class="social-btns">
+            {% get_providers as socialaccount_providers %}
+            {% for provider in socialaccount_providers %}
+                {% if provider.id == "google" %}
+                    <a href="{% provider_login_url provider.id %}" class="btn-glow blue">
+                        <i class="fab fa-google"></i> {% trans "Continue with Google" %}
+                    </a>
+                {% else %}
+                    <a href="{% provider_login_url provider.id %}" class="btn-glow">
+                        <i class="fab fa-{{ provider.id }}"></i> {{ provider.name }}
+                    </a>
+                {% endif %}
+            {% endfor %}
+        </div>
+        
+        <div style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--glass-border); font-size: 0.85rem; color: rgba(255,255,255,0.4);">
+            <i class="fas fa-info-circle"></i> {% trans "Secure social authentication powered by Tonsor." %}
+            <br><br>
+            <p style="text-align: center; color: var(--text-muted);">
+                {% trans "Don't have an account?" %} <a href="{% url 'account_signup' %}" style="color: var(--neon-blue); text-decoration: none; font-weight: 600;">{% trans "Register here" %}</a>.
+            </p>
+        </div>
+    </div>
+</div>
+{% endblock %}

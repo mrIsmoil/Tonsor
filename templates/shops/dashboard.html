@@ -1,0 +1,527 @@
+{% extends 'base.html' %}
+{% load masterpiece_i18n %}
+
+{% block content %}
+<div class="dashboard-container">
+    <div class="dashboard-header">
+        <div style="display: flex; align-items: center; gap: 20px;">
+            <div style="width: 70px; height: 70px; border-radius: 50%; background: var(--glass-bg); border: 2px solid rgba(255,255,255,0.1); display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 1.8rem; color: #ffffff; overflow: hidden; box-shadow: 0 10px 25px rgba(0,0,0,0.3); flex-shrink: 0;">
+                {% if request.user.barber_profile.logo_url %}
+                    <img src="{{ request.user.barber_profile.logo_url }}" alt="{{ request.user.barber_profile.shop_name }}" style="width: 100%; height: 100%; object-fit: cover;">
+                {% else %}
+                    {{ request.user.barber_profile.shop_name|make_list|first|upper }}
+                {% endif %}
+            </div>
+            <div>
+                <h1 class="gradient-text dashboard-title">{% masterpiece_trans "Command Center" %}</h1>
+                <p style="font-size: 1.1rem; color: rgba(255,255,255,0.5); margin: 5px 0 0 0; text-transform: uppercase; letter-spacing: 2px;">{{ request.user.barber_profile.shop_name }}</p>
+            </div>
+        </div>
+        
+        <div style="display: flex; align-items: center; gap: 20px;">
+            <div style="background: rgba(255,188,0,0.1); padding: 8px 15px; border-radius: 12px; border: 1px solid rgba(255,188,0,0.2); display: flex; align-items: center; gap: 8px;">
+                <i class="fas fa-star" style="color: #FFD700;"></i>
+                <span style="color: white; font-weight: 800; font-size: 1.1rem;">{{ request.user.barber_profile.rating|floatformat:1 }}</span>
+            </div>
+            {% if request.user.barber_profile.depends_on_owner %}
+            <div style="background: rgba(255,255,255,0.03); padding: 12px 20px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center; gap: 15px;">
+                <span style="font-size: 0.9rem; font-weight: 700; color: rgba(255,255,255,0.6); text-transform: uppercase;">{% masterpiece_trans "Live Status" %}</span>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="shopStatusToggle" {% if request.user.barber_profile.is_open_now %}checked{% endif %}>
+                    <span class="toggle-slider"></span>
+                </label>
+                <span id="shopStatusText" class="status-badge {% if request.user.barber_profile.is_open_now %}open{% else %}closed{% endif %}">
+                    {% if request.user.barber_profile.is_open_now %}{% masterpiece_trans "OPEN" %}{% else %}{% masterpiece_trans "CLOSED" %}{% endif %}
+                </span>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <div class="dashboard-grid">
+        
+        <!-- PENDING REQUESTS -->
+        <div class="dashboard-col">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 25px;">
+                <h3 style="margin: 0; color: white; font-weight: 700; display: flex; align-items: center; gap: 10px;">
+                    <span style="width: 8px; height: 8px; background: #ffffff; border-radius: 50%; box-shadow: 0 0 10px #ffffff;"></span>
+                    {% masterpiece_trans "Pending" %}
+                </h3>
+                <span class="count-badge">{{ pending_appointments|length }}</span>
+            </div>
+            
+            <div class="scroll-container">
+            {% for app in pending_appointments %}
+                <div class="appointment-card pending">
+                    <div class="card-header">
+                        <div class="client-info">
+                            <span class="client-name">{{ app.client.first_name|default:app.client.username }}</span>
+                            <span class="time-stamp"><i class="far fa-calendar-alt"></i> {{ app.date|date:"M d" }} • {{ app.time|time:"H:i" }}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="card-details">
+                        <div class="detail-row">
+                            <span class="label">{% masterpiece_trans "Service" %}</span>
+                            <span class="value">{% masterpiece_trans app.service.name|default:"General" %}</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="label">{% masterpiece_trans "Worker" %}</span>
+                            <span class="value">{% if app.employee %}{{ app.employee.first_name }}{% else %}<span style="opacity:0.4;">{% masterpiece_trans "Any" %}</span>{% endif %}</span>
+                        </div>
+                    </div>
+
+                    <div class="card-actions" style="margin-top: 20px;">
+                        <a href="{% url 'shops:appointment_action' app.id 'accept' %}" class="action-btn accept">{% masterpiece_trans "Approve" %}</a>
+                        
+                        <form method="post" action="{% url 'shops:appointment_action' app.id 'cancel' %}" style="display: flex; gap: 8px; margin-top: 8px;">
+                            {% csrf_token %}
+                            <input type="text" name="note" placeholder="{% masterpiece_trans 'Reason...' %}" class="reason-input">
+                            <button type="submit" class="action-btn decline"><i class="fas fa-times"></i></button>
+                        </form>
+                    </div>
+                </div>
+            {% empty %}
+                <div class="empty-state">{% masterpiece_trans "Empty" %}</div>
+            {% endfor %}
+            </div>
+        </div>
+        
+        <!-- UPCOMING SCHEDULE -->
+        <div class="dashboard-col">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 25px;">
+                <h3 style="margin: 0; color: white; font-weight: 700; display: flex; align-items: center; gap: 10px;">
+                    <span style="width: 8px; height: 8px; background: #00ff88; border-radius: 50%; box-shadow: 0 0 10px #00ff88;"></span>
+                    {% masterpiece_trans "Upcoming" %}
+                </h3>
+            </div>
+            
+            <div class="scroll-container">
+            {% for app in upcoming_appointments %}
+                <div class="appointment-card upcoming" data-time="{{ app.date|date:'Y-m-d' }}T{{ app.time|time:'H:i' }}:00" data-client="{{ app.client.first_name|default:app.client.username }}" data-service="{{ app.service.name|default:'Appointment' }}">
+                    <div class="card-header">
+                        <div class="client-info">
+                            <span class="client-name">{{ app.client.first_name|default:app.client.username }}</span>
+                            <span class="time-stamp success"><i class="fas fa-calendar-alt"></i> {{ app.date|date:"M d" }} • {{ app.time|time:"H:i" }}</span>
+                        </div>
+                        <div class="price-pill">
+                            {% if app.service.currency == 'USD' %}${% endif %}{{ app.service.price|floatformat:0 }}
+                        </div>
+                    </div>
+
+                    <div style="margin-top: 15px; display: flex; flex-direction: column; gap: 10px;">
+                        <span style="font-size: 0.8rem; color: rgba(255,255,255,0.4); font-weight: 500;">
+                            {% masterpiece_trans app.service.category.category %} • {% masterpiece_trans app.service.name %}
+                        </span>
+                        
+                        <div class="arrival-actions" style="display: none; gap: 8px; margin-top: 5px;">
+                            <a href="{% url 'shops:appointment_action' app.id 'arrived' %}" class="action-btn accept" style="padding: 10px; font-size: 0.85rem;">{% masterpiece_trans "Client Arrived" %}</a>
+                            <a href="{% url 'shops:appointment_action' app.id 'no_show' %}" class="action-btn decline" style="padding: 10px; font-size: 0.85rem; width: auto; flex: 1;">{% masterpiece_trans "No Show" %}</a>
+                        </div>
+                        <div class="waiting-label" style="font-size: 0.8rem; color: rgba(255,255,255,0.2); font-style: italic; margin-top: 8px;">
+                            {% masterpiece_trans "Buttons will appear at" %} {{ app.time|time:"H:i" }}
+                        </div>
+                    </div>
+                </div>
+            {% empty %}
+                <div class="empty-state">{% masterpiece_trans "No upcoming" %}</div>
+            {% endfor %}
+            </div>
+        </div>
+
+        <!-- IN PROGRESS / PROCESS -->
+        <div class="dashboard-col">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 25px;">
+                <h3 style="margin: 0; color: white; font-weight: 700; display: flex; align-items: center; gap: 10px;">
+                    <span style="width: 8px; height: 8px; background: #3399ff; border-radius: 50%; box-shadow: 0 0 10px #3399ff;"></span>
+                    {% masterpiece_trans "In Progress" %}
+                </h3>
+            </div>
+            
+            <div class="scroll-container">
+            {% for app in in_progress_appointments %}
+                <div class="appointment-card in-progress" data-start="{{ app.started_at|date:'c' }}" data-duration="{{ app.service.duration_minutes }}">
+                    <div class="card-header" style="margin-bottom: 10px;">
+                        <span class="client-name" style="font-size: 1.1rem;">{{ app.client.first_name|default:app.client.username }}</span>
+                        <span class="time-stamp" style="color: #3399ff;"><i class="fas fa-spinner fa-spin"></i> {% masterpiece_trans "Active" %}</span>
+                    </div>
+                    
+                    <p style="margin: 5px 0 0 0; color: rgba(255,255,255,0.6);">{% masterpiece_trans app.service.name %} • {% masterpiece_trans app.employee.first_name|default:"Professional" %}</p>
+                    
+                    <div class="progress-bar-container" style="height: 6px; background: rgba(255,255,255,0.05); border-radius: 10px; overflow: hidden; position: relative; margin-top: 15px;">
+                        <div class="progress-bar-fill" style="height: 100%; background: linear-gradient(90deg, #3399ff, #00ff88); width: 0%; transition: width 1s linear;"></div>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; margin-top: 8px; font-size: 0.75rem; color: rgba(255,255,255,0.3); font-weight: 600;">
+                        <span class="time-elapsed">0:00</span>
+                        <span class="time-remaining">{{ app.service.duration_minutes }}:00</span>
+                    </div>
+                </div>
+            {% empty %}
+                <div class="empty-state">{% masterpiece_trans "No active services" %}</div>
+            {% endfor %}
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<style>
+    :root {
+        --card-bg: rgba(255, 255, 255, 0.03);
+        --card-border: rgba(255, 255, 255, 0.08);
+        --accent-white: #ffffff;
+    }
+
+    .dashboard-col {
+        background: rgba(0,0,0,0.2);
+        padding: 25px;
+        border-radius: 24px;
+        height: 80vh;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .scroll-container {
+        overflow-y: auto;
+        flex-grow: 1;
+        padding-right: 5px;
+    }
+    .scroll-container::-webkit-scrollbar { width: 4px; }
+    .scroll-container::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
+
+    /* Appointment Card Styling */
+    .appointment-card {
+        background: var(--card-bg);
+        border: 1px solid var(--card-border);
+        border-radius: 20px;
+        padding: 20px;
+        margin-bottom: 35px;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+    }
+    .appointment-card:hover {
+        border-color: rgba(255,255,255,0.2);
+        transform: translateY(-2px);
+        background: rgba(255,255,255,0.05);
+    }
+    
+    .client-name {
+        display: block;
+        font-size: 1.25rem;
+        font-weight: 800;
+        color: white;
+        letter-spacing: -0.5px;
+    }
+    .time-stamp {
+        font-size: 0.85rem;
+        color: rgba(255,255,255,0.4);
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        margin-top: 4px;
+    }
+    .time-stamp.success { color: #00ff88; }
+
+    .card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 15px;
+    }
+
+    .price-pill {
+        padding: 6px 12px;
+        background: white;
+        color: black;
+        border-radius: 30px;
+        font-weight: 800;
+        font-size: 0.85rem;
+    }
+
+    /* Detail Rows */
+    .card-details { display: flex; flex-direction: column; gap: 8px; }
+    .detail-row {
+        display: flex;
+        justify-content: space-between;
+        font-size: 0.9rem;
+        padding-bottom: 8px;
+        border-bottom: 1px solid rgba(255,255,255,0.03);
+    }
+    .detail-row .label { color: rgba(255,255,255,0.3); font-weight: 500; }
+    .detail-row .value { color: white; font-weight: 600; }
+
+    .card-details-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 10px;
+        margin-top: 15px;
+        padding-top: 15px;
+        border-top: 1px solid rgba(255,255,255,0.05);
+    }
+    .mini-detail {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 5px;
+        font-size: 0.75rem;
+        color: rgba(255,255,255,0.5);
+    }
+    .mini-detail i { font-size: 0.9rem; color: white; }
+
+    /* Action Buttons */
+    .action-btn {
+        display: block;
+        text-align: center;
+        padding: 12px;
+        border-radius: 12px;
+        font-weight: 700;
+        font-size: 0.9rem;
+        text-decoration: none;
+        transition: 0.2s;
+        cursor: pointer;
+        border: none;
+    }
+    .action-btn.accept {
+        background: white;
+        color: black;
+        width: 100%;
+    }
+    .action-btn.accept:hover { background: #e0e0e0; transform: scale(1.01); }
+    
+    .action-btn.decline {
+        background: rgba(255,68,68,0.1);
+        color: #ff4444;
+        width: 50px;
+    }
+    .action-btn.decline:hover { background: #ff4444; color: white; }
+
+    .reason-input {
+        flex: 1;
+        background: rgba(0,0,0,0.3);
+        border: 1px solid rgba(255,255,255,0.1);
+        border-radius: 10px;
+        padding: 0 15px;
+        color: white;
+        outline: none;
+    }
+
+    /* Cancelled styles */
+    .appointment-card.cancelled { border-left: 3px solid #ff4444; opacity: 0.7; }
+    .status-tag { font-size: 0.65rem; font-weight: 900; background: #ff4444; color: white; padding: 2px 6px; border-radius: 4px; }
+    .cancelled-meta { font-size: 0.8rem; color: rgba(255,255,255,0.3); margin: 5px 0 10px 0; }
+    .cancellation-reason {
+        font-size: 0.85rem;
+        color: rgba(255,255,255,0.5);
+        font-style: italic;
+        padding: 10px;
+        background: rgba(0,0,0,0.2);
+        border-radius: 8px;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 40px;
+        color: rgba(255,255,255,0.2);
+        font-weight: 600;
+        border: 2px dashed rgba(255,255,255,0.05);
+        border-radius: 20px;
+    }
+
+    .count-badge {
+        background: rgba(255,255,255,0.1);
+        color: white;
+        padding: 2px 10px;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 800;
+    }
+
+    /* Toggle & Badge Styling */
+    .status-badge {
+        font-weight: 800;
+        font-size: 0.8rem;
+        letter-spacing: 1px;
+    }
+    .status-badge.open { color: #00ff88; }
+    .status-badge.closed { color: #ff4444; }
+
+    .toggle-switch { position: relative; display: inline-block; width: 44px; height: 24px; }
+    .toggle-switch input { opacity: 0; width: 0; height: 0; }
+    .toggle-slider {
+      position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0;
+      background-color: rgba(255,255,255,0.1); transition: .4s; border-radius: 30px;
+    }
+    .toggle-slider:before {
+      position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px;
+      background-color: white; transition: .4s; border-radius: 50%;
+    }
+    input:checked + .toggle-slider { background-color: #00ff88; }
+    input:checked + .toggle-slider:before { transform: translateX(20px); }
+</style>
+
+<!-- Translation Data -->
+<div id="js-translations" style="display: none;"
+    data-notify-text="{% masterpiece_trans 'appointment_notify_5min' %}"
+    data-voice-lang="{% if request.session.masterpiece_lang == 'uz' %}uz-UZ{% elif request.session.masterpiece_lang == 'ru' %}ru_RU{% else %}en-US{% endif %}"
+    data-open="{% masterpiece_trans 'OPEN' %}"
+    data-closed="{% masterpiece_trans 'CLOSED' %}"
+    data-missed="{% masterpiece_trans 'Appointment Missed (Past Date)' %}"
+    data-appear-at="{% masterpiece_trans 'Buttons will appear at' %}"
+    data-active="{% masterpiece_trans 'Active' %}"
+    data-csrf="{{ csrf_token }}"
+    data-toggle-url="{% url 'shops:toggle_shop_status' %}"
+></div>
+
+<script>
+    // Audio Notification System
+    const notifiedAppointments = new Set();
+    const dashboardTrans = document.getElementById('js-translations').dataset;
+
+    function announceAppointment() {
+        if (!window.speechSynthesis) return;
+        
+        const message = new SpeechSynthesisUtterance();
+        message.text = dashboardTrans.notifyText;
+        message.lang = dashboardTrans.voiceLang || 'en-US';
+        message.rate = 0.9;
+        message.pitch = 1.0;
+        message.volume = 1.0;
+        
+        window.speechSynthesis.speak(message);
+    }
+
+    function updateUpcomingActions() {
+        const now = new Date();
+        const cards = document.querySelectorAll('.appointment-card.upcoming');
+        
+        cards.forEach(card => {
+            const appTimeStr = card.getAttribute('data-time');
+            if (!appTimeStr) return;
+            
+            const appTime = new Date(appTimeStr);
+            const actions = card.querySelector('.arrival-actions');
+            const label = card.querySelector('.waiting-label');
+            
+            const isToday = now.toDateString() === appTime.toDateString();
+            
+            if (isToday && now >= appTime) {
+                if (actions && actions.style.display === 'none') {
+                    actions.style.display = 'flex';
+                    if (label) label.style.display = 'none';
+                }
+            } else if (!isToday && now > appTime) {
+                if (label) {
+                    label.textContent = dashboardTrans.missed;
+                    label.style.color = "#ff4444";
+                }
+            }
+        });
+    }
+
+    function checkSchedules() {
+        const now = new Date();
+        const cards = document.querySelectorAll('.appointment-card.upcoming');
+        
+        updateUpcomingActions();
+        
+        cards.forEach(card => {
+            const appTimeStr = card.getAttribute('data-time');
+            if (!appTimeStr) return;
+            
+            const appTime = new Date(appTimeStr);
+            const diffMs = appTime - now;
+            const diffMins = Math.floor(diffMs / 60000);
+            
+            if (diffMins === 5 && !notifiedAppointments.has(appTimeStr)) {
+                announceAppointment();
+                notifiedAppointments.add(appTimeStr);
+            }
+        });
+    }
+
+    function updateProgressBars() {
+        const now = new Date();
+        const cards = document.querySelectorAll('.appointment-card.in-progress');
+        let needsRefresh = false;
+
+        cards.forEach(card => {
+            const startStr = card.getAttribute('data-start');
+            const duration = parseInt(card.getAttribute('data-duration')) || 30;
+            const fill = card.querySelector('.progress-bar-fill');
+            const elapsedEl = card.querySelector('.time-elapsed');
+            const remainingEl = card.querySelector('.time-remaining');
+
+            if (!startStr || !fill) return;
+
+            const startTime = new Date(startStr);
+            const endTime = new Date(startTime.getTime() + duration * 60000);
+            const totalMs = duration * 60000;
+            const elapsedMs = now - startTime;
+            const remainingMs = endTime - now;
+
+            if (elapsedMs >= totalMs) {
+                fill.style.width = '100%';
+                if (elapsedEl) elapsedEl.textContent = `${duration}:00`;
+                if (remainingEl) remainingEl.textContent = '0:00';
+                needsRefresh = true;
+            } else if (elapsedMs > 0) {
+                const percent = (elapsedMs / totalMs) * 100;
+                fill.style.width = `${percent}%`;
+
+                if (elapsedEl) {
+                    const eMin = Math.floor(elapsedMs / 60000);
+                    const eSec = Math.floor((elapsedMs % 60000) / 1000);
+                    elapsedEl.textContent = `${eMin}:${eSec.toString().padStart(2, '0')}`;
+                }
+
+                if (remainingEl) {
+                    const rMin = Math.floor(remainingMs / 60000);
+                    const rSec = Math.floor((remainingMs % 60000) / 1000);
+                    remainingEl.textContent = `${rMin}:${rSec.toString().padStart(2, '0')}`;
+                }
+            }
+        });
+
+        if (needsRefresh) {
+            setTimeout(() => { location.reload(); }, 2000);
+        }
+    }
+
+    document.addEventListener("DOMContentLoaded", function() {
+        const trans = document.getElementById('js-translations').dataset;
+        
+        setInterval(checkSchedules, 30000);
+        checkSchedules();
+
+        setInterval(updateProgressBars, 1000);
+        updateProgressBars();
+
+        const toggle = document.getElementById("shopStatusToggle");
+        const statusText = document.getElementById("shopStatusText");
+        
+        if(toggle) {
+            toggle.addEventListener("change", function() {
+                if(this.checked) {
+                    statusText.textContent = trans.open;
+                    statusText.className = "status-badge open";
+                } else {
+                    statusText.textContent = trans.closed;
+                    statusText.className = "status-badge closed";
+                }
+                
+                fetch(trans.toggleUrl, {
+                    method: "POST",
+                    headers: {
+                        "X-CSRFToken": trans.csrf,
+                        "Content-Type": "application/json"
+                    }
+                }).then(response => response.json())
+                  .catch(error => console.error("Error:", error));
+            });
+        }
+        
+        if (window.speechSynthesis) window.speechSynthesis.getVoices();
+    });
+</script>
+{% endblock %}
