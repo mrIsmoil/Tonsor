@@ -4,7 +4,7 @@
 {% block title %}{{ user.first_name }} {{ user.last_name }} - {% masterpiece_trans "Profile" %}{% endblock %}
 
 {% block content %}
-<section class="profile-container floating-medium">
+<section class="profile-container">
     <div class="profile-header">
         <div class="profile-photo-wrapper">
             {% if user.profile_photo %}
@@ -37,7 +37,7 @@
             <h2 class="section-title"><i class="fas fa-users"></i> {% masterpiece_trans "My Followers" %} <span class="badge" style="background: rgba(255,255,255,0.1); padding: 2px 8px; border-radius: 10px; font-size: 0.9rem; margin-left: 10px;">{{ followers|length }}</span></h2>
             <div class="barbers-grid">
                 {% for follower in followers %}
-                    <div class="barber-card-mini floating-fast">
+                    <div class="barber-card-mini">
                         <h3 class="shop-name">{{ follower.client.get_full_name|default:follower.client.username }}</h3>
                     </div>
                 {% empty %}
@@ -50,7 +50,7 @@
             <h2 class="section-title"><i class="fas fa-video"></i> {% masterpiece_trans "My Added Posts" %}</h2>
             <div class="saved-posts-grid">
                 {% for post in own_posts %}
-                    <div class="saved-post-card floating-fast" id="post-card-{{ post.id }}" onclick="openInteractions({{ post.id }})" style="cursor: pointer; position: relative;">
+                    <div class="saved-post-card" id="post-card-{{ post.id }}" onclick="openInteractions({{ post.id }})" style="cursor: pointer; position: relative;">
                         {% if user.is_barber and post.barber == user.barber_profile %}
                         <button onclick="event.stopPropagation(); confirmDeletePost({{ post.id }})" class="delete-post-btn" title="{% masterpiece_trans 'Delete Post' %}">
                             <i class="fas fa-trash"></i>
@@ -318,7 +318,7 @@
             <h2 class="section-title"><i class="fas fa-users"></i> {% masterpiece_trans "Followed Barbers" %}</h2>
             <div class="barbers-grid">
                 {% for follower in followed_barbers %}
-                    <div class="barber-card-mini floating-fast">
+                    <div class="barber-card-mini">
                         <a href="{% url 'shops:barber_profile' follower.barber.id %}">
                             <h3 class="shop-name">{{ follower.barber.shop_name }}</h3>
                             <p class="address">{{ follower.barber.address|truncatechars:30 }}</p>
@@ -335,7 +335,7 @@
             <h2 class="section-title"><i class="fas fa-bookmark"></i> {% masterpiece_trans "Saved Messages" %}</h2>
             <div class="saved-posts-grid">
                 {% for post in saved_posts %}
-                    <div class="saved-post-card floating-fast" onclick="openInteractions({{ post.id }})" style="cursor: pointer;">
+                    <div class="saved-post-card" onclick="openInteractions({{ post.id }})" style="cursor: pointer;">
                         <div class="post-preview">
                             <video src="{{ post.video_file.url }}" muted loop></video>
                         </div>

@@ -252,7 +252,7 @@ class ScrollObserver {
 
 // Initialize High-Fidelity Experience
 document.addEventListener('DOMContentLoaded', () => {
-    new NeuralSilkEngine('bg-canvas');
+    // new NeuralSilkEngine('bg-canvas');
     new ScrollObserver();
     
     // Universal Smooth Scrolling

@@ -330,16 +330,6 @@
         max-width: 100vw;
     }
 
-    #bg-canvas {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100vw;
-        height: 100vh;
-        z-index: -1;
-        background: #000;
-        pointer-events: none;
-    }
 
     .login-container {
         position: relative;
@@ -418,10 +408,9 @@
 </style>
 
 
-<div class="login-container">
-    <canvas id="bg-canvas"></canvas>
 
-    <div class="glass-panel login-card floating" style="max-width: 600px; width: 100%; transition: all 0.5s ease;">
+<div class="login-container">
+    <div class="glass-panel login-card" style="max-width: 600px; width: 100%; transition: all 0.5s ease;">
         {% if error %}
         <div style="background: rgba(255,51,51,0.1); border: 1px solid rgba(255,51,51,0.2); color: #ff3333; padding: 15px; border-radius: 12px; margin-bottom: 25px; text-align: center; font-weight: 600; font-size: 0.9rem; animation: fadeIn 0.3s ease;">
             <i class="fas fa-exclamation-circle"></i> {% masterpiece_trans error %}
@@ -816,8 +805,7 @@
 <!-- Yandex Maps Script with Dynamic Language Support -->
 <script src="https://api-maps.yandex.ru/2.1/?apikey={{ YANDEX_MAPS_API_KEY }}&lang={% if request.session.masterpiece_lang == 'uz' %}uz_UZ{% elif request.session.masterpiece_lang == 'ru' %}ru_RU{% else %}en_US{% endif %}&load=package.full" type="text/javascript"></script>
 
-<!-- Global Home Animation System (Neural Silk) -->
-<script src="{% static 'js/home_animation.js' %}"></script>
+
 
 <script>
     // Navigation core
