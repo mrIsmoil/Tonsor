@@ -45,15 +45,34 @@ emas**. PostgreSQL kerak bo'lsa ham shunchaki `.env` ga
 
 ## 1. Kodni serverga olib chiqish
 
-PythonAnywhere'da **Bash console** oching:
+Loyiha git omboriga solingan va birinchi commit qilingan (`.env`, baza,
+media va `staticfiles` ataylab omborga kirmaydi).
+
+**Avval o'z kompyuteringizda** GitHub'ga yuklang. github.com/new sahifasida
+bo'sh **private** ombor oching, keyin:
+
+```bash
+cd ~/Documents/Tonsor
+git remote add origin https://github.com/<foydalanuvchi>/tonsor.git
+git branch -M main
+git push -u origin main
+```
+
+**So'ng PythonAnywhere'da** Bash console oching:
 
 ```bash
 cd ~
-# Agar kod GitHub'da bo'lsa:
-git clone <sizning-repo-manzilingiz> Tonsor
-# Bo'lmasa: Files bo'limidan zip yuklab, shu yerga chiqaring.
+git clone https://github.com/<foydalanuvchi>/tonsor.git Tonsor
 cd Tonsor
 ```
+
+> Private ombor uchun GitHub parol emas, **Personal Access Token** so'raydi:
+> github.com/settings/tokens → *Generate new token (classic)* → `repo`
+> ruxsati. Token parol o'rniga kiritiladi.
+
+**GitHub'siz ham bo'ladi:** loyihani zip qilib, PythonAnywhere'ning
+*Files* bo'limidan yuklang va `unzip` qiling. Faqat keyin har yangilanishda
+qaytadan yuklashga to'g'ri keladi — git bilan esa `git pull` yetarli.
 
 ## 2. Virtual muhit va kutubxonalar
 
