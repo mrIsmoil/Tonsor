@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% load masterpiece_i18n %}
+{% load masterpiece_i18n static %}
 
 {% block content %}
 {# flatpickr must load inside a real block, or a child template silently discards it. #}
@@ -227,6 +227,14 @@
                         <i class="fas fa-search-location" style="position: absolute; right: 15px; top: 14px; color: rgba(242, 243, 239, 0.3); pointer-events: none;" aria-hidden="true"></i>
                         <input id="pac-input" type="text" name="location" value="{{ user.barber_profile.address|default:'' }}" placeholder="{% masterpiece_trans 'Search for Shop Location' %}" required>
                     </div>
+                    <button type="button" id="use-gps-btn" class="tns-gps-btn"
+                            data-label-default="{% masterpiece_trans 'Use my current location' %}"
+                            data-label-locating="{% masterpiece_trans 'Finding you...' %}"
+                            data-label-denied="{% masterpiece_trans 'Location access denied' %}"
+                            data-label-done="{% masterpiece_trans 'Location set' %}">
+                        <i class="fas fa-location-crosshairs" aria-hidden="true"></i>
+                        <span id="use-gps-text">{% masterpiece_trans "Use my current location" %}</span>
+                    </button>
                     <div id="map"></div>
                     <input type="hidden" name="location_lat" id="location_lat" value="{{ user.barber_profile.location_lat|default:'' }}">
                     <input type="hidden" name="location_lng" id="location_lng" value="{{ user.barber_profile.location_lng|default:'' }}">
@@ -300,6 +308,7 @@
 {% if user.is_barber and user.barber_profile %}
 <!-- Yandex Maps Script with Dynamic Language Support -->
 <script src="https://api-maps.yandex.ru/2.1/?apikey={{ YANDEX_MAPS_API_KEY }}&lang={% if request.session.masterpiece_lang == 'uz' %}uz_UZ{% elif request.session.masterpiece_lang == 'ru' %}ru_RU{% else %}en_US{% endif %}&load=package.full" type="text/javascript"></script>
+<script src="{% static 'js/gps-location.js' %}"></script>
 
 <style>
     /* Style for Yandex suggest list to match the olive/cream theme */
@@ -358,24 +367,33 @@
         var lngInput = document.getElementById("location_lng");
         var searchInput = document.getElementById("pac-input");
 
-        // Use Yandex SuggestView for autocomplete on our custom input
-        var suggestView = new ymaps.SuggestView('pac-input');
+        // Manzilni yozib Enter bosilsa, xarita o'sha joyga o'tadi.
+        //
+        // Ilgari bu yerda ymaps.SuggestView (yozayotganda taklif ro'yxati)
+        // ishlatilardi, lekin Yandex uni API'dan butunlay olib tashlagan va
+        // u FeatureRemovedError'ni ASINXRON tashlaydi — ya'ni try/catch ham
+        // ushlay olmaydi. Qidiruvning o'zi (geocode) esa ishlayveradi.
+        if (searchInput) {
+            searchInput.addEventListener('keydown', function (e) {
+                if (e.key !== 'Enter') return;
+                e.preventDefault();          // forma yuborilib ketmasin
+                var query = searchInput.value.trim();
+                if (!query) return;
 
-        suggestView.events.add('select', function (e) {
-            var item = e.get('item');
-            ymaps.geocode(item.value).then(function (res) {
-                var firstGeoObject = res.geoObjects.get(0);
-                var coords = firstGeoObject.geometry.getCoordinates();
-                var bounds = firstGeoObject.properties.get('boundedBy');
+                ymaps.geocode(query, { results: 1 }).then(function (res) {
+                    var geoObject = res.geoObjects.get(0);
+                    if (!geoObject) return;
+                    var coords = geoObject.geometry.getCoordinates();
 
-                myMap.setBounds(bounds, {
-                    checkZoomRange: true
+                    myMap.setCenter(coords, 16);
+                    myPlacemark.geometry.setCoordinates(coords);
+                    latInput.value = coords[0];
+                    lngInput.value = coords[1];
+                }).catch(function (err) {
+                    console.warn('Manzilni topib bo\'lmadi:', err && err.message);
                 });
-                myPlacemark.geometry.setCoordinates(coords);
-                latInput.value = coords[0];
-                lngInput.value = coords[1];
             });
-        });
+        }
 
         myPlacemark.events.add('dragend', function (e) {
             var coords = myPlacemark.geometry.getCoordinates();

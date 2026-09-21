@@ -763,6 +763,14 @@
                         <i class="fas fa-search-location" style="position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: var(--neon-blue);"></i>
                         <input type="text" id="pac-input" name="location" placeholder="{% masterpiece_trans 'Search or click on the map to set location' %}" style="width: 100%; padding: 15px 15px 15px 45px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; color: white;">
                     </div>
+                    <button type="button" id="use-gps-btn" class="tns-gps-btn"
+                            data-label-default="{% masterpiece_trans 'Use my current location' %}"
+                            data-label-locating="{% masterpiece_trans 'Finding you...' %}"
+                            data-label-denied="{% masterpiece_trans 'Location access denied' %}"
+                            data-label-done="{% masterpiece_trans 'Location set' %}">
+                        <i class="fas fa-location-crosshairs" aria-hidden="true"></i>
+                        <span id="use-gps-text">{% masterpiece_trans "Use my current location" %}</span>
+                    </button>
                     <div id="map" style="height: 300px; border-radius: 12px; margin-top: 10px; border: 1px solid rgba(255,255,255,0.1);"></div>
                     <input type="hidden" name="location_lat" id="location_lat" required>
                     <input type="hidden" name="location_lng" id="location_lng" required>
@@ -978,6 +986,7 @@
 
 <!-- Yandex Maps Script with Dynamic Language Support -->
 <script src="https://api-maps.yandex.ru/2.1/?apikey={{ YANDEX_MAPS_API_KEY }}&lang={% if request.session.masterpiece_lang == 'uz' %}uz_UZ{% elif request.session.masterpiece_lang == 'ru' %}ru_RU{% else %}en_US{% endif %}&load=package.full" type="text/javascript"></script>
+<script src="{% static 'js/gps-location.js' %}"></script>
 
 
 
@@ -1280,32 +1289,42 @@
                     }
                 }
 
+                // Manzilni yozib Enter bosilsa, xarita o'sha joyga o'tadi.
+                //
+                // Ilgari ymaps.SuggestView (yozayotganda taklif ro'yxati)
+                // ishlatilardi, lekin Yandex uni API'dan olib tashlagan va u
+                // FeatureRemovedError'ni ASINXRON tashlaydi — try/catch ham
+                // ushlay olmaydi. Qidiruvning o'zi (geocode) ishlayveradi.
                 const suggestInput = document.getElementById('pac-input');
                 if (suggestInput) {
-                    const suggestView = new ymaps.SuggestView('pac-input');
-                    suggestView.events.add('select', function(e) {
-                        const addr = e.get('item').value;
-                        ymaps.geocode(addr).then(res => {
+                    suggestInput.addEventListener('keydown', function(e) {
+                        if (e.key !== 'Enter') return;
+                        e.preventDefault();      // forma yuborilib ketmasin
+                        const addr = suggestInput.value.trim();
+                        if (!addr) return;
+
+                        ymaps.geocode(addr, { results: 1 }).then(res => {
                             const firstGeoObject = res.geoObjects.get(0);
+                            if (!firstGeoObject) return;
                             const coords = firstGeoObject.geometry.getCoordinates();
-                            window.myMap.setCenter(coords, 15);
+                            window.myMap.setCenter(coords, 16);
                             marker.geometry.setCoordinates(coords);
                             const latIn = document.getElementById('location_lat');
                             const lngIn = document.getElementById('location_lng');
                             if (latIn) latIn.value = coords[0];
                             if (lngIn) lngIn.value = coords[1];
-                            
-                            // Ensure pacIn also shows the full address from the geocode, not just suggest text
-                            const pacIn = document.getElementById('pac-input');
-                            if (pacIn) {
-                                pacIn.value = firstGeoObject.getAddressLine() || addr;
-                            }
+
+                            // To'liq manzilni ko'rsatamiz, foydalanuvchi
+                            // yozgan qisqa matnni emas.
+                            suggestInput.value = firstGeoObject.getAddressLine() || addr;
+                        }).catch(err => {
+                            console.warn('Manzilni topib bo\'lmadi:', err && err.message);
                         });
                     });
                 }
             });
         }
-        
+
         // Initial view
         window.showSection('choice-section');
     });

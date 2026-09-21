@@ -845,3 +845,45 @@ html, body {
         font-size: 2.2rem;
     }
 }
+
+/* --- GPS bilan joylashuv belgilash tugmasi ---
+   barber_entry va edit_profile sahifalarida ishlatiladi. Xarita Yandex
+   kalitiga bog'liq, bu tugma esa emas — shuning uchun kalit bo'lmaganda
+   ham sartarosh joylashuvini belgilay oladi. */
+.tns-gps-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+    width: 100%;
+    justify-content: center;
+    margin-top: 12px;
+    padding: 13px 20px;
+    border-radius: 12px;
+    cursor: pointer;
+    background: rgba(143, 162, 152, 0.14);
+    border: 1px solid rgba(143, 162, 152, 0.38);
+    color: #F2F3EF;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 600;
+    transition: background .25s ease, border-color .25s ease, color .25s ease;
+}
+
+.tns-gps-btn:hover:not(:disabled) {
+    background: rgba(143, 162, 152, 0.24);
+    border-color: rgba(143, 162, 152, 0.62);
+}
+
+.tns-gps-btn:disabled { opacity: .65; cursor: default; }
+
+.tns-gps-btn.is-done {
+    background: rgba(143, 212, 168, 0.16);
+    border-color: rgba(143, 212, 168, 0.55);
+    color: #8fd4a8;
+}
+
+.tns-gps-btn.is-error {
+    background: rgba(214, 92, 82, 0.14);
+    border-color: rgba(214, 92, 82, 0.5);
+    color: #D65C52;
+}
