@@ -1,0 +1,174 @@
+{% extends 'base.html' %}
+{% load masterpiece_i18n %}
+
+{% block title %}{% masterpiece_trans "Claim Your Shop" %} - Tonsor{% endblock %}
+
+{% block nav_links %}{% endblock %}
+{% block nav_lang %}{% endblock %}
+{% block nav_actions %}{% endblock %}
+
+{% block content %}
+<style>
+    html, body { background-color: #13271E !important; overflow-x: clip; }
+
+    .cs { min-height: 100vh; min-height: 100svh; padding: 104px 6% 56px; display: flex; align-items: center; justify-content: center; position: relative; z-index: 2; }
+    .navbar {
+        position: fixed !important; top: 0 !important; left: 0 !important; right: 0 !important;
+        background: transparent !important; padding: 18px 4% !important;
+        border-bottom: 1px solid transparent !important; box-shadow: none !important;
+        backdrop-filter: none !important; -webkit-backdrop-filter: none !important;
+    }
+    .navbar h2 { font-family: 'TAN - PEARL', serif !important; font-weight: 400 !important; }
+
+    .cs-card {
+        position: relative; z-index: 2; width: 100%; max-width: 460px;
+        border: 1px solid rgba(242, 243, 239, 0.14); border-radius: 30px;
+        padding: clamp(1.9rem, 5vw, 3rem); text-align: center;
+        background: linear-gradient(168deg, rgba(242, 243, 239, 0.07), rgba(242, 243, 239, 0.02));
+        backdrop-filter: blur(18px) saturate(160%); -webkit-backdrop-filter: blur(18px) saturate(160%);
+        box-shadow: 0 40px 90px -34px rgba(0, 0, 0, 0.65), inset 0 1.5px 1px rgba(242, 243, 239, 0.24);
+    }
+    .cs-kicker {
+        display: inline-flex; align-items: center; gap: 10px; margin-bottom: 16px;
+        font-size: 0.66rem; text-transform: uppercase; letter-spacing: 3px; font-weight: 800; color: #8fa298;
+    }
+    .cs-kicker::before { content: ''; width: 24px; height: 2px; border-radius: 2px; background: linear-gradient(90deg, #13271E, #F2F3EF); }
+    .cs-title {
+        font-family: 'TAN - PEARL', serif; font-weight: 400; font-size: clamp(1.8rem, 6.5vw, 2.4rem);
+        line-height: 1.1; letter-spacing: -0.7px; margin: 0 0 10px; color: #F4F5F1; overflow-wrap: break-word;
+    }
+    .cs-sub { color: #8fa298; font-size: 0.94rem; line-height: 1.55; margin: 0 0 28px; overflow-wrap: break-word; }
+
+    .cs-shop {
+        display: flex; align-items: center; gap: 12px; text-align: left;
+        padding: 16px 18px; border-radius: 16px; margin-bottom: 24px;
+        background: rgba(143, 212, 168, 0.09); border: 1px solid rgba(143, 212, 168, 0.28);
+    }
+    .cs-shop i { color: #8fd4a8; font-size: 1.2rem; flex-shrink: 0; }
+    .cs-shop-name { color: #F4F5F1; font-weight: 700; font-size: 1.02rem; }
+    .cs-shop-addr { color: #8fa298; font-size: 0.82rem; margin-top: 2px; }
+
+    .cs-field { text-align: left; margin-bottom: 18px; }
+    .cs-label {
+        display: block; margin-bottom: 9px; font-size: 0.68rem; font-weight: 800;
+        text-transform: uppercase; letter-spacing: 2px; color: #8fa298;
+    }
+    .cs-input {
+        width: 100%; min-height: 56px; padding: 0 18px; box-sizing: border-box;
+        background: rgba(242, 243, 239, 0.05); border: 1px solid rgba(242, 243, 239, 0.16);
+        border-radius: 16px; color: #F4F5F1; font-family: 'Inter', sans-serif; font-size: 1rem;
+        -webkit-appearance: none; appearance: none; transition: border-color 0.3s, background 0.3s;
+    }
+    .cs-input::placeholder { color: rgba(242, 243, 239, 0.3); }
+    .cs-input:focus {
+        outline: none; background: rgba(242, 243, 239, 0.09); border-color: rgba(242, 243, 239, 0.42);
+    }
+    .cs-input--code {
+        text-align: center; font-size: 1.5rem; font-weight: 700; letter-spacing: 4px;
+        font-family: ui-monospace, Menlo, monospace; text-transform: uppercase;
+    }
+
+    .cs-btn {
+        display: flex; align-items: center; justify-content: center; gap: 10px;
+        width: 100%; min-height: 56px; margin-top: 6px; border-radius: 16px; cursor: pointer;
+        border: 1px solid rgba(242, 243, 239, 0.28); background: rgba(242, 243, 239, 0.14);
+        color: #F2F3EF; font-family: 'Inter', sans-serif; font-size: 0.96rem; font-weight: 700;
+        box-shadow: 0 10px 30px -10px rgba(0,0,0,0.5), inset 0 1.5px 1px rgba(242, 243, 239, 0.5);
+        transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), background 0.3s;
+    }
+    .cs-btn:hover { transform: translateY(-2px); background: rgba(242, 243, 239, 0.22); }
+
+    .cs-error {
+        display: flex; align-items: flex-start; gap: 10px; margin-bottom: 20px; text-align: left;
+        padding: 13px 15px; border-radius: 14px; font-size: 0.86rem; line-height: 1.45;
+        background: rgba(214, 92, 82, 0.12); border: 1px solid rgba(214, 92, 82, 0.32); color: #f0b9b3;
+    }
+    .cs-error i { margin-top: 2px; }
+
+    .cs-foot { margin-top: 22px; padding-top: 18px; border-top: 1px solid rgba(242, 243, 239, 0.1); font-size: 0.84rem; color: #6d8177; }
+    .cs-foot a { color: #c8d6cb; text-decoration: none; font-weight: 600; }
+
+    @media (max-width: 520px) {
+        .cs { padding: 92px 5% 44px; }
+        .cs-card { border-radius: 24px; }
+    }
+</style>
+
+<div class="cs">
+    <div class="cs-card">
+        <span class="cs-kicker">{% masterpiece_trans "Business Portal" %}</span>
+
+        {% if error %}
+        <div class="cs-error" role="alert">
+            <i class="fas fa-circle-exclamation" aria-hidden="true"></i>
+            <span>{% masterpiece_trans error %}</span>
+        </div>
+        {% endif %}
+
+        {% if shop %}
+            {# 2-bosqich: kod to'g'ri, endi hisob ochiladi #}
+            <h1 class="cs-title">{% masterpiece_trans "Almost done" %}</h1>
+            <p class="cs-sub">{% masterpiece_trans "Set a phone number and password — you will sign in with them." %}</p>
+
+            <div class="cs-shop">
+                <i class="fas fa-store" aria-hidden="true"></i>
+                <div>
+                    <div class="cs-shop-name">{{ shop.shop_name }}</div>
+                    {% if shop.address %}<div class="cs-shop-addr">{{ shop.address }}</div>{% endif %}
+                </div>
+            </div>
+
+            <form method="post">
+                {% csrf_token %}
+                <input type="hidden" name="claim_code" value="{{ code_input }}">
+                <input type="hidden" name="step" value="details">
+
+                <div class="cs-field">
+                    <label class="cs-label" for="first_name">{% masterpiece_trans "Your Name" %}</label>
+                    <input type="text" name="first_name" id="first_name" class="cs-input"
+                           autocomplete="given-name" placeholder="{% masterpiece_trans 'e.g. Ali' %}">
+                </div>
+
+                <div class="cs-field">
+                    <label class="cs-label" for="phone">{% masterpiece_trans "Phone" %}</label>
+                    <input type="tel" name="phone" id="phone" class="cs-input" required
+                           inputmode="tel" autocomplete="tel" placeholder="+998 90 123 45 67">
+                </div>
+
+                <div class="cs-field">
+                    <label class="cs-label" for="password">{% masterpiece_trans "Password" %}</label>
+                    <input type="password" name="password" id="password" class="cs-input" required
+                           inputmode="numeric" pattern="\d{6}" maxlength="6"
+                           autocomplete="new-password" placeholder="••••••">
+                </div>
+
+                <button type="submit" class="cs-btn">
+                    <i class="fas fa-check" aria-hidden="true"></i> {% masterpiece_trans "Claim the shop" %}
+                </button>
+            </form>
+        {% else %}
+            {# 1-bosqich: kodni kiritish #}
+            <h1 class="cs-title">{% masterpiece_trans "Claim Your Shop" %}</h1>
+            <p class="cs-sub">{% masterpiece_trans "Enter the code you were given to take over your shop page." %}</p>
+
+            <form method="post">
+                {% csrf_token %}
+                <div class="cs-field">
+                    <label class="cs-label" for="claim_code">{% masterpiece_trans "Your Code" %}</label>
+                    <input type="text" name="claim_code" id="claim_code" class="cs-input cs-input--code" required
+                           autocomplete="off" autocapitalize="characters" spellcheck="false"
+                           value="{{ code_input }}" placeholder="TNS-0000">
+                </div>
+                <button type="submit" class="cs-btn">
+                    {% masterpiece_trans "Continue" %} <i class="fas fa-arrow-right" aria-hidden="true"></i>
+                </button>
+            </form>
+
+            <div class="cs-foot">
+                {% masterpiece_trans "Do not have a code?" %}
+                <a href="{% url 'accounts:barber_entry' %}">{% masterpiece_trans "Register your shop" %}</a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

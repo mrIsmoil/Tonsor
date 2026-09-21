@@ -1,0 +1,316 @@
+{% extends 'base.html' %}
+{% load masterpiece_i18n %}
+
+{% block content %}
+<style>
+    .lxb-wrap { max-width: 1100px; margin: 0 auto; padding: 140px 6% 60px; position: relative; z-index: 2; }
+    .lxb-head { text-align: center; margin-bottom: 40px; }
+    .lxb-kicker {
+        display: inline-flex; align-items: center; gap: 10px; margin-bottom: 14px;
+        font-size: 0.66rem; text-transform: uppercase; letter-spacing: 3px; font-weight: 800; color: #8fa298;
+    }
+    .lxb-kicker::before, .lxb-kicker::after { content: ''; width: 24px; height: 2px; border-radius: 2px; background: linear-gradient(90deg, #13271E, #F2F3EF); }
+    .lxb-title {
+        font-family: 'TAN - PEARL', serif; font-weight: 400; font-size: clamp(1.9rem, 6vw, 2.6rem);
+        letter-spacing: -0.6px; color: #F4F5F1; margin: 0;
+    }
+
+    .lxb-search { max-width: 560px; margin: 32px auto 0; display: flex; gap: 12px; }
+    .lxb-search input {
+        flex: 1; min-height: 54px; padding: 0 20px; box-sizing: border-box;
+        background: rgba(242, 243, 239, 0.05); border: 1px solid rgba(242, 243, 239, 0.16);
+        border-radius: 16px; color: #F4F5F1; font-family: 'Inter', sans-serif; font-size: 0.96rem;
+        transition: border-color 0.3s, background 0.3s;
+    }
+    .lxb-search input::placeholder { color: rgba(242, 243, 239, 0.32); }
+    .lxb-search input:focus {
+        outline: none; background: rgba(242, 243, 239, 0.09); border-color: rgba(242, 243, 239, 0.42);
+    }
+    .lxb-search button {
+        min-height: 54px; padding: 0 26px; border-radius: 16px; border: 1px solid rgba(242, 243, 239, 0.28);
+        background: rgba(242, 243, 239, 0.14); color: #F2F3EF; font-family: 'Inter', sans-serif;
+        font-size: 0.9rem; font-weight: 700; letter-spacing: 0.3px; cursor: pointer;
+        transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), background 0.3s;
+        text-transform: none; white-space: nowrap;
+    }
+    .lxb-search button:hover { transform: translateY(-2px); background: rgba(242, 243, 239, 0.22); }
+
+    .lxb-grid {
+        margin-top: 44px; display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 24px;
+    }
+    .lxb-card {
+        position: relative; padding: 26px 20px; text-align: center; border-radius: 24px;
+        border: 1px solid rgba(242, 243, 239, 0.14);
+        background: linear-gradient(168deg, rgba(242, 243, 239, 0.06), rgba(242, 243, 239, 0.02));
+        backdrop-filter: blur(18px) saturate(160%); -webkit-backdrop-filter: blur(18px) saturate(160%);
+        box-shadow: 0 30px 70px -30px rgba(0, 0, 0, 0.6);
+        transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.3s;
+    }
+    .lxb-card:hover { transform: translateY(-4px); border-color: rgba(242, 243, 239, 0.28); }
+    .lxb-card a { text-decoration: none; color: inherit; display: block; }
+
+    .lxb-avatar-wrap { position: relative; width: 64px; height: 64px; margin: 0 auto 16px; }
+    .lxb-avatar {
+        width: 100%; height: 100%; border-radius: 50%; overflow: hidden;
+        background: rgba(242, 243, 239, 0.1); border: 1px solid rgba(242, 243, 239, 0.2);
+        display: flex; align-items: center; justify-content: center;
+        font-weight: 800; font-size: 1.4rem; color: #F4F5F1;
+    }
+    .lxb-avatar img { width: 100%; height: 100%; object-fit: cover; }
+    .lxb-new-badge {
+        position: absolute; top: -6px; right: -14px; background: #F2F3EF; color: #13271E;
+        font-size: 0.58rem; padding: 3px 7px; border-radius: 6px; font-weight: 900;
+        letter-spacing: 0.5px; box-shadow: 0 4px 10px rgba(0,0,0,0.4); transform: rotate(12deg); z-index: 2;
+    }
+
+    .lxb-name-row { display: flex; align-items: center; justify-content: center; gap: 8px; flex-wrap: wrap; }
+    .lxb-name { margin: 0; font-size: 1.05rem; font-weight: 700; color: #F4F5F1; }
+    .lxb-rating {
+        display: flex; align-items: center; gap: 4px; background: rgba(255, 200, 87, 0.1);
+        padding: 2px 7px; border-radius: 8px; border: 1px solid rgba(255, 200, 87, 0.22);
+    }
+    .lxb-rating i { color: #FFC857; font-size: 0.7rem; }
+    .lxb-rating span { font-size: 0.72rem; font-weight: 800; color: #F4F5F1; }
+
+    .lxb-status-dot { width: 9px; height: 9px; border-radius: 50%; transition: all 0.3s; }
+    .lxb-status-dot.open { background: #8fd4a8; box-shadow: 0 0 10px rgba(143, 212, 168, 0.6); }
+    .lxb-status-dot.closed { background: rgba(242, 243, 239, 0.25); }
+
+    .lxb-address { color: #8fa298; margin: 10px 0 12px; font-size: 0.88rem; }
+
+    .lxb-tag {
+        display: inline-flex; align-items: center; font-size: 0.68rem; padding: 5px 12px; border-radius: 20px;
+        background: rgba(242, 243, 239, 0.06); color: rgba(242, 243, 239, 0.75);
+        border: 1px solid rgba(242, 243, 239, 0.16); font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;
+    }
+    .lxb-tag i { margin-right: 5px; }
+
+    .lxb-book {
+        display: block; margin-top: 18px; padding: 12px 20px; border-radius: 14px;
+        background: rgba(242, 243, 239, 0.12); border: 1px solid rgba(242, 243, 239, 0.24);
+        color: #F2F3EF; font-size: 0.86rem; font-weight: 700; text-decoration: none;
+        transition: transform 0.3s, background 0.3s;
+    }
+    .lxb-book:hover { transform: translateY(-2px); background: rgba(242, 243, 239, 0.2); }
+
+    /* Egasi tasdiqlamagan salon: bron tugmasi o'rniga sokin izoh */
+    .lxb-unclaimed {
+        display: block; margin-top: 18px; padding: 12px 20px; border-radius: 14px;
+        background: rgba(242, 243, 239, 0.03); border: 1px dashed rgba(242, 243, 239, 0.18);
+        color: #6d8177; font-size: 0.8rem; font-weight: 600; text-align: center;
+    }
+
+    .lxb-empty { text-align: center; grid-column: 1 / -1; color: #8fa298; padding: 40px 0; }
+
+    /* --- Joylashuv bo'yicha qidiruv --- */
+    .lxb-geo {
+        display: flex; align-items: center; gap: 14px;
+        flex-wrap: wrap; margin-top: 14px;
+    }
+    .lxb-near {
+        display: inline-flex; align-items: center; gap: 8px;
+        padding: 10px 18px; border-radius: 999px; cursor: pointer;
+        background: rgba(143, 162, 152, 0.12);
+        border: 1px solid rgba(143, 162, 152, 0.35);
+        color: #F2F3EF; font-family: 'Inter', sans-serif;
+        font-size: 0.86rem; font-weight: 600;
+        transition: background .25s ease, border-color .25s ease;
+    }
+    .lxb-near:hover:not(:disabled) {
+        background: rgba(143, 162, 152, 0.22);
+        border-color: rgba(143, 162, 152, 0.6);
+    }
+    .lxb-near:disabled { opacity: .6; cursor: default; }
+    .lxb-geo-note {
+        display: inline-flex; align-items: center; gap: 6px;
+        color: #8fd4a8; font-size: 0.8rem; font-weight: 600;
+    }
+    .lxb-distance {
+        display: inline-flex; align-items: center; gap: 6px;
+        margin-bottom: 10px;
+        color: #8fa298; font-size: 0.82rem; font-weight: 600;
+    }
+    .lxb-distance i { font-size: 0.75rem; opacity: .8; }
+
+    @media (max-width: 520px) {
+        .lxb-wrap { padding: 116px 5% 48px; }
+        .lxb-search { flex-direction: column; }
+        .lxb-near { width: 100%; justify-content: center; }
+    }
+</style>
+
+<div class="lxb-wrap">
+    <div class="lxb-head">
+        <span class="lxb-kicker">{% masterpiece_trans "Search Barbers" %}</span>
+        <h1 class="lxb-title">{% masterpiece_trans "Search Barbers" %}</h1>
+        <form method="get" class="lxb-search">
+            <input type="text" name="q" value="{{ query }}" placeholder="{% masterpiece_trans 'Search by shop name...' %}">
+            <button type="submit">{% masterpiece_trans "Search" %}</button>
+        </form>
+        <div class="lxb-geo">
+            <button type="button" id="lxb-near-btn" class="lxb-near"
+                    data-label-locating="{% masterpiece_trans 'Finding you...' %}"
+                    data-label-denied="{% masterpiece_trans 'Location access denied' %}"
+                    data-label-default="{% masterpiece_trans 'Nearest to me' %}">
+                <i class="fas fa-location-crosshairs" aria-hidden="true"></i>
+                <span id="lxb-near-text">{% masterpiece_trans "Nearest to me" %}</span>
+            </button>
+            {% if has_location %}
+            <span class="lxb-geo-note">
+                <i class="fas fa-check" aria-hidden="true"></i>
+                {% masterpiece_trans "Sorted by distance" %}
+            </span>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="lxb-grid">
+        {% for barber in barbers %}
+            <div class="lxb-card">
+                <a href="{% url 'shops:barber_profile' barber.id %}">
+                    <div class="lxb-avatar-wrap">
+                        <div class="lxb-avatar">
+                            {% if barber.logo_url %}
+                                <img src="{{ barber.logo_url }}" alt="{{ barber.shop_name }}">
+                            {% else %}
+                                {{ barber.shop_name|make_list|first|upper }}
+                            {% endif %}
+                        </div>
+                        {% if barber.is_new %}
+                        <span class="lxb-new-badge">{% masterpiece_trans "NEW" %}</span>
+                        {% endif %}
+                    </div>
+                    <div class="lxb-name-row">
+                        <h3 class="lxb-name">{{ barber.shop_name }}</h3>
+                        <div class="lxb-rating">
+                            <i class="fas fa-star" aria-hidden="true"></i>
+                            <span>{{ barber.rating|floatformat:1 }}</span>
+                        </div>
+                        <div id="status-dot-{{ barber.id }}" class="lxb-status-dot {% if barber.is_open_now %}open{% else %}closed{% endif %}"
+                             title="{% if barber.is_open_now %}{% masterpiece_trans 'Open Now' %}{% else %}{% masterpiece_trans 'Closed' %}{% endif %}">
+                        </div>
+                    </div>
+                    <p class="lxb-address">
+                        {% if barber.short_address %}{{ barber.short_address }}{% else %}{% masterpiece_trans "Location Unknown" %}{% endif %}
+                    </p>
+                    {% if barber.distance_text %}
+                    <span class="lxb-distance">
+                        <i class="fas fa-route" aria-hidden="true"></i>{{ barber.distance_text }}
+                    </span>
+                    {% endif %}
+                    <span class="lxb-tag">
+                        {% if barber.shop_type == 'men' %}
+                            <i class="fas fa-mars" aria-hidden="true"></i>{% masterpiece_trans "Men" %}
+                        {% else %}
+                            <i class="fas fa-venus" aria-hidden="true"></i>{% masterpiece_trans "Women" %}
+                        {% endif %}
+                    </span>
+                </a>
+                {% if not request.user.is_barber %}
+                    {% if barber.is_claimed %}
+                        <a href="{% url 'bookings:book_appointment' barber.id %}" class="lxb-book">{% masterpiece_trans "Book" %}</a>
+                    {% else %}
+                        <span class="lxb-unclaimed">{% masterpiece_trans "Not on Tonsor yet" %}</span>
+                    {% endif %}
+                {% endif %}
+            </div>
+        {% empty %}
+            <p class="lxb-empty">{% masterpiece_trans "No barbers found." %}</p>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<!-- Translation Data -->
+<div id="js-translations" style="display: none;"
+    data-open-now="{% masterpiece_trans 'Open Now' %}"
+    data-closed="{% masterpiece_trans 'Closed' %}"
+    data-api-url="{% url 'shops:api_statuses' %}"
+></div>
+<div id="lxb-geo-data" style="display: none;"
+    data-save-url="{% url 'accounts:update_location' %}"
+    data-csrf="{{ csrf_token }}"
+></div>
+
+<script>
+    function updateShopStatuses() {
+        const trans = document.getElementById('js-translations').dataset;
+        fetch(trans.apiUrl)
+            .then(response => response.json())
+            .then(data => {
+                for (const [id, isOpen] of Object.entries(data)) {
+                    const dot = document.getElementById(`status-dot-${id}`);
+                    if (dot) {
+                        if (isOpen) {
+                            dot.classList.add('open');
+                            dot.classList.remove('closed');
+                            dot.title = trans.openNow;
+                        } else {
+                            dot.classList.add('closed');
+                            dot.classList.remove('open');
+                            dot.title = trans.closed;
+                        }
+                    }
+                }
+            })
+            .catch(error => console.error('Error fetching shop statuses:', error));
+    }
+
+    // Poll every 30 seconds
+    setInterval(updateShopStatuses, 30000);
+    // Initial update
+    updateShopStatuses();
+
+    // --- "Yaqinimdagilar": brauzerdan joylashuvni so'raydi ---
+    // Koordinata URL'ga yozilmaydi (u server loglariga tushib qolardi) —
+    // profilga saqlanadi va sahifa oddiygina qayta yuklanadi.
+    (function () {
+        const btn = document.getElementById('lxb-near-btn');
+        if (!btn) return;
+        const label = document.getElementById('lxb-near-text');
+        const geoBox = document.getElementById('lxb-geo-data');
+
+        if (!navigator.geolocation) {
+            btn.style.display = 'none';
+            return;
+        }
+
+        btn.addEventListener('click', function () {
+            btn.disabled = true;
+            label.textContent = btn.dataset.labelLocating;
+
+            navigator.geolocation.getCurrentPosition(
+                function (pos) {
+                    fetch(geoBox.dataset.saveUrl, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': geoBox.dataset.csrf,
+                        },
+                        body: JSON.stringify({
+                            latitude: pos.coords.latitude,
+                            longitude: pos.coords.longitude,
+                        }),
+                    })
+                    .then(function () { window.location.reload(); })
+                    .catch(function () {
+                        // Saqlab bo'lmasa ham natijani ko'rsatamiz.
+                        window.location.reload();
+                    });
+                },
+                function () {
+                    // Foydalanuvchi ruxsat bermadi yoki GPS ishlamadi.
+                    label.textContent = btn.dataset.labelDenied;
+                    setTimeout(function () {
+                        label.textContent = btn.dataset.labelDefault;
+                        btn.disabled = false;
+                    }, 2600);
+                },
+                { enableHighAccuracy: true, timeout: 10000, maximumAge: 300000 }
+            );
+        });
+    })();
+</script>
+{% endblock %}

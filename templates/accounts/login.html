@@ -1,0 +1,302 @@
+{% extends 'base.html' %}
+{% load socialaccount masterpiece_i18n static %}
+
+{% block nav_links %}{% endblock %}
+{% block nav_lang %}{% endblock %}
+
+{# language switcher, shown on both desktop (nav_actions) and mobile (mobile_toggle) #}
+{% block nav_actions %}
+<div class="nav-actions desktop-only lxa-lang">
+    <div class="language-selector" style="margin-right: 0;">
+        <button class="lang-btn lang-toggle-trigger lxa-lang-btn" type="button">
+            <i class="fas fa-globe"></i>
+            <span class="curr-lang">{% if request.session.masterpiece_lang == 'ru' %}RU{% elif request.session.masterpiece_lang == 'en' %}EN{% else %}UZ{% endif %}</span>
+        </button>
+        <div class="lang-dropdown">
+            <form action="{% url 'accounts:set_language_direct' %}" method="post">
+                {% csrf_token %}
+                <input name="next" type="hidden" value="{{ request.get_full_path }}">
+                <button type="submit" name="language" value="uz" class="lang-opt">O'zbekcha</button>
+                <button type="submit" name="language" value="ru" class="lang-opt">Русский</button>
+                <button type="submit" name="language" value="en" class="lang-opt">English</button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block mobile_toggle %}
+<div class="lxa-lang">
+    <div class="language-selector">
+        <button class="lang-btn lang-toggle-trigger lxa-lang-btn" type="button">
+            <i class="fas fa-globe"></i>
+            <span class="curr-lang">{% if request.session.masterpiece_lang == 'ru' %}RU{% elif request.session.masterpiece_lang == 'en' %}EN{% else %}UZ{% endif %}</span>
+        </button>
+        <div class="lang-dropdown">
+            <form action="{% url 'accounts:set_language_direct' %}" method="post">
+                {% csrf_token %}
+                <input name="next" type="hidden" value="{{ request.get_full_path }}">
+                <button type="submit" name="language" value="uz" class="lang-opt">UZ</button>
+                <button type="submit" name="language" value="ru" class="lang-opt">RU</button>
+                <button type="submit" name="language" value="en" class="lang-opt">EN</button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<style>
+    /* ============ TONSOR AUTH — matches the landing design system ============ */
+    html, body { background-color: #13271E !important; overflow-x: clip; }
+    body { overflow-y: auto !important; height: auto !important; }
+
+    .lxa {
+        --ink: #F4F5F1;
+        --muted: #8fa298;
+        --muted-soft: #6d8579;
+        --green: #13271E;
+        --yellow: #F2F3EF;
+        --line: rgba(242, 243, 239, 0.14);
+        --line-soft: rgba(242, 243, 239, 0.08);
+        --surface: rgba(242, 243, 239, 0.05);
+        --grad: linear-gradient(120deg, #FFFFFF 0%, #F2F3EF 45%, #D6DAD2 100%);
+        --grad-line: linear-gradient(90deg, #13271E, #F2F3EF);
+        position: relative;
+        z-index: 2;
+        color: var(--ink);
+        min-height: 100vh;
+        min-height: 100svh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 104px 6% 56px;
+    }
+
+    /* navbar: transparent over the auth background, same as the landing at rest */
+    .navbar {
+        position: fixed !important; top: 0 !important; left: 0 !important; right: 0 !important;
+        background: transparent !important; padding: 18px 4% !important;
+        border-bottom: 1px solid transparent !important; box-shadow: none !important;
+        backdrop-filter: none !important; -webkit-backdrop-filter: none !important;
+        grid-template-columns: 1fr auto !important;
+    }
+    .navbar h2 { font-family: 'TAN - PEARL', serif !important; font-weight: 400 !important; }
+    .nav-links { display: none !important; }
+
+    /* ambient background, lifted from the landing */
+    .lxa-bg { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
+    .lxa-blob { position: absolute; border-radius: 50%; filter: blur(95px); opacity: 0.3; }
+    .lxa-blob.b1 { width: 46vw; height: 46vw; top: -14vw; left: -8vw; background: radial-gradient(circle, rgba(242, 243, 239, 0.10), transparent 68%); }
+    .lxa-blob.b2 { width: 52vw; height: 52vw; bottom: -18vw; right: -16vw; background: radial-gradient(circle, rgba(60, 100, 76, 0.4), transparent 68%); }
+    .lxa-grid {
+        position: fixed; inset: 0; z-index: 0; pointer-events: none;
+        background-image:
+            linear-gradient(rgba(242, 243, 239, 0.03) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(242, 243, 239, 0.03) 1px, transparent 1px);
+        background-size: 70px 70px;
+        mask-image: radial-gradient(ellipse 90% 60% at 50% 40%, #000 20%, transparent 72%);
+        -webkit-mask-image: radial-gradient(ellipse 90% 60% at 50% 40%, #000 20%, transparent 72%);
+    }
+
+    /* language pill, mirrors the landing's glass button */
+    .lxa-lang { display: flex; align-items: center; }
+    .lxa-lang-btn {
+        background: rgba(242, 243, 239, 0.08) !important;
+        backdrop-filter: blur(14px) saturate(180%); -webkit-backdrop-filter: blur(14px) saturate(180%);
+        border: 1px solid rgba(242, 243, 239, 0.18) !important;
+        color: #F4F5F1 !important; padding: 9px 17px !important; border-radius: 30px !important;
+        font-size: 0.78rem !important; letter-spacing: 0.5px; cursor: pointer;
+        box-shadow: 0 4px 18px -6px rgba(0, 0, 0, 0.4), inset 0 1.5px 1px rgba(242, 243, 239, 0.5);
+    }
+    .navbar .lang-dropdown {
+        background: rgba(19, 39, 30, 0.72) !important;
+        backdrop-filter: blur(20px) saturate(180%); -webkit-backdrop-filter: blur(20px) saturate(180%);
+        border: 1px solid rgba(242, 243, 239, 0.18) !important;
+        border-radius: 20px !important; padding: 10px !important; min-width: 120px !important;
+        box-shadow: 0 22px 52px -14px rgba(0, 0, 0, 0.6);
+    }
+    .navbar .lang-dropdown .lang-opt { color: #F2F3EF !important; border-radius: 12px !important; padding: 10px 14px !important; }
+    .navbar .lang-dropdown .lang-opt:hover { background: rgba(242, 243, 239, 0.15) !important; color: #fff !important; }
+
+    /* ---------------- card ---------------- */
+    .lxa-card {
+        position: relative; z-index: 2; width: 100%; max-width: 460px;
+        border: 1px solid var(--line); border-radius: 30px;
+        padding: clamp(1.9rem, 5vw, 3rem);
+        background: linear-gradient(168deg, rgba(242, 243, 239, 0.07), rgba(242, 243, 239, 0.02));
+        backdrop-filter: blur(18px) saturate(160%); -webkit-backdrop-filter: blur(18px) saturate(160%);
+        box-shadow: 0 40px 90px -34px rgba(0, 0, 0, 0.65), inset 0 1.5px 1px rgba(242, 243, 239, 0.28);
+    }
+    .lxa-kicker {
+        display: inline-flex; align-items: center; gap: 10px; margin-bottom: 16px;
+        font-size: 0.66rem; text-transform: uppercase; letter-spacing: 3px; font-weight: 800; color: var(--muted);
+    }
+    .lxa-kicker::before { content: ''; width: 24px; height: 2px; border-radius: 2px; background: var(--grad-line); }
+    .lxa-title {
+        font-family: 'TAN - PEARL', serif; font-weight: 400;
+        font-size: clamp(1.9rem, 7vw, 2.6rem); line-height: 1.06; letter-spacing: -0.8px;
+        margin: 0 0 10px; color: var(--ink); overflow-wrap: break-word;
+    }
+    .lxa-sub { color: var(--muted); font-size: 0.94rem; line-height: 1.55; margin: 0 0 26px; overflow-wrap: break-word; }
+
+    .lxa-error {
+        display: flex; align-items: flex-start; gap: 10px; margin-bottom: 20px;
+        padding: 13px 15px; border-radius: 14px; font-size: 0.86rem; line-height: 1.45;
+        background: rgba(214, 92, 82, 0.12); border: 1px solid rgba(214, 92, 82, 0.32); color: #f0b9b3;
+        overflow-wrap: break-word;
+    }
+    .lxa-error i { margin-top: 2px; }
+
+    .lxa-field { margin-bottom: 16px; }
+    .lxa-label {
+        display: block; margin-bottom: 8px; font-size: 0.68rem; font-weight: 800;
+        text-transform: uppercase; letter-spacing: 2px; color: var(--muted);
+    }
+    .lxa-input-wrap { position: relative; }
+    .lxa-input {
+        width: 100%; min-height: 54px; padding: 0 18px;
+        background: rgba(242, 243, 239, 0.05) !important;
+        border: 1px solid rgba(242, 243, 239, 0.16) !important;
+        border-radius: 16px !important; color: var(--ink) !important;
+        font-family: 'Inter', sans-serif; font-size: 0.96rem;
+        -webkit-appearance: none; appearance: none;
+        transition: border-color 0.3s, background 0.3s, box-shadow 0.3s;
+    }
+    .lxa-input::placeholder { color: rgba(242, 243, 239, 0.32); }
+    .lxa-input:focus {
+        outline: none;
+        background: rgba(242, 243, 239, 0.09) !important;
+        border-color: rgba(242, 243, 239, 0.42) !important;
+        box-shadow: 0 0 0 4px rgba(242, 243, 239, 0.06);
+    }
+    .lxa-input.has-toggle { padding-right: 52px; }
+    .lxa-toggle {
+        position: absolute; right: 8px; top: 50%; transform: translateY(-50%);
+        width: 38px; height: 38px; display: flex; align-items: center; justify-content: center;
+        background: none; border: 0; cursor: pointer; color: var(--muted); border-radius: 10px;
+        transition: color 0.25s, background 0.25s;
+    }
+    .lxa-toggle:hover { color: var(--ink); background: rgba(242, 243, 239, 0.07); }
+
+    .lxa-btn {
+        display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+        width: 100%; min-height: 54px; margin-top: 8px; padding: 14px 22px;
+        border-radius: 16px; border: 1px solid rgba(242, 243, 239, 0.28);
+        background: rgba(242, 243, 239, 0.14); color: #F2F3EF;
+        font-family: 'Inter', sans-serif; font-size: 0.92rem; font-weight: 700; letter-spacing: 0.3px;
+        text-decoration: none; cursor: pointer; position: relative; overflow: hidden;
+        backdrop-filter: blur(10px) saturate(180%); -webkit-backdrop-filter: blur(10px) saturate(180%);
+        box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5), inset 0 1.5px 1px rgba(242, 243, 239, 0.5);
+        transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), background 0.3s, border-color 0.3s;
+        text-align: center; line-height: 1.3;
+    }
+    .lxa-btn:hover { transform: translateY(-2px); background: rgba(242, 243, 239, 0.22); border-color: rgba(242, 243, 239, 0.45); }
+    .lxa-btn--ghost { background: rgba(242, 243, 239, 0.05); border-color: rgba(242, 243, 239, 0.16); font-weight: 600; }
+    .lxa-btn--ghost:hover { background: rgba(242, 243, 239, 0.11); }
+    .lxa-btn img { width: 18px; height: 18px; flex-shrink: 0; }
+
+    .lxa-divider { display: flex; align-items: center; gap: 16px; margin: 22px 0; }
+    .lxa-divider span { font-size: 0.64rem; text-transform: uppercase; letter-spacing: 3px; font-weight: 800; color: var(--muted-soft); }
+    .lxa-divider::before, .lxa-divider::after { content: ''; flex: 1; height: 1px; background: var(--line-soft); }
+
+    .lxa-foot { margin-top: 24px; padding-top: 18px; border-top: 1px solid var(--line-soft); text-align: center; font-size: 0.84rem; color: var(--muted-soft); line-height: 1.6; }
+    .lxa-foot a { color: #c8d6cb; text-decoration: none; font-weight: 600; transition: color 0.3s; }
+    .lxa-foot a:hover { color: var(--yellow); }
+    .lxa-back { display: inline-flex; align-items: center; gap: 7px; margin-top: 18px; font-size: 0.84rem; color: var(--muted-soft); text-decoration: none; transition: color 0.3s; }
+    .lxa-back:hover { color: var(--ink); }
+
+    @media (max-width: 520px) {
+        .lxa { padding: 92px 5% 44px; }
+        .lxa-card { border-radius: 24px; }
+        .lxa-input { min-height: 50px; font-size: 0.92rem; }
+        .lxa-btn { min-height: 50px; font-size: 0.88rem; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+        .lxa-btn { transition: none; }
+        .lxa-btn:hover { transform: none; }
+    }
+</style>
+
+<div class="lxa-bg" aria-hidden="true">
+    <div class="lxa-blob b1"></div>
+    <div class="lxa-blob b2"></div>
+</div>
+<div class="lxa-grid" aria-hidden="true"></div>
+
+<div class="lxa">
+    <div class="lxa-card">
+        <span class="lxa-kicker">{% masterpiece_trans "Client Portal" %}</span>
+        <h1 class="lxa-title">{% masterpiece_trans "Welcome back." %}</h1>
+        <p class="lxa-sub">{% masterpiece_trans "Sign in to book your next appointment." %}</p>
+
+        {% if error %}
+        <div class="lxa-error" role="alert">
+            <i class="fas fa-circle-exclamation"></i>
+            <span>{% masterpiece_trans error %}</span>
+        </div>
+        {% endif %}
+
+        <form method="post" novalidate>
+            {% csrf_token %}
+
+            <div class="lxa-field">
+                <label class="lxa-label" for="id_username">{% masterpiece_trans "Phone or Email" %}</label>
+                {# type=email emas: sartaroshlar telefon kiritadi, brauzer uni rad etardi. #}
+                <input type="text" name="username" id="id_username" class="lxa-input"
+                       value="{{ identifier|default:'' }}" autocomplete="username"
+                       placeholder="{% masterpiece_trans 'e.g. +998 90 123 45 67' %}" required>
+            </div>
+
+            <div class="lxa-field">
+                <label class="lxa-label" for="id_password">{% masterpiece_trans "Password" %}</label>
+                <div class="lxa-input-wrap">
+                    <input type="password" name="password" id="id_password" class="lxa-input has-toggle"
+                           autocomplete="current-password" placeholder="••••••" required>
+                    <button type="button" class="lxa-toggle" id="pwToggle"
+                            aria-label="{% masterpiece_trans 'Show password' %}">
+                        <i class="fas fa-eye" id="pwIcon" aria-hidden="true"></i>
+                    </button>
+                </div>
+            </div>
+
+            <button type="submit" class="lxa-btn">{% masterpiece_trans "Sign in" %}</button>
+        </form>
+
+        <div class="lxa-divider"><span>{% masterpiece_trans "or" %}</span></div>
+
+        <a href="{% provider_login_url 'google' %}" class="lxa-btn lxa-btn--ghost">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" alt="">
+            {% masterpiece_trans "Continue with Google" %}
+        </a>
+
+        <div class="lxa-foot">
+            {% masterpiece_trans "Are you a barber or a salon?" %}
+            <a href="{% url 'accounts:barber_entry' %}">{% masterpiece_trans "Go to the business portal" %}</a>
+        </div>
+
+        <div style="text-align: center;">
+            <a href="{% url 'accounts:home' %}" class="lxa-back">
+                <i class="fas fa-arrow-left" aria-hidden="true"></i> {% masterpiece_trans "Back to home" %}
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    (function () {
+        var input = document.getElementById('id_password');
+        var btn = document.getElementById('pwToggle');
+        var icon = document.getElementById('pwIcon');
+        if (!input || !btn) return;
+        btn.addEventListener('click', function () {
+            var hidden = input.type === 'password';
+            input.type = hidden ? 'text' : 'password';
+            icon.classList.toggle('fa-eye', !hidden);
+            icon.classList.toggle('fa-eye-slash', hidden);
+        });
+    })();
+</script>
+{% endblock %}

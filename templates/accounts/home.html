@@ -1,0 +1,741 @@
+{% extends 'base.html' %}
+{% load masterpiece_i18n static %}
+
+{% block mobile_toggle %}
+<div class="mobile-nav-custom">
+    <div class="language-selector">
+        <button class="lang-btn lang-toggle-trigger" style="padding: 6px 10px; font-size: 0.75rem;">
+            <i class="fas fa-globe"></i>
+            <span class="curr-lang">{% if request.session.masterpiece_lang == 'ru' %}RU{% elif request.session.masterpiece_lang == 'en' %}EN{% else %}UZ{% endif %}</span>
+        </button>
+        <div class="lang-dropdown">
+            <form action="{% url 'accounts:set_language_direct' %}" method="post">
+                {% csrf_token %}
+                <input name="next" type="hidden" value="{{ request.get_full_path }}">
+                <button type="submit" name="language" value="uz" class="lang-opt">UZ</button>
+                <button type="submit" name="language" value="ru" class="lang-opt">RU</button>
+                <button type="submit" name="language" value="en" class="lang-opt">EN</button>
+            </form>
+        </div>
+    </div>
+    <a href="#portal-selection" class="lx-btn lx-btn--primary sm" style="margin-left: 10px;">
+        {% masterpiece_trans "Start" %}
+    </a>
+</div>
+{% endblock %}
+
+{% block nav_links %}
+{% endblock %}
+
+{% block nav_actions %}
+<div class="nav-actions desktop-only" style="display:flex;align-items:center;gap:14px;">
+    <div class="language-selector" style="margin-right:0;">
+        <button class="lang-btn lang-toggle-trigger lx-lang-btn">
+            <i class="fas fa-globe"></i>
+            <span class="curr-lang">{% if request.session.masterpiece_lang == 'ru' %}RU{% elif request.session.masterpiece_lang == 'en' %}EN{% else %}UZ{% endif %}</span>
+        </button>
+        <div class="lang-dropdown">
+            <form action="{% url 'accounts:set_language_direct' %}" method="post">
+                {% csrf_token %}
+                <input name="next" type="hidden" value="{{ request.get_full_path }}">
+                <button type="submit" name="language" value="uz" class="lang-opt">O'zbekcha</button>
+                <button type="submit" name="language" value="ru" class="lang-opt">Русский</button>
+                <button type="submit" name="language" value="en" class="lang-opt">English</button>
+            </form>
+        </div>
+    </div>
+
+</div>
+{% endblock %}
+
+{% block nav_lang %}{% endblock %}
+
+{% block content %}
+<!-- Liquid Glass lens-distortion filters (iOS-style edge refraction) -->
+<svg class="lx-glass-defs" width="0" height="0" aria-hidden="true" focusable="false"
+    style="position:absolute;width:0;height:0;overflow:hidden;pointer-events:none;">
+    <defs>
+        <filter id="lxLiquidLens" x="-40%" y="-40%" width="180%" height="180%" color-interpolation-filters="sRGB">
+            <feTurbulence type="fractalNoise" baseFrequency="0.004 0.006" numOctaves="1" seed="14" result="lxNoise" />
+            <feGaussianBlur in="lxNoise" stdDeviation="2.4" result="lxSoft" />
+            <feDisplacementMap in="SourceGraphic" in2="lxSoft" scale="34" xChannelSelector="R" yChannelSelector="G" />
+        </filter>
+        <filter id="lxLiquidLensNav" x="-15%" y="-90%" width="130%" height="280%" color-interpolation-filters="sRGB">
+            <feTurbulence type="fractalNoise" baseFrequency="0.0025 0.009" numOctaves="1" seed="9" result="lxNoiseN" />
+            <feGaussianBlur in="lxNoiseN" stdDeviation="2.6" result="lxSoftN" />
+            <feDisplacementMap in="SourceGraphic" in2="lxSoftN" scale="56" xChannelSelector="R" yChannelSelector="G" />
+        </filter>
+    </defs>
+</svg>
+<style>
+    /* ===================== TONSOR LANDING — Dark Olive & Pale Lemon system ===================== */
+    html, body { overflow-x: clip; background-color: #13271E; }
+    html { scroll-behavior: smooth; }
+    /* Anchor targets must clear the fixed navbar */
+    #audience, #features, #experience, #portal-selection { scroll-margin-top: 84px; }
+    @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+
+    .lx {
+        --ink: #F4F5F1;
+        --muted: #8fa298;
+        --muted-soft: #6d8579;
+
+        --green: #13271E;
+        --green-deep: #0C1A13;
+        --green-mid: #141414;
+        --green-bright: #33533F;
+        --yellow: #F2F3EF;
+        --yellow-deep: #DDE0DA;
+
+        --surface: rgba(242, 243, 239, 0.05);
+        --surface-2: rgba(242, 243, 239, 0.09);
+        --line: rgba(242, 243, 239, 0.14);
+        --line-soft: rgba(242, 243, 239, 0.08);
+
+        --cream: #F2F3EF;
+        --cream-ink: #13271E;
+        --cream-muted: #566b5f;
+        --cream-line: rgba(19, 39, 30, 0.14);
+
+        --grad: linear-gradient(120deg, #FFFFFF 0%, #F2F3EF 45%, #D6DAD2 100%);
+        --grad-green: linear-gradient(120deg, #141414, #13271E);
+        --grad-line: linear-gradient(90deg, #13271E, #F2F3EF);
+
+        position: relative;
+        z-index: 2;
+        color: var(--ink);
+    }
+
+    /* Scroll progress bar */
+    .lx-progress { position: fixed; top: 0; left: 0; right: 0; height: 3px; z-index: 1100; background: rgba(242, 243, 239, 0.07); }
+    .lx-progress > span { display: block; height: 100%; width: 100%; transform: scaleX(0); transform-origin: 0 50%; background: var(--grad-line); box-shadow: 0 0 12px rgba(242, 243, 239, 0.55); }
+
+    /* Navbar (landing) — transparent at top, olive-blur when scrolled */
+    .navbar {
+        position: fixed !important;
+        top: 0 !important; left: 0 !important; right: 0 !important; width: 100% !important;
+        background: transparent !important;
+        padding: 18px 4% !important;
+        border-bottom: 1px solid transparent !important;
+        box-shadow: none !important;
+        backdrop-filter: none !important; -webkit-backdrop-filter: none !important;
+        transition: background 0.5s, box-shadow 0.5s, border-color 0.5s, backdrop-filter 0.5s;
+    }
+    /* NOTE: the base .navbar rules above are !important (to beat main.css), so these
+       must be !important too or the scrolled state silently loses its blur/border. */
+    .navbar.scrolled {
+        background: rgba(19, 39, 30, 0.55) !important;
+        backdrop-filter: blur(18px) saturate(180%) url(#lxLiquidLensNav) !important;
+        -webkit-backdrop-filter: blur(18px) saturate(180%) !important;
+        border-bottom: 1px solid rgba(242, 243, 239, 0.12) !important;
+        box-shadow: 0 8px 32px -8px rgba(0, 0, 0, 0.4), inset 0 1.5px 1px rgba(242, 243, 239, 0.4), inset 0 -10px 18px -14px rgba(242, 243, 239, 0.22) !important;
+    }
+    /* Browsers without backdrop-filter get a solid-enough bar instead of a see-through one */
+    @supports not (backdrop-filter: blur(1px)) {
+        .navbar.scrolled { background: rgba(19, 39, 30, 0.92) !important; }
+    }
+    .nav-links { display: none !important; }
+    .navbar { grid-template-columns: 1fr auto !important; }
+    /* ===== Liquid Glass ===== */
+    .lx-lang-btn {
+        background: rgba(242, 243, 239, 0.08) !important;
+        backdrop-filter: blur(9px) saturate(180%) url(#lxLiquidLens); -webkit-backdrop-filter: blur(18px) saturate(180%);
+        border: 1px solid rgba(242, 243, 239, 0.18) !important;
+        color: var(--ink) !important; padding: 10px 20px !important; border-radius: 30px !important;
+        font-size: 0.82rem !important; letter-spacing: 0.5px;
+        box-shadow: 0 4px 18px -6px rgba(0, 0, 0, 0.4), inset 0 1.5px 1px rgba(242, 243, 239, 0.55), inset 0 -8px 14px -12px rgba(242, 243, 239, 0.3), inset 0 0 0 1px rgba(242, 243, 239, 0.08);
+        transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1) !important;
+    }
+    .lx-lang-btn:hover { background: rgba(242, 243, 239, 0.16) !important; border-color: rgba(242, 243, 239, 0.32) !important; transform: translateY(-2px); }
+
+    /* ===== Language dropdown — Liquid Glass + Liquid Expansion ===== */
+    .navbar .lang-dropdown {
+        background: rgba(242, 243, 239, 0.08) !important;
+        backdrop-filter: blur(20px) saturate(180%) url(#lxLiquidLens);
+        -webkit-backdrop-filter: blur(22px) saturate(180%);
+        border: 1px solid rgba(242, 243, 239, 0.18) !important;
+        border-radius: 46px !important;
+        padding: 12px !important;
+        min-width: 172px !important;
+        box-shadow: 0 22px 52px -14px rgba(0, 0, 0, 0.6), inset 0 1.5px 1px rgba(242, 243, 239, 0.5), inset 0 -12px 22px -16px rgba(242, 243, 239, 0.3), inset 0 0 0 1px rgba(242, 243, 239, 0.07) !important;
+        transform-origin: top right;
+        transform: scale(0.5) translateY(-20px) !important;
+        opacity: 0;
+        overflow: hidden;
+        transition:
+            opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+            transform 0.64s cubic-bezier(0.34, 1.56, 0.64, 1),
+            border-radius 0.64s cubic-bezier(0.34, 1.56, 0.64, 1),
+            visibility 0.64s linear !important;
+    }
+    .navbar .lang-dropdown.active {
+        opacity: 1 !important;
+        visibility: visible !important;
+        transform: scale(1) translateY(0) !important;
+        border-radius: 24px !important;
+    }
+    /* glass sheen that washes across on open */
+    .navbar .lang-dropdown::after {
+        content: ''; position: absolute; inset: 0; border-radius: inherit; pointer-events: none;
+        background: linear-gradient(135deg, rgba(242, 243, 239, 0.22), rgba(242, 243, 239, 0) 48%);
+        opacity: 0; transition: opacity 0.7s ease 0.12s;
+    }
+    .navbar .lang-dropdown.active::after { opacity: 1; }
+    /* options — staggered liquid rise */
+    .navbar .lang-dropdown .lang-opt {
+        position: relative; z-index: 1;
+        color: #F2F3EF !important;
+        border-radius: 14px !important;
+        padding: 11px 16px !important;
+        opacity: 0;
+        transform: translateX(14px) scale(0.92);
+        transition: opacity 0.42s ease, transform 0.52s cubic-bezier(0.34, 1.56, 0.64, 1), background 0.25s, color 0.25s, letter-spacing 0.25s;
+    }
+    .navbar .lang-dropdown.active .lang-opt { opacity: 1; transform: translateX(0) scale(1); }
+    .navbar .lang-dropdown.active .lang-opt:nth-of-type(1) { transition-delay: 0.15s, 0.15s; }
+    .navbar .lang-dropdown.active .lang-opt:nth-of-type(2) { transition-delay: 0.22s, 0.22s; }
+    .navbar .lang-dropdown.active .lang-opt:nth-of-type(3) { transition-delay: 0.29s, 0.29s; }
+    .navbar .lang-dropdown .lang-opt:hover {
+        background: rgba(242, 243, 239, 0.15) !important;
+        color: #FFFFFF !important;
+        letter-spacing: 0.6px;
+    }
+
+    /* Ambient mesh background */
+    .lx-bg { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
+    .lx-blob { position: absolute; border-radius: 50%; filter: blur(95px); opacity: 0.3; will-change: transform; }
+    .lx-blob.b1 { width: 46vw; height: 46vw; top: -14vw; left: -8vw; background: radial-gradient(circle, rgba(242, 243, 239, 0.10), transparent 68%); }
+    .lx-blob.b2 { width: 52vw; height: 52vw; top: 6vw; right: -16vw; background: radial-gradient(circle, rgba(60, 100, 76, 0.4), transparent 68%); }
+    .lx-blob.b3 { width: 42vw; height: 42vw; top: 120vh; left: 28vw; background: radial-gradient(circle, rgba(242, 243, 239, 0.13), transparent 68%); }
+    .lx-grid {
+        position: fixed; inset: 0; z-index: 0; pointer-events: none;
+        background-image:
+            linear-gradient(rgba(242, 243, 239, 0.03) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(242, 243, 239, 0.03) 1px, transparent 1px);
+        background-size: 70px 70px;
+        mask-image: radial-gradient(ellipse 90% 55% at 50% 28%, #000 25%, transparent 72%);
+        -webkit-mask-image: radial-gradient(ellipse 90% 55% at 50% 28%, #000 25%, transparent 72%);
+    }
+
+    /* Shared */
+    .lx-wrap { max-width: 1240px; margin: 0 auto; }
+    .lx-section { padding: clamp(80px, 11vw, 150px) 6%; position: relative; z-index: 2; }
+    .lx-head { max-width: 720px; }
+    .lx-head.center { margin: 0 auto; text-align: center; }
+    .lx-kicker { display: inline-flex; align-items: center; gap: 12px; margin-bottom: 22px; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 3.5px; font-weight: 800; color: var(--muted); }
+    .lx-kicker::before { content: ''; width: 30px; height: 2px; border-radius: 2px; background: var(--grad-line); }
+    /* long Uzbek/Russian words must wrap rather than clip out of their column */
+    .lx-h2, .lx-title, .lx-hcard h4, .lx-fcard h4, .lx-pcard h3, .lx-side h3,
+    .lx-fcard p, .lx-pcard p, .lx-side > p, .lx-hcard p, .lx-feat-list li, .lx-lead {
+        /* break-word only kicks in when a single word can't fit its column (long Uzbek
+           compounds at 320px). No `hyphens: auto` — it split "vaqt tal-ab" mid-headline. */
+        overflow-wrap: break-word; hyphens: manual;
+    }
+    /* The checklist rows are flex containers; `break-word` doesn't shrink a flex item below its
+       min-content width, so long words (ru "тонирование") still overflowed. `anywhere` does. */
+    .lx-feat-list li { overflow-wrap: anywhere; }
+    .lx-h2 { font-size: clamp(2.1rem, 5.4vw, 4rem); font-weight: 900; letter-spacing: -2.4px; line-height: 1.02; margin: 0 0 20px; color: var(--ink); }
+    .lx-lead { color: var(--muted); font-size: clamp(1.02rem, 1.5vw, 1.24rem); line-height: 1.62; }
+    .grad-text { background: var(--grad); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; color: transparent; }
+
+    /* Buttons — unified */
+    .lx-btn {
+        display: inline-flex; align-items: center; justify-content: center; gap: 11px; position: relative; overflow: hidden;
+        padding: 16px 30px; border-radius: 16px; font-size: 0.94rem; font-weight: 700; letter-spacing: 0.2px;
+        text-decoration: none; cursor: pointer; border: 1px solid rgba(242, 243, 239, 0.18); white-space: nowrap;
+        background: rgba(242, 243, 239, 0.08);
+        backdrop-filter: blur(9px) saturate(180%) url(#lxLiquidLens); -webkit-backdrop-filter: blur(18px) saturate(180%);
+        box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5), inset 0 1.5px 1px rgba(242, 243, 239, 0.55), inset 0 -10px 16px -12px rgba(242, 243, 239, 0.32), inset 0 0 0 1px rgba(242, 243, 239, 0.08);
+        transition: transform 0.45s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.45s cubic-bezier(0.16, 1, 0.3, 1), background 0.3s, border-color 0.3s;
+    }
+    /* glass sheen sweep */
+    .lx-btn::before {
+        content: ''; position: absolute; top: 0; left: -120%; width: 70%; height: 100%;
+        background: linear-gradient(100deg, transparent, rgba(242, 243, 239, 0.28), transparent);
+        transform: skewX(-18deg); transition: left 0.7s cubic-bezier(0.16, 1, 0.3, 1); pointer-events: none;
+    }
+    .lx-btn:hover::before { left: 140%; }
+    .lx-btn.sm { padding: 10px 18px; font-size: 0.8rem; border-radius: 12px; }
+    .lx-btn--primary { background: rgba(242, 243, 239, 0.14); color: #F2F3EF; border-color: rgba(242, 243, 239, 0.28); }
+    .lx-btn--primary:hover { transform: translateY(-3px); background: rgba(242, 243, 239, 0.22); border-color: rgba(242, 243, 239, 0.45); box-shadow: 0 18px 44px -12px rgba(0, 0, 0, 0.5), inset 0 1px 1px rgba(242, 243, 239, 0.4); }
+    .lx-btn--outline { background: rgba(242, 243, 239, 0.05); border-color: rgba(242, 243, 239, 0.14); color: var(--ink); }
+    .lx-btn--outline:hover { background: rgba(242, 243, 239, 0.12); border-color: rgba(242, 243, 239, 0.32); transform: translateY(-3px); }
+    .lx-btn--dark { background: rgba(19, 39, 30, 0.45); color: var(--yellow); border-color: rgba(242, 243, 239, 0.18); }
+    .lx-btn--dark:hover { transform: translateY(-3px); box-shadow: 0 16px 40px -12px rgba(0, 0, 0, 0.45), inset 0 1px 1px rgba(242, 243, 239, 0.25); }
+
+    .lx-nav-signin { color: #eaeee8; text-decoration: none; font-weight: 600; font-size: 0.9rem; transition: color 0.3s; }
+    .lx-nav-signin:hover { color: var(--yellow); }
+
+    /* ---------- Reveal animations ---------- */
+    .lx-reveal { opacity: 0; transform: translateY(44px); transition: opacity 0.9s cubic-bezier(0.16, 1, 0.3, 1), transform 0.9s cubic-bezier(0.16, 1, 0.3, 1); transition-delay: var(--d, 0s); }
+    .lx-reveal.left { transform: translateX(-64px); }
+    .lx-reveal.right { transform: translateX(64px); }
+    .lx-reveal.scale { transform: scale(0.92); }
+    .lx-reveal.in { opacity: 1; transform: none; }
+
+    /* ===================== HERO ===================== */
+    /* Fixed via inset (not a vh height) so the hero always fills the *current* viewport —
+       avoids the mobile URL-bar gap that 100vh causes. */
+    .lx-hero { position: fixed; inset: 0; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 150px 6% 70px; z-index: 1; overflow: hidden; }
+    /* Pinned-hero reveal: hero stays fixed, the rest of the page rises up over it.
+       svh keeps the scroll distance stable while mobile browser chrome collapses. */
+    .lx-hero-spacer { height: 100vh; height: 100svh; pointer-events: none; }
+    .lx-rise { position: relative; z-index: 2; background: #13271E; box-shadow: 0 -40px 80px -20px rgba(0, 0, 0, 0.55); }
+    .lx-hero .reveal-content { position: relative; z-index: 2; }
+    /* Hero 3D model (tonsor.glb via model-viewer) */
+    .lx-hero-3d { position: absolute; inset: 0; z-index: 0; overflow: hidden; pointer-events: none; }
+    .lx-hero-3d model-viewer { width: 100%; height: 100%; background: transparent; --poster-color: transparent; transform: scale(1.18); transform-origin: center 56%; }
+    .lx-hero-3d-overlay { position: absolute; inset: 0; z-index: 1; pointer-events: none;
+        background:
+            /* soft band behind the copy so the headline stays readable over the chrome/leather;
+               sized for a two-line headline, since translations run longer than the English */
+            radial-gradient(ellipse 70% 44% at 50% 50%, rgba(19, 39, 30, 0.68) 0%, rgba(19, 39, 30, 0.40) 58%, transparent 84%),
+            radial-gradient(ellipse 72% 62% at 50% 50%, transparent 32%, rgba(19, 39, 30, 0.45) 88%),
+            linear-gradient(180deg, rgba(19, 39, 30, 0.55) 0%, transparent 22%, transparent 68%, rgba(19, 39, 30, 0.85) 100%); }
+    /* Legibility guard for copy sitting on top of the model, on every device */
+    .lx-title { text-shadow: 0 2px 28px rgba(9, 20, 15, 0.55), 0 1px 3px rgba(9, 20, 15, 0.4); }
+    .lx-hero-sub { text-shadow: 0 1px 16px rgba(9, 20, 15, 0.7), 0 1px 2px rgba(9, 20, 15, 0.5); }
+    /* 3D model stays on every device — it just scales down and the scrim gets stronger
+       so the headline keeps its contrast on small screens. */
+    @media (max-width: 1024px) {
+        .lx-hero-3d model-viewer { transform: scale(1.06); transform-origin: center 58%; }
+    }
+    @media (max-width: 768px) {
+        .lx-hero-3d model-viewer { transform: scale(1); transform-origin: center 63%; }
+        .lx-hero-3d-overlay {
+            background:
+                radial-gradient(ellipse 88% 52% at 50% 44%, rgba(19, 39, 30, 0.72) 0%, rgba(19, 39, 30, 0.34) 58%, transparent 82%),
+                linear-gradient(180deg, rgba(19, 39, 30, 0.72) 0%, rgba(19, 39, 30, 0.30) 24%, rgba(19, 39, 30, 0.30) 62%, rgba(19, 39, 30, 0.92) 100%);
+        }
+    }
+    @media (max-width: 480px) {
+        .lx-hero-3d model-viewer { transform: scale(0.92); transform-origin: center 66%; }
+    }
+    .lx-eyebrow { display: inline-flex; align-items: center; gap: 12px; margin-bottom: 30px; padding: 10px 20px; border: 1px solid rgba(242, 243, 239, 0.16); border-radius: 40px; background: rgba(242, 243, 239, 0.07); backdrop-filter: blur(9px) saturate(180%) url(#lxLiquidLens); -webkit-backdrop-filter: blur(16px) saturate(180%); box-shadow: inset 0 1.5px 1px rgba(242, 243, 239, 0.5), inset 0 -8px 14px -12px rgba(242, 243, 239, 0.3), inset 0 0 0 1px rgba(242, 243, 239, 0.07), 0 4px 16px -8px rgba(0, 0, 0, 0.4); font-size: 0.74rem; text-transform: uppercase; letter-spacing: 3px; font-weight: 700; color: var(--muted); }
+    .lx-eyebrow .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--yellow); box-shadow: 0 0 12px rgba(242, 243, 239, 0.8); }
+    .lx-title { font-family: 'TAN - PEARL', serif; font-size: clamp(3rem, 9.2vw, 6.6rem); font-weight: 400; letter-spacing: -2px; line-height: 1; margin: 0 0 26px; color: var(--ink); text-wrap: balance; }
+    .navbar h2 { font-family: 'TAN - PEARL', serif !important; font-weight: 400 !important; }
+    .lx-h2, .lx-side h3, .lx-pcard h3, .lx-footer-brand h2 { font-family: 'TAN - PEARL', serif; font-weight: 400; }
+    .lx-hero-sub { font-size: clamp(1.05rem, 2vw, 1.4rem); color: #c8d6cb; max-width: 660px; margin: 0 auto 44px; line-height: 1.6; }
+    .lx-hero-enter { position: relative; overflow: hidden; display: inline-flex; align-items: center; gap: 14px; margin-top: 48px; padding: 18px 44px; font-family: 'TAN - PEARL', serif; font-size: 1.05rem; letter-spacing: 1.5px; color: var(--ink); text-decoration: none; border: 1px solid rgba(242, 243, 239, 0.26); border-radius: 50px; background: rgba(242, 243, 239, 0.08); backdrop-filter: blur(7px) saturate(180%) url(#lxLiquidLens); -webkit-backdrop-filter: blur(20px) saturate(180%); box-shadow: 0 10px 34px -10px rgba(0, 0, 0, 0.5), inset 0 1.5px 1px rgba(242, 243, 239, 0.6), inset 0 -12px 20px -14px rgba(242, 243, 239, 0.4), inset 0 0 0 1px rgba(242, 243, 239, 0.09); transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1); }
+    .lx-hero-enter::before { content: ''; position: absolute; top: 0; left: -120%; width: 60%; height: 100%; background: linear-gradient(100deg, transparent, rgba(242, 243, 239, 0.3), transparent); transform: skewX(-18deg); transition: left 0.8s cubic-bezier(0.16, 1, 0.3, 1); pointer-events: none; }
+    .lx-hero-enter:hover::before { left: 150%; }
+    .lx-hero-enter:hover { background: rgba(242, 243, 239, 0.16); border-color: rgba(242, 243, 239, 0.4); letter-spacing: 3px; transform: translateY(-2px); }
+    .lx-hero-enter .lx-arrow { transition: transform 0.4s ease; font-size: 1.2rem; }
+    .lx-hero-enter:hover .lx-arrow { transform: translateX(6px); }
+    @keyframes lxbob { 0%, 100% { transform: translateY(0); opacity: 0.5; } 50% { transform: translateY(6px); opacity: 1; } }
+
+    /* ===================== MARQUEE ===================== */
+    .lx-marquee {
+        border-top: 1px solid var(--line-soft); border-bottom: 1px solid var(--line-soft); padding: 24px 0; overflow: hidden; position: relative; z-index: 2;
+        -webkit-mask-image: linear-gradient(90deg, transparent, #000 12%, #000 88%, transparent);
+        mask-image: linear-gradient(90deg, transparent, #000 12%, #000 88%, transparent);
+    }
+    /* main.css has a global `* { max-width: 100% }` which was squeezing these tracks
+       down to the parent width — that broke the seamless marquee loop and the
+       horizontal showcase measurements. Opt both back out. */
+    .lx-marquee-track, .lx-htrack { max-width: none; }
+    .lx-marquee-track { display: flex; gap: 50px; width: max-content; animation: lxscroll 30s linear infinite; }
+    .lx-marquee-item { display: inline-flex; align-items: center; gap: 16px; white-space: nowrap; font-size: 1.05rem; font-weight: 700; color: #c8d6cb; }
+    .lx-marquee-item .sep { font-size: 0.7rem; -webkit-text-fill-color: initial; }
+    @keyframes lxscroll { to { transform: translateX(-50%); } }
+
+    /* ===================== SPLIT (clients / barbers) ===================== */
+    .lx-split { display: grid; grid-template-columns: 1fr 1fr; gap: 26px; }
+    .lx-side { position: relative; overflow: hidden; border: 1px solid var(--line); border-radius: 30px; padding: clamp(2.2rem, 4vw, 3.4rem); background: linear-gradient(168deg, var(--surface), transparent); transition: transform 0.7s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.5s, box-shadow 0.6s; }
+    .lx-side::before { content: ''; position: absolute; top: -40%; right: -30%; width: 60%; height: 80%; border-radius: 50%; filter: blur(70px); opacity: 0.55; transition: opacity 0.6s; }
+    .lx-side.client::before { background: radial-gradient(circle, rgba(242, 243, 239, 0.26), transparent 70%); }
+    .lx-side.barber::before { background: radial-gradient(circle, rgba(60, 100, 76, 0.5), transparent 70%); }
+    .lx-side:hover { transform: translateY(-8px); border-color: rgba(242, 243, 239, 0.24); box-shadow: 0 40px 90px -30px rgba(0, 0, 0, 0.55); }
+    .lx-side:hover::before { opacity: 0.85; }
+    .lx-side-tag { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 3px; font-weight: 800; color: var(--muted-soft); margin-bottom: 26px; display: flex; align-items: center; gap: 9px; }
+    .lx-side-ico { width: 60px; height: 60px; border-radius: 18px; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; margin-bottom: 24px; }
+    .lx-side.client .lx-side-ico { background: var(--yellow); color: var(--green); }
+    .lx-side.barber .lx-side-ico { background: var(--green-mid); color: var(--yellow); border: 1px solid rgba(242, 243, 239, 0.22); }
+    .lx-side h3 { font-size: clamp(1.7rem, 3vw, 2.3rem); font-weight: 800; letter-spacing: -1.2px; margin-bottom: 13px; color: var(--ink); }
+    .lx-side > p { color: var(--muted); font-size: 1.02rem; line-height: 1.58; margin-bottom: 28px; max-width: 440px; }
+    /* Titles/copy wrap to different line counts in each language, so pin the checklists (and the
+       portal CTAs) to the bottom of the equal-height cards instead of letting them drift. */
+    #audience .lx-side { display: flex; flex-direction: column; }
+    #audience .lx-feat-list { margin-top: auto; margin-bottom: 0; }
+    @media (min-width: 901px) { #audience .lx-side h3 { min-height: 2.1em; } }
+    .lx-feat-list { list-style: none; padding: 0; margin: 0 0 36px; }
+    .lx-feat-list li { display: flex; align-items: flex-start; gap: 14px; padding: 14px 0; border-top: 1px solid var(--line-soft); color: #e6ebe5; font-size: 0.98rem; font-weight: 500; }
+    .lx-feat-list li:last-child { border-bottom: 1px solid var(--line-soft); }
+    .lx-feat-list .ic { width: 22px; height: 22px; border-radius: 7px; flex-shrink: 0; margin-top: 2px; display: flex; align-items: center; justify-content: center; font-size: 0.62rem; color: var(--green); background: var(--yellow); }
+
+    /* ===================== HORIZONTAL PINNED SHOWCASE (butter section, forest cards) ===================== */
+    .lx-pin { position: relative; height: 360vh; z-index: 2; }
+    /* svh so the sticky pane doesn't jump as mobile browser chrome collapses */
+    .lx-pin-sticky { position: sticky; top: 0; height: 100vh; height: 100svh; overflow: hidden; display: flex; flex-direction: column; justify-content: center; background: var(--cream); color: var(--cream-ink); }
+    .lx-pin-head { padding: 0 6%; max-width: 1240px; margin: 0 auto 38px; width: 100%; }
+    .lx-pin-head .lx-kicker { color: var(--cream-muted); }
+    .lx-pin-head .lx-kicker::before { background: var(--grad-green); }
+    .lx-pin-head .lx-h2 { color: var(--cream-ink); }
+    .lx-pin-head .lx-h2 .grad-text { background: var(--grad-green); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+    .lx-pin-head .lx-lead { color: var(--cream-muted); }
+    .lx-htrack { display: flex; gap: 26px; padding: 0 6%; width: max-content; will-change: transform; align-items: stretch; }
+    .lx-hcard { width: 360px; flex-shrink: 0; background: var(--green); border: 1px solid rgba(242, 243, 239, 0.16); border-radius: 26px; padding: 2.6rem 2.2rem; display: flex; flex-direction: column; box-shadow: 0 30px 60px -34px rgba(0, 0, 0, 0.6); transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1); }
+    .lx-hcard:hover { transform: translateY(-8px); }
+    .lx-hcard-n { font-size: 0.8rem; font-weight: 800; letter-spacing: 1px; color: var(--yellow); margin-bottom: 28px; }
+    .lx-hcard-ico { width: 58px; height: 58px; border-radius: 17px; display: flex; align-items: center; justify-content: center; font-size: 1.35rem; margin-bottom: 26px; }
+    /* alternate icon treatment by position, so adding/removing cards can't break the rhythm */
+    .lx-hcard:nth-child(odd) .lx-hcard-ico { background: var(--yellow); color: var(--green); }
+    .lx-hcard:nth-child(even) .lx-hcard-ico { background: var(--green-mid); color: var(--yellow); border: 1px solid rgba(242, 243, 239, 0.25); }
+    .lx-hcard h4 { font-size: 1.5rem; font-weight: 800; letter-spacing: -0.8px; margin-bottom: 12px; color: var(--ink); }
+    .lx-hcard p { color: #8fa298; font-size: 0.98rem; line-height: 1.6; margin: 0; }
+    .lx-hcard .lx-hcard-meta { margin-top: auto; padding-top: 24px; font-size: 0.82rem; font-weight: 700; color: var(--yellow); display: flex; align-items: center; gap: 8px; }
+    .lx-hint-drag { margin: 30px auto 0; max-width: 1240px; padding: 0 6%; width: 100%; color: var(--cream-muted); font-size: 0.72rem; letter-spacing: 2px; text-transform: uppercase; font-weight: 700; display: flex; align-items: center; gap: 10px; }
+
+    /* ===================== FEATURES ===================== */
+    .lx-features { display: grid; grid-template-columns: repeat(2, 1fr); gap: 22px; }
+    .lx-fcard { padding: clamp(2rem, 3.4vw, 2.8rem); border: 1px solid var(--line); border-radius: 26px; background: linear-gradient(168deg, var(--surface), transparent); display: flex; gap: 24px; align-items: flex-start; transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.5s, box-shadow 0.6s; }
+    .lx-fcard:hover { transform: translateY(-6px); border-color: rgba(242, 243, 239, 0.22); box-shadow: 0 36px 80px -32px rgba(0, 0, 0, 0.5); }
+    .lx-fcard-ico { width: 54px; height: 54px; flex-shrink: 0; border-radius: 15px; display: flex; align-items: center; justify-content: center; font-size: 1.18rem; color: var(--ink); background: rgba(242, 243, 239, 0.06); border: 1px solid var(--line); transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1); }
+    .lx-fcard:hover .lx-fcard-ico { background: var(--yellow); color: var(--green); border-color: transparent; transform: rotate(-6deg) scale(1.05); }
+    .lx-fcard h4 { font-size: 1.22rem; font-weight: 700; letter-spacing: -0.5px; margin-bottom: 9px; color: var(--ink); }
+    .lx-fcard p { color: var(--muted); font-size: 0.96rem; line-height: 1.58; }
+
+    /* ===================== PORTAL ===================== */
+    .lx-portal { display: grid; grid-template-columns: repeat(2, 1fr); gap: 26px; }
+    .lx-pcard { position: relative; overflow: hidden; border: 1px solid var(--line); border-radius: 34px; padding: clamp(2.6rem, 5vw, 3.8rem) clamp(2rem, 4vw, 3.2rem); text-align: center; background: linear-gradient(168deg, var(--surface), transparent); transition: transform 0.7s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.5s, box-shadow 0.6s; }
+    .lx-pcard::before { content: ''; position: absolute; bottom: -50%; left: 50%; transform: translateX(-50%); width: 80%; height: 80%; border-radius: 50%; filter: blur(70px); opacity: 0.45; transition: opacity 0.5s; }
+    .lx-pcard.client::before { background: radial-gradient(circle, rgba(242, 243, 239, 0.26), transparent 70%); }
+    .lx-pcard.barber::before { background: radial-gradient(circle, rgba(60, 100, 76, 0.5), transparent 70%); }
+    .lx-pcard:hover { transform: translateY(-12px); border-color: rgba(242, 243, 239, 0.28); box-shadow: 0 56px 110px -34px rgba(0, 0, 0, 0.6); }
+    .lx-pcard:hover::before { opacity: 0.8; }
+    .lx-pcard-ico { width: 70px; height: 70px; margin: 0 auto 24px; border-radius: 20px; display: flex; align-items: center; justify-content: center; font-size: 1.7rem; }
+    .lx-pcard.client .lx-pcard-ico { background: var(--yellow); color: var(--green); }
+    .lx-pcard.barber .lx-pcard-ico { background: var(--green-mid); color: var(--yellow); border: 1px solid rgba(242, 243, 239, 0.22); }
+    .lx-pcard h3 { font-size: clamp(1.6rem, 3vw, 2.1rem); font-weight: 900; letter-spacing: -1.5px; margin-bottom: 13px; color: var(--ink); }
+    .lx-pcard p { color: var(--muted); font-size: 1rem; line-height: 1.58; margin-bottom: 34px; }
+    /* keep both portal CTAs on the same baseline when the copy above wraps differently */
+    .lx-pcard { display: flex; flex-direction: column; }
+    .lx-pcard .lx-btn { margin-top: auto; }
+
+    /* ===================== FOOTER ===================== */
+    .lx-footer { border-top: 1px solid var(--line); padding: 68px 6% 44px; position: relative; z-index: 2; }
+    .lx-footer-top { max-width: 1240px; margin: 0 auto; display: grid; grid-template-columns: 1.6fr 1fr 1fr 1fr; gap: 40px; }
+    .lx-footer-brand h2 { font-size: 1.9rem; font-weight: 900; letter-spacing: -1px; margin-bottom: 14px; }
+    .lx-footer-brand p { color: var(--muted-soft); font-size: 0.92rem; line-height: 1.6; max-width: 320px; }
+    .lx-footer-col h5 { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 2px; color: var(--muted-soft); margin-bottom: 16px; font-weight: 800; }
+    .lx-footer-col a { display: block; color: #c8d6cb; text-decoration: none; font-size: 0.94rem; padding: 6px 0; transition: color 0.3s; }
+    .lx-footer-col a:hover { color: var(--yellow); }
+    .lx-footer-bottom { max-width: 1240px; margin: 48px auto 0; padding-top: 26px; border-top: 1px solid var(--line-soft); display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap; color: var(--muted-soft); font-size: 0.84rem; }
+
+    /* ===================== RESPONSIVE ===================== */
+    /* Two-up stays two-up. Cards that sit side by side on desktop keep that pairing on phones —
+       only the type, padding and icons get compact so 2 columns still read at 320px. */
+    @media (max-width: 900px) {
+        .lx-split, .lx-features, .lx-portal { grid-template-columns: 1fr 1fr; gap: 16px; }
+        .lx-footer-top { grid-template-columns: 1fr 1fr; gap: 30px; }
+        .lx-footer-brand { grid-column: 1 / -1; }
+        .lx-hcard { width: 74vw; max-width: 340px; }
+    }
+    @media (max-width: 620px) {
+        .lx-split, .lx-features, .lx-portal { gap: 11px; }
+
+        .lx-fcard { flex-direction: column; gap: 12px; padding: 1.15rem 1rem; border-radius: 18px; }
+        .lx-fcard-ico { width: 38px; height: 38px; border-radius: 11px; font-size: 0.85rem; }
+        .lx-fcard h4 { font-size: 0.92rem; letter-spacing: -0.2px; margin-bottom: 6px; line-height: 1.25; }
+        .lx-fcard p { font-size: 0.78rem; line-height: 1.45; }
+
+        .lx-side { padding: 1.3rem 1rem; border-radius: 20px; }
+        .lx-side-tag { font-size: 0.55rem; letter-spacing: 1.4px; margin-bottom: 14px; gap: 6px; }
+        .lx-side-ico { width: 40px; height: 40px; border-radius: 12px; font-size: 0.95rem; margin-bottom: 14px; }
+        /* TAN Pearl is a display face — far too wide for a 132px column, it forced
+           "sartaroshx-onasi" to hyphenate. Use the text face at this size instead. */
+        .lx-side h3, .lx-pcard h3 {
+            font-family: 'Inter', sans-serif; font-weight: 700; font-size: 0.94rem;
+            letter-spacing: -0.2px; margin-bottom: 8px; line-height: 1.25; hyphens: none;
+        }
+        .lx-side > p { font-size: 0.78rem; line-height: 1.45; margin-bottom: 16px; }
+        .lx-feat-list { margin-bottom: 0; }
+        .lx-feat-list li { font-size: 0.74rem; padding: 9px 0; gap: 8px; line-height: 1.35; }
+        .lx-feat-list .ic { width: 16px; height: 16px; border-radius: 5px; font-size: 0.5rem; margin-top: 1px; }
+
+        .lx-pcard { padding: 1.6rem 1rem; border-radius: 22px; }
+        .lx-pcard-ico { width: 46px; height: 46px; border-radius: 14px; font-size: 1.05rem; margin-bottom: 14px; }
+        .lx-pcard p { font-size: 0.78rem; line-height: 1.45; margin-bottom: 18px; }
+        /* .lx-btn is nowrap by default — let the narrow two-up CTAs wrap instead of overflowing */
+        /* .lx-btn is nowrap by default — let the narrow two-up CTAs wrap instead of overflowing,
+           and give them a shared min-height so a one-line and a two-line label still match. */
+        .lx-pcard .lx-btn {
+            width: 100%; padding: 10px 8px; font-size: 0.72rem; border-radius: 12px; gap: 5px;
+            white-space: normal; line-height: 1.3; text-align: center; min-height: 52px;
+        }
+    }
+    @media (max-width: 768px) {
+        .nav-links { background: #0C1A13 !important; }
+        /* Hero breathes on phones: less top padding, tighter rhythm */
+        .lx-hero { padding: 96px 6% 56px; }
+        .lx-eyebrow { font-size: 0.62rem; letter-spacing: 1.8px; padding: 8px 15px; margin-bottom: 22px; gap: 9px; }
+        .lx-eyebrow .dot { width: 6px; height: 6px; }
+        .lx-hero-sub { margin-bottom: 0; }
+        .lx-hero-enter { margin-top: 32px; padding: 15px 32px; font-size: 0.95rem; letter-spacing: 1px; }
+        .lx-hero-enter:hover { letter-spacing: 1.6px; }
+        .lx-section { padding: 72px 6%; }
+        .lx-marquee-item { font-size: 0.94rem; }
+        .lx-marquee-track { gap: 34px; }
+    }
+    @media (max-width: 520px) {
+        .lx-cta-row .lx-btn { width: 100%; }
+        .lx-hero { padding: 88px 6% 48px; }
+        .lx-title { letter-spacing: -1px; }
+        .lx-hero-enter { width: 100%; max-width: 320px; justify-content: center; }
+        .lx-hcard { width: 78vw; padding: 1.6rem 1.3rem; }
+        .lx-footer-bottom { flex-direction: column; align-items: flex-start; gap: 10px; }
+    }
+    /* main.css ships global `h1/h2 { font-size: ... !important }` rules under 480px that are
+       meant for the app pages — they were shrinking the landing headlines. Take them back. */
+    @media (max-width: 480px) {
+        .lx-title { font-size: clamp(2.9rem, 13vw, 4rem) !important; letter-spacing: -1.5px !important; }
+        .lx-h2 { font-size: clamp(2rem, 8vw, 2.6rem) !important; letter-spacing: -1.2px !important; }
+    }
+    @media (max-width: 380px) {
+        .lx-eyebrow { font-size: 0.56rem; letter-spacing: 1.2px; }
+        .lx-hero-sub { font-size: 0.98rem; }
+        /* Uzbek/Russian words run long ("Professionallar"); shrink so they still fit a 320px column */
+        .lx-h2 { font-size: clamp(1.7rem, 7.6vw, 2.2rem) !important; }
+        .lx-title { font-size: clamp(2.5rem, 12vw, 3.4rem) !important; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+        .lx-reveal { opacity: 1 !important; transform: none !important; }
+        .lx-marquee-track { animation: none; }
+    }
+</style>
+
+<div class="lx-progress"><span></span></div>
+<div class="lx-bg">
+    <div class="lx-blob b1 lx-parallax" data-speed="0.12"></div>
+    <div class="lx-blob b2 lx-parallax" data-speed="-0.08"></div>
+    <div class="lx-blob b3 lx-parallax" data-speed="0.06"></div>
+</div>
+<div class="lx-grid"></div>
+
+<div class="lx">
+
+    <!-- ===== HERO ===== -->
+    <section class="lx-hero">
+        <div class="lx-hero-3d" aria-hidden="true">
+            <model-viewer
+                src="{% static 'models/tonsor.glb' %}?v=3"
+                alt="Tonsor"
+                loading="eager"
+                camera-orbit="-120deg 78deg auto"
+                auto-rotate auto-rotate-delay="4000" rotation-per-second="11deg"
+                interaction-prompt="none"
+                exposure="1.1" environment-image="neutral" shadow-intensity="0">
+            </model-viewer>
+        </div>
+        <div class="lx-hero-3d-overlay" aria-hidden="true"></div>
+        <div class="reveal-content">
+            <div class="lx-eyebrow"><span class="dot"></span> {% masterpiece_trans "The barbering ecosystem" %}</div>
+            <h1 class="lx-title">{% masterpiece_trans "Pure" %} <span class="grad-text">{% masterpiece_trans "Mastery." %}</span></h1>
+            <p class="lx-hero-sub">{% masterpiece_trans "Tonsor connects the world's finest barbers with clients who expect more — discover, book in seconds, and look unforgettable." %}</p>
+            <a href="#portal-selection" class="lx-hero-enter">{% masterpiece_trans "Enter Tonsor" %} <span class="lx-arrow">→</span></a>
+        </div>
+    </section>
+
+    <!-- Spacer reveals the fixed hero; everything below rises up over it -->
+    <div class="lx-hero-spacer" aria-hidden="true"></div>
+    <div class="lx-rise">
+
+    <!-- ===== MARQUEE ===== -->
+    <div class="lx-marquee">
+        <div class="lx-marquee-track">
+            {% for i in "12" %}
+            <span class="lx-marquee-item">{% masterpiece_trans "Verified Masters" %} <span class="sep grad-text">✦</span></span>
+            <span class="lx-marquee-item">{% masterpiece_trans "Zero-Friction Booking" %} <span class="sep grad-text">✦</span></span>
+            <span class="lx-marquee-item">{% masterpiece_trans "Curated Network" %} <span class="sep grad-text">✦</span></span>
+            <span class="lx-marquee-item">{% masterpiece_trans "HD Portfolios" %} <span class="sep grad-text">✦</span></span>
+            <span class="lx-marquee-item">{% masterpiece_trans "Smart Discovery" %} <span class="sep grad-text">✦</span></span>
+            <span class="lx-marquee-item">{% masterpiece_trans "Trusted Reviews" %} <span class="sep grad-text">✦</span></span>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- ===== WHO IT'S FOR (barbershops + salons) ===== -->
+    <section class="lx-section" id="audience">
+        <div class="lx-wrap">
+            <div class="lx-head center" style="margin-bottom: 54px;">
+                <span class="lx-kicker lx-reveal">{% masterpiece_trans "Who it's for" %}</span>
+                <h2 class="lx-h2 lx-reveal" style="--d:.05s;">{% masterpiece_trans "Two worlds," %} <span class="grad-text">{% masterpiece_trans "one standard." %}</span></h2>
+                <p class="lx-lead lx-reveal" style="--d:.1s; margin: 0 auto;">{% masterpiece_trans "Tonsor works the same way for a men's barbershop and a women's salon — the same booking, the same portfolio, the same quality bar." %}</p>
+            </div>
+            <div class="lx-split">
+                <div class="lx-side client lx-reveal left">
+                    <div class="lx-side-tag"><span style="width:7px;height:7px;border-radius:50%;background:#F2F3EF;"></span> {% masterpiece_trans "Barbershop" %}</div>
+                    <div class="lx-side-ico"><i class="fas fa-scissors"></i></div>
+                    <h3>{% masterpiece_trans "Men's barbershop" %}</h3>
+                    <p>{% masterpiece_trans "Haircuts, fades, beard work and hot-towel shaves — the whole barbershop craft in one place." %}</p>
+                    <ul class="lx-feat-list">
+                        <li><span class="ic"><i class="fas fa-check"></i></span> {% masterpiece_trans "Haircuts and fades" %}</li>
+                        <li><span class="ic"><i class="fas fa-check"></i></span> {% masterpiece_trans "Shaving and beard care" %}</li>
+                        <li><span class="ic"><i class="fas fa-check"></i></span> {% masterpiece_trans "Regular clients and repeat bookings" %}</li>
+                    </ul>
+                </div>
+                <div class="lx-side barber lx-reveal right">
+                    <div class="lx-side-tag"><span style="width:7px;height:7px;border-radius:50%;background:#141414;"></span> {% masterpiece_trans "Salon" %}</div>
+                    <div class="lx-side-ico"><i class="fas fa-wand-magic-sparkles"></i></div>
+                    <h3>{% masterpiece_trans "Women's salon" %}</h3>
+                    <p>{% masterpiece_trans "Colouring, styling and hair care — masters who work with every hair type and length." %}</p>
+                    <ul class="lx-feat-list">
+                        <li><span class="ic"><i class="fas fa-check"></i></span> {% masterpiece_trans "Colouring and toning" %}</li>
+                        <li><span class="ic"><i class="fas fa-check"></i></span> {% masterpiece_trans "Styling and hair care" %}</li>
+                        <li><span class="ic"><i class="fas fa-check"></i></span> {% masterpiece_trans "Before-and-after work in your portfolio" %}</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== FEATURES ===== -->
+    <section class="lx-section" id="features">
+        <div class="lx-wrap">
+            <div class="lx-head center" style="margin-bottom: 54px;">
+                <span class="lx-kicker lx-reveal">{% masterpiece_trans "The platform" %}</span>
+                <h2 class="lx-h2 lx-reveal" style="--d:.05s;">{% masterpiece_trans "Engineered for" %} <span class="grad-text">{% masterpiece_trans "artists." %}</span></h2>
+                <p class="lx-lead lx-reveal" style="--d:.1s; margin: 0 auto;">{% masterpiece_trans "A closed, high-fidelity ecosystem designed to elevate the barbering craft to a global standard." %}</p>
+            </div>
+            <div class="lx-features">
+                <div class="lx-fcard lx-reveal scale">
+                    <div class="lx-fcard-ico"><i class="fas fa-map-location-dot"></i></div>
+                    <div><h4>{% masterpiece_trans "Smart Proximity Discovery" %}</h4><p>{% masterpiece_trans "Precision geospatial search surfaces the right master barber at the right distance, every time." %}</p></div>
+                </div>
+                <div class="lx-fcard lx-reveal scale" style="--d:.08s;">
+                    <div class="lx-fcard-ico"><i class="fas fa-video"></i></div>
+                    <div><h4>{% masterpiece_trans "HD Video Portfolios" %}</h4><p>{% masterpiece_trans "Barbers present their finest work in fluid, high-fidelity galleries that win clients before the first word." %}</p></div>
+                </div>
+                <div class="lx-fcard lx-reveal scale" style="--d:.04s;">
+                    <div class="lx-fcard-ico"><i class="fas fa-chart-pie"></i></div>
+                    <div><h4>{% masterpiece_trans "Revenue & Schedule Tools" %}</h4><p>{% masterpiece_trans "Track earnings, manage availability, and scale the business with analytics built for the chair." %}</p></div>
+                </div>
+                <div class="lx-fcard lx-reveal scale" style="--d:.12s;">
+                    <div class="lx-fcard-ico"><i class="fas fa-shield-halved"></i></div>
+                    <div><h4>{% masterpiece_trans "Curated & Vetted" %}</h4><p>{% masterpiece_trans "Every professional is verified for skill, hygiene, and service — a network you can trust by default." %}</p></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== HORIZONTAL PINNED SHOWCASE (butter section) ===== -->
+    <section class="lx-pin" id="experience">
+        <div class="lx-pin-sticky">
+            <div class="lx-pin-head">
+                <span class="lx-kicker">{% masterpiece_trans "The experience" %}</span>
+                <h2 class="lx-h2">{% masterpiece_trans "Crafted," %} <span class="grad-text">{% masterpiece_trans "not rushed." %}</span></h2>
+                <p class="lx-lead" style="max-width: 560px;">{% masterpiece_trans "Every Tonsor session is a ritual. Scroll through the signatures that define a master's chair." %}</p>
+            </div>
+            <div class="lx-htrack">
+                <div class="lx-hcard c1">
+                    <div class="lx-hcard-n">01</div>
+                    <div class="lx-hcard-ico"><i class="fas fa-scissors"></i></div>
+                    <h4>{% masterpiece_trans "Precision Cuts" %}</h4>
+                    <p>{% masterpiece_trans "Millimeter-accurate fades and classic shapes tailored to your face and lifestyle." %}</p>
+                    <div class="lx-hcard-meta"><i class="fas fa-clock"></i> {% masterpiece_trans "30–45 min" %}</div>
+                </div>
+                <div class="lx-hcard c2">
+                    <div class="lx-hcard-n">02</div>
+                    <div class="lx-hcard-ico"><i class="fas fa-fire"></i></div>
+                    <h4>{% masterpiece_trans "Hot Towel Ritual" %}</h4>
+                    <p>{% masterpiece_trans "A warm, restorative shave experience that turns grooming into genuine downtime." %}</p>
+                    <div class="lx-hcard-meta"><i class="fas fa-clock"></i> {% masterpiece_trans "20–30 min" %}</div>
+                </div>
+                <div class="lx-hcard c3">
+                    <div class="lx-hcard-n">03</div>
+                    <div class="lx-hcard-ico"><i class="fas fa-palette"></i></div>
+                    <h4>{% masterpiece_trans "Colour & Gloss" %}</h4>
+                    <p>{% masterpiece_trans "Full colour, highlights or a soft gloss — matched to your tone and kept healthy." %}</p>
+                    <div class="lx-hcard-meta"><i class="fas fa-clock"></i> {% masterpiece_trans "60–120 min" %}</div>
+                </div>
+                <div class="lx-hcard c4">
+                    <div class="lx-hcard-n">04</div>
+                    <div class="lx-hcard-ico"><i class="fas fa-hand-holding-droplet"></i></div>
+                    <h4>{% masterpiece_trans "Hair Repair" %}</h4>
+                    <p>{% masterpiece_trans "Keratin, masks and deep conditioning that bring dry or coloured hair back to life." %}</p>
+                    <div class="lx-hcard-meta"><i class="fas fa-clock"></i> {% masterpiece_trans "45–90 min" %}</div>
+                </div>
+                <div class="lx-hcard c5">
+                    <div class="lx-hcard-n">05</div>
+                    <div class="lx-hcard-ico"><i class="fas fa-spray-can-sparkles"></i></div>
+                    <h4>{% masterpiece_trans "Styling & Finish" %}</h4>
+                    <p>{% masterpiece_trans "Pro-grade products and a finishing touch so the look lasts well beyond the chair." %}</p>
+                    <div class="lx-hcard-meta"><i class="fas fa-clock"></i> {% masterpiece_trans "10–15 min" %}</div>
+                </div>
+                <div class="lx-hcard c6">
+                    <div class="lx-hcard-n">06</div>
+                    <div class="lx-hcard-ico"><i class="fas fa-crown"></i></div>
+                    <h4>{% masterpiece_trans "The VIP Chair" %}</h4>
+                    <p>{% masterpiece_trans "The full signature journey — priority booking, private session, and the works." %}</p>
+                    <div class="lx-hcard-meta"><i class="fas fa-clock"></i> {% masterpiece_trans "60–90 min" %}</div>
+                </div>
+            </div>
+            <div class="lx-hint-drag"><i class="fas fa-arrow-right-long"></i> {% masterpiece_trans "Keep scrolling — the menu moves with you" %}</div>
+        </div>
+    </section>
+
+    <!-- ===== PORTAL ===== -->
+    <section class="lx-section" id="portal-selection">
+        <div class="lx-wrap">
+            <div class="lx-head center" style="margin-bottom: 54px;">
+                <span class="lx-kicker lx-reveal">{% masterpiece_trans "Get started" %}</span>
+                <h2 class="lx-h2 lx-reveal" style="--d:.05s;">{% masterpiece_trans "Choose your" %} <span class="grad-text">{% masterpiece_trans "path." %}</span></h2>
+                <p class="lx-lead lx-reveal" style="--d:.1s; margin: 0 auto;">{% masterpiece_trans "Define your experience in the Tonsor ecosystem." %}</p>
+            </div>
+            <div class="lx-portal">
+                <div class="lx-pcard client lx-reveal left">
+                    <div class="lx-pcard-ico"><i class="fas fa-couch"></i></div>
+                    <h3>{% masterpiece_trans "Client Portal" %}</h3>
+                    <p>{% masterpiece_trans "Access the most exclusive barbershops in the network and optimize your grooming schedule." %}</p>
+                    <a href="{% url 'accounts:login' %}?portal=client" class="lx-btn lx-btn--primary">{% masterpiece_trans "Enter as Client" %}</a>
+                </div>
+                <div class="lx-pcard barber lx-reveal right">
+                    <div class="lx-pcard-ico"><i class="fas fa-hand-scissors"></i></div>
+                    <h3>{% masterpiece_trans "Business Portal" %}</h3>
+                    <p>{% masterpiece_trans "Scale your business with professional tools and showcase your identity to elite clientele." %}</p>
+                    <a href="{% url 'accounts:barber_entry' %}?portal=business" class="lx-btn lx-btn--outline">{% masterpiece_trans "Enter as Business" %}</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== FOOTER ===== -->
+    <footer class="lx-footer">
+        <div class="lx-footer-top">
+            <div class="lx-footer-brand">
+                <h2 class="grad-text">Tonsor</h2>
+                <p>{% masterpiece_trans "An exclusive digital ecosystem for the world's most elite barbers and discerning clients." %}</p>
+            </div>
+            <div class="lx-footer-col">
+                <h5>{% masterpiece_trans "Explore" %}</h5>
+                <a href="#experience">{% masterpiece_trans "Experience" %}</a>
+                <a href="#portal-selection">{% masterpiece_trans "For Clients" %}</a>
+                <a href="#features">{% masterpiece_trans "Platform" %}</a>
+            </div>
+            <div class="lx-footer-col">
+                <h5>{% masterpiece_trans "For Barbers" %}</h5>
+                <a href="#features">{% masterpiece_trans "Why Tonsor" %}</a>
+                <a href="{% url 'accounts:barber_entry' %}?portal=business">{% masterpiece_trans "Open a shop" %}</a>
+                <a href="{% url 'accounts:login' %}?portal=client">{% masterpiece_trans "Sign in" %}</a>
+            </div>
+            <div class="lx-footer-col">
+                <h5>{% masterpiece_trans "Company" %}</h5>
+                <a href="#features">{% masterpiece_trans "About" %}</a>
+                <a href="#portal-selection">{% masterpiece_trans "Contact" %}</a>
+            </div>
+        </div>
+        <div class="lx-footer-bottom">
+            <span>© {% now "Y" %} Tonsor. {% masterpiece_trans "All rights reserved." %}</span>
+            <span style="letter-spacing: 1px; text-transform: uppercase; font-size: 0.72rem;">{% masterpiece_trans "Developed by MIM" %}</span>
+        </div>
+    </footer>
+    </div><!-- /.lx-rise -->
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script type="module" src="{% static 'js/model-viewer.min.js' %}"></script>
+<script src="{% static 'js/landing.js' %}?v=6"></script>
+{% endblock %}

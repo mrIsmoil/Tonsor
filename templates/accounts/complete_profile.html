@@ -1,0 +1,355 @@
+{% extends 'base.html' %}
+{% load masterpiece_i18n static %}
+
+{% block title %}{% masterpiece_trans "Final Step" %} - Tonsor{% endblock %}
+
+{% block nav_links %}
+<div class="cp-mobile-lang">
+    <span class="cp-mobile-lang-label">{% masterpiece_trans "Language" %}</span>
+    <form action="{% url 'accounts:set_language_direct' %}" method="post">
+        {% csrf_token %}
+        <input name="next" type="hidden" value="{{ request.get_full_path }}">
+        <button type="submit" name="language" value="uz" class="cp-mobile-lang-btn">O'zbekcha</button>
+        <button type="submit" name="language" value="ru" class="cp-mobile-lang-btn">Русский</button>
+        <button type="submit" name="language" value="en" class="cp-mobile-lang-btn">English</button>
+    </form>
+</div>
+{% endblock %}
+{% block nav_lang %}{% endblock %}
+{% block nav_actions %}
+<div class="nav-actions desktop-only lxa-lang">
+    <div class="language-selector" style="margin-right: 0;">
+        <button class="lang-btn lang-toggle-trigger lxa-lang-btn" type="button">
+            <i class="fas fa-globe"></i>
+            <span class="curr-lang">{% if request.session.masterpiece_lang == 'ru' %}RU{% elif request.session.masterpiece_lang == 'en' %}EN{% else %}UZ{% endif %}</span>
+        </button>
+        <div class="lang-dropdown">
+            <form action="{% url 'accounts:set_language_direct' %}" method="post">
+                {% csrf_token %}
+                <input name="next" type="hidden" value="{{ request.get_full_path }}">
+                <button type="submit" name="language" value="uz" class="lang-opt">O'zbekcha</button>
+                <button type="submit" name="language" value="ru" class="lang-opt">Русский</button>
+                <button type="submit" name="language" value="en" class="lang-opt">English</button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<style>
+    html, body { background-color: #13271E !important; overflow-x: clip; }
+
+    .lxa { min-height: 100vh; min-height: 100svh; padding: 104px 6% 56px; display: flex; align-items: center; justify-content: center; position: relative; z-index: 2; }
+    .navbar {
+        position: fixed !important; top: 0 !important; left: 0 !important; right: 0 !important;
+        background: transparent !important; padding: 18px 4% !important;
+        border-bottom: 1px solid transparent !important; box-shadow: none !important;
+        backdrop-filter: none !important; -webkit-backdrop-filter: none !important;
+    }
+    .navbar h2 { font-family: 'TAN - PEARL', serif !important; font-weight: 400 !important; }
+    .lxa-lang-btn {
+        background: rgba(242, 243, 239, 0.08) !important;
+        backdrop-filter: blur(14px) saturate(180%); -webkit-backdrop-filter: blur(14px) saturate(180%);
+        border: 1px solid rgba(242, 243, 239, 0.18) !important;
+        color: #F4F5F1 !important; padding: 9px 17px !important; border-radius: 30px !important;
+        font-size: 0.78rem !important; letter-spacing: 0.5px; cursor: pointer;
+    }
+    .navbar .lang-dropdown {
+        background: rgba(19, 39, 30, 0.72) !important;
+        backdrop-filter: blur(20px) saturate(180%); -webkit-backdrop-filter: blur(20px) saturate(180%);
+        border: 1px solid rgba(242, 243, 239, 0.18) !important;
+        border-radius: 20px !important; padding: 10px !important; min-width: 120px !important;
+    }
+    .navbar .lang-dropdown .lang-opt { color: #F2F3EF !important; border-radius: 12px !important; padding: 10px 14px !important; }
+    .navbar .lang-dropdown .lang-opt:hover { background: rgba(242, 243, 239, 0.15) !important; color: #fff !important; }
+
+    .lxa-card {
+        position: relative; z-index: 2; width: 100%; max-width: 480px;
+        border: 1px solid rgba(242, 243, 239, 0.14); border-radius: 30px;
+        padding: clamp(1.9rem, 5vw, 3rem); text-align: center;
+        background: linear-gradient(168deg, rgba(242, 243, 239, 0.07), rgba(242, 243, 239, 0.02));
+        backdrop-filter: blur(18px) saturate(160%); -webkit-backdrop-filter: blur(18px) saturate(160%);
+        box-shadow: 0 40px 90px -34px rgba(0, 0, 0, 0.65), inset 0 1.5px 1px rgba(242, 243, 239, 0.28);
+    }
+    .lxa-kicker {
+        display: inline-flex; align-items: center; gap: 10px; margin-bottom: 16px;
+        font-size: 0.66rem; text-transform: uppercase; letter-spacing: 3px; font-weight: 800; color: #8fa298;
+    }
+    .lxa-kicker::before { content: ''; width: 24px; height: 2px; border-radius: 2px; background: linear-gradient(90deg, #13271E, #F2F3EF); }
+    .lxa-title {
+        font-family: 'TAN - PEARL', serif; font-weight: 400; font-size: clamp(1.9rem, 7vw, 2.5rem);
+        line-height: 1.08; letter-spacing: -0.7px; margin: 0 0 10px; color: #F4F5F1; overflow-wrap: break-word;
+    }
+    .lxa-sub { color: #8fa298; font-size: 0.94rem; line-height: 1.55; margin: 0 0 30px; overflow-wrap: break-word; }
+
+    /* photo picker */
+    .cp-photo-wrap { position: relative; width: 128px; height: 128px; margin: 0 auto 28px; }
+    .cp-photo-preview {
+        width: 100%; height: 100%; border-radius: 50%; overflow: hidden;
+        background: rgba(242, 243, 239, 0.05); border: 2px dashed rgba(242, 243, 239, 0.24);
+        display: flex; align-items: center; justify-content: center; transition: border-color 0.3s;
+    }
+    .cp-photo-preview i { font-size: 2.1rem; color: rgba(242, 243, 239, 0.34); }
+    .cp-photo-preview img { width: 100%; height: 100%; object-fit: cover; }
+    .cp-photo-btn {
+        position: absolute; bottom: 2px; right: 2px; width: 36px; height: 36px; border-radius: 50%;
+        background: #F2F3EF; color: #13271E; display: flex; align-items: center; justify-content: center;
+        cursor: pointer; box-shadow: 0 10px 24px -8px rgba(0, 0, 0, 0.6); transition: transform 0.3s;
+    }
+    .cp-photo-btn:hover { transform: scale(1.08); }
+
+    /* gender picker */
+    .cp-field { text-align: left; margin-bottom: 22px; }
+    .cp-label {
+        display: block; margin-bottom: 12px; font-size: 0.68rem; font-weight: 800;
+        text-transform: uppercase; letter-spacing: 2px; color: #8fa298;
+    }
+    .cp-gender-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+    .cp-gender-card {
+        background: rgba(242, 243, 239, 0.05); border: 1px solid rgba(242, 243, 239, 0.14);
+        border-radius: 16px; padding: 16px 8px; text-align: center; cursor: pointer;
+        transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .cp-gender-card i { font-size: 1.3rem; margin-bottom: 8px; display: block; color: #8fa298; }
+    .cp-gender-card span { display: block; font-size: 0.78rem; font-weight: 700; color: #F4F5F1; }
+    .cp-gender-card:hover { background: rgba(242, 243, 239, 0.09); border-color: rgba(242, 243, 239, 0.26); transform: translateY(-2px); }
+    .cp-gender-card.active { background: rgba(242, 243, 239, 0.16); border-color: rgba(242, 243, 239, 0.45); }
+    .cp-gender-card.active i { color: #F2F3EF; }
+
+    .lxa-input {
+        width: 100%; min-height: 54px; padding: 0 18px; box-sizing: border-box;
+        background: rgba(242, 243, 239, 0.05) !important;
+        border: 1px solid rgba(242, 243, 239, 0.16) !important;
+        border-radius: 16px !important; color: #F4F5F1 !important;
+        font-family: 'Inter', sans-serif; font-size: 0.96rem;
+        -webkit-appearance: none; appearance: none;
+        transition: border-color 0.3s, background 0.3s, box-shadow 0.3s;
+    }
+    .lxa-input::placeholder { color: rgba(242, 243, 239, 0.32); }
+    .lxa-input:focus {
+        outline: none;
+        background: rgba(242, 243, 239, 0.09) !important;
+        border-color: rgba(242, 243, 239, 0.42) !important;
+        box-shadow: 0 0 0 4px rgba(242, 243, 239, 0.06);
+    }
+    .lxa-input[type=number]::-webkit-inner-spin-button,
+    .lxa-input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+
+    .lxa-input-wrap { position: relative; }
+    .lxa-input.has-toggle { padding-right: 52px; }
+    .lxa-toggle {
+        position: absolute; right: 8px; top: 50%; transform: translateY(-50%);
+        width: 38px; height: 38px; display: flex; align-items: center; justify-content: center;
+        background: none; border: 0; cursor: pointer; color: #8fa298; border-radius: 10px;
+        transition: color 0.25s, background 0.25s;
+    }
+    .lxa-toggle:hover { color: #F4F5F1; background: rgba(242, 243, 239, 0.07); }
+
+    .lxa-error {
+        display: flex; align-items: flex-start; gap: 10px; margin-bottom: 20px; text-align: left;
+        padding: 13px 15px; border-radius: 14px; font-size: 0.86rem; line-height: 1.45;
+        background: rgba(214, 92, 82, 0.12); border: 1px solid rgba(214, 92, 82, 0.32); color: #f0b9b3;
+        overflow-wrap: break-word;
+    }
+    .lxa-error i { margin-top: 2px; }
+
+    .lxa-btn {
+        display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+        width: 100%; min-height: 54px; margin-top: 8px; padding: 14px 22px;
+        border-radius: 16px; border: 1px solid rgba(242, 243, 239, 0.28);
+        background: rgba(242, 243, 239, 0.14); color: #F2F3EF;
+        font-family: 'Inter', sans-serif; font-size: 0.92rem; font-weight: 700; letter-spacing: 0.3px;
+        cursor: pointer; box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5), inset 0 1.5px 1px rgba(242, 243, 239, 0.5);
+        transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), background 0.3s, border-color 0.3s;
+    }
+    .lxa-btn:hover { transform: translateY(-2px); background: rgba(242, 243, 239, 0.22); border-color: rgba(242, 243, 239, 0.45); }
+
+    @media (max-width: 520px) {
+        .lxa { padding: 92px 5% 44px; }
+        .lxa-card { border-radius: 24px; }
+    }
+
+    /* Mobile-only language panel (shown inside the hamburger overlay) */
+    .cp-mobile-lang { display: none; }
+    @media (max-width: 768px) {
+        .cp-mobile-lang { display: flex; flex-direction: column; align-items: center; gap: 12px; width: 100%; }
+        .cp-mobile-lang-label {
+            font-size: 0.66rem; text-transform: uppercase; letter-spacing: 3px; font-weight: 800; color: #8fa298;
+        }
+        .cp-mobile-lang form { display: flex; flex-direction: column; gap: 10px; width: 100%; max-width: 240px; }
+        .cp-mobile-lang-btn {
+            width: 100%; min-height: 50px; border-radius: 14px; cursor: pointer;
+            background: rgba(242, 243, 239, 0.06); border: 1px solid rgba(242, 243, 239, 0.18);
+            color: #F4F5F1; font-family: 'Inter', sans-serif; font-size: 0.94rem; font-weight: 600;
+            transition: background 0.3s, border-color 0.3s;
+        }
+        .cp-mobile-lang-btn:hover, .cp-mobile-lang-btn:active { background: rgba(242, 243, 239, 0.14); border-color: rgba(242, 243, 239, 0.36); }
+    }
+</style>
+
+<div class="lxa">
+    <div class="lxa-card">
+        <span class="lxa-kicker">{% masterpiece_trans "Client Portal" %}</span>
+        <h1 class="lxa-title">{% masterpiece_trans "Final Step" %}</h1>
+        <p class="lxa-sub">{% masterpiece_trans "Complete your profile to unlock the full ecosystem." %}</p>
+
+        <div class="lxa-error" id="cpFormError" role="alert" {% if not error %}style="display: none;"{% endif %}>
+            <i class="fas fa-circle-exclamation" aria-hidden="true"></i>
+            <span>{% if error %}{% masterpiece_trans error %}{% endif %}</span>
+        </div>
+
+        <form method="post" enctype="multipart/form-data" id="completeProfileForm" novalidate>
+            {% csrf_token %}
+
+            <div class="cp-photo-wrap">
+                <div id="photoPreview" class="cp-photo-preview">
+                    <i class="fas fa-user-plus" aria-hidden="true"></i>
+                </div>
+                <label for="profile_photo" class="cp-photo-btn">
+                    <i class="fas fa-camera" aria-hidden="true"></i>
+                </label>
+                <input type="file" name="profile_photo" id="profile_photo" accept="image/*" style="display: none;" onchange="cpPreviewImage(this)">
+            </div>
+
+            <div class="cp-field">
+                <label class="cp-label">{% masterpiece_trans "Select Gender" %}</label>
+                <div class="cp-gender-grid">
+                    <div class="cp-gender-card" onclick="cpSelectGender('male', this)">
+                        <i class="fas fa-mars" aria-hidden="true"></i>
+                        <span>{% masterpiece_trans "Male" %}</span>
+                    </div>
+                    <div class="cp-gender-card" onclick="cpSelectGender('female', this)">
+                        <i class="fas fa-venus" aria-hidden="true"></i>
+                        <span>{% masterpiece_trans "Female" %}</span>
+                    </div>
+                    <div class="cp-gender-card" onclick="cpSelectGender('other', this)">
+                        <i class="fas fa-genderless" aria-hidden="true"></i>
+                        <span>{% masterpiece_trans "Other" %}</span>
+                    </div>
+                </div>
+                <input type="hidden" name="gender" id="genderInput" required>
+            </div>
+
+            <div class="cp-field">
+                <label class="cp-label" for="age">{% masterpiece_trans "Your Age" %}</label>
+                <input type="number" name="age" id="age" class="lxa-input" placeholder="{% masterpiece_trans 'e.g. 25' %}" min="1" max="120" required>
+            </div>
+
+            <div class="cp-field">
+                <label class="cp-label" for="id_cp_username">{% masterpiece_trans "Username" %}</label>
+                <input type="text" name="username" id="id_cp_username" class="lxa-input"
+                       value="{{ username|default:'' }}" autocomplete="username"
+                       placeholder="{% masterpiece_trans 'e.g. john_doe' %}" required>
+            </div>
+
+            <div class="cp-field">
+                <label class="cp-label" for="id_cp_password">{% masterpiece_trans "Password" %}</label>
+                <div class="lxa-input-wrap">
+                    <input type="password" name="password" id="id_cp_password" class="lxa-input has-toggle"
+                           inputmode="numeric" pattern="\d{6}" maxlength="6"
+                           autocomplete="new-password" placeholder="••••••" required>
+                    <button type="button" class="lxa-toggle" id="cpPwToggle"
+                            aria-label="{% masterpiece_trans 'Show password' %}">
+                        <i class="fas fa-eye" id="cpPwIcon" aria-hidden="true"></i>
+                    </button>
+                </div>
+            </div>
+
+            <button type="submit" class="lxa-btn">{% masterpiece_trans "Enter Tonsor" %}</button>
+        </form>
+    </div>
+</div>
+
+<!-- Translation Data -->
+<div id="cp-validation-messages" style="display: none;"
+    data-gender="{% masterpiece_trans 'Please select your gender.' %}"
+    data-age="{% masterpiece_trans 'Please enter a valid age.' %}"
+    data-username="{% masterpiece_trans 'Please choose a username.' %}"
+    data-username-pattern="{% masterpiece_trans 'Username must be 3-30 characters and can only contain letters, numbers, dots and underscores.' %}"
+    data-password="{% masterpiece_trans 'Password must be exactly 6 digits.' %}"
+></div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    function cpPreviewImage(input) {
+        if (input.files && input.files[0]) {
+            var reader = new FileReader();
+            reader.onload = function (e) {
+                var preview = document.getElementById('photoPreview');
+                preview.innerHTML = '<img src="' + e.target.result + '" alt="">';
+                preview.style.borderStyle = 'solid';
+                preview.style.borderColor = 'rgba(242, 243, 239, 0.5)';
+            };
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+
+    function cpSelectGender(gender, element) {
+        document.querySelectorAll('.cp-gender-card').forEach(function (card) {
+            card.classList.remove('active');
+        });
+        element.classList.add('active');
+        document.getElementById('genderInput').value = gender;
+    }
+
+    (function () {
+        var input = document.getElementById('id_cp_password');
+        var btn = document.getElementById('cpPwToggle');
+        var icon = document.getElementById('cpPwIcon');
+        if (!input || !btn) return;
+        btn.addEventListener('click', function () {
+            var hidden = input.type === 'password';
+            input.type = hidden ? 'text' : 'password';
+            icon.classList.toggle('fa-eye', !hidden);
+            icon.classList.toggle('fa-eye-slash', hidden);
+        });
+    })();
+
+    (function () {
+        var form = document.getElementById('completeProfileForm');
+        var errorBox = document.getElementById('cpFormError');
+        var errorText = errorBox.querySelector('span');
+        var msgs = document.getElementById('cp-validation-messages').dataset;
+        if (!form) return;
+
+        function showCpError(text, field) {
+            errorText.textContent = text;
+            errorBox.style.display = 'flex';
+            errorBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            if (field) field.focus();
+        }
+
+        form.addEventListener('submit', function (e) {
+            var genderField = document.getElementById('genderInput');
+            var ageField = document.getElementById('age');
+            var usernameField = document.getElementById('id_cp_username');
+            var passwordField = document.getElementById('id_cp_password');
+
+            if (!genderField.value) {
+                e.preventDefault();
+                return showCpError(msgs.gender);
+            }
+            if (!ageField.value || !ageField.checkValidity()) {
+                e.preventDefault();
+                return showCpError(msgs.age, ageField);
+            }
+            if (!usernameField.value.trim()) {
+                e.preventDefault();
+                return showCpError(msgs.username, usernameField);
+            }
+            if (!/^[A-Za-z0-9_.]{3,30}$/.test(usernameField.value.trim())) {
+                e.preventDefault();
+                return showCpError(msgs.usernamePattern, usernameField);
+            }
+            if (!/^\d{6}$/.test(passwordField.value)) {
+                e.preventDefault();
+                return showCpError(msgs.password, passwordField);
+            }
+
+            errorBox.style.display = 'none';
+        });
+    })();
+</script>
+{% endblock %}

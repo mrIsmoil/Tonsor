@@ -1,0 +1,144 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: Tonsor\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-03-29 20:30+0500\n"
+"PO-Revision-Date: 2026-03-29 20:30+0500\n"
+"Last-Translator: Antigravity\n"
+"Language-Team: Russian\n"
+"Language: ru\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+msgid "Features"
+msgstr "Возможности"
+
+msgid "Services"
+msgstr "Услуги"
+
+msgid "Explore"
+msgstr "Исследовать"
+
+msgid "Get Started"
+msgstr "Начать"
+
+msgid "Home"
+msgstr "Главная"
+
+msgid "Barbers"
+msgstr "Барберы"
+
+msgid "Feed"
+msgstr "Лента"
+
+msgid "Profile"
+msgstr "Профиль"
+
+msgid "Schedule"
+msgstr "Расписание"
+
+msgid "Logout"
+msgstr "Выйти"
+
+msgid "Login"
+msgstr "Войти"
+
+msgid "The Antigravity Standard"
+msgstr "Стандарт Антигравити"
+
+msgid "Pure Mastery."
+msgstr "Чистое Мастерство."
+
+msgid "Tonsor is an exclusive digital ecosystem for the world's most elite barbers and discerning clients. Experience precision grooming through an uncompromising lens."
+msgstr "Tonsor - это эксклюзивная цифровая экосистема для самых элитных барберов мира и взыскательных клиентов. Почувствуйте точность ухода через бескомпромиссную призму."
+
+msgid "Start Experience"
+msgstr "Начать Путешествие"
+
+msgid "Master Barbers"
+msgstr "Мастер-барберы"
+
+msgid "Monthly Sessions"
+msgstr "Сессий в Месяц"
+
+msgid "Precision Rate"
+msgstr "Показатель Точности"
+
+msgid "Engineered for Artists."
+msgstr "Разработано для Художников."
+
+msgid "A dual-sided ecosystem designed to elevate the barbering craft to a global standard."
+msgstr "Двусторонняя экосистема, созданная для поднятия барберского искусства на мировой уровень."
+
+msgid "The Client Path"
+msgstr "Путь Клиента"
+
+msgid "Discover an elite network of verified master barbers. Book your next masterpiece with 0% friction, manage your style history, and explore trends."
+msgstr "Откройте для себя элитную сеть проверенных мастер-барберов. Забронируйте свой следующий шедевр без лишних усилий, управляйте историей стиля и изучайте тренды."
+
+msgid "Smart Proximity Discovery"
+msgstr "Умный Поиск по Близости"
+
+msgid "Adaptive Session Reminders"
+msgstr "Адаптивные Напоминания о Сеансах"
+
+msgid "The Barber Edge"
+msgstr "Преимущество Барбера"
+
+msgid "Secure your legacy on a platform built for professionals. High-fidelity video portfolios meet advanced shop analytics and revenue scaling tools."
+msgstr "Закрепите свое наследие на платформе, созданной для профессионалов. Высококачественные видео-портфолио сочетаются с продвинутой аналитикой салона и инструментами масштабирования дохода."
+
+msgid "Master Financial Tracking"
+msgstr "Контроль Финансов"
+
+msgid "Global Portfolio Distribution"
+msgstr "Глобальное Продвижение Портфолио"
+
+msgid "Curated Excellence"
+msgstr "Особое Превосходство"
+
+msgid "Tonsor is a closed network. Every professional on this platform is vetted for artistic skill, shop hygiene, and elite client interaction."
+msgstr "Tonsor - это закрытая сеть. Каждый профессионал на этой платформе проверяется на художественное мастерство, гигиену салона и уровень взаимодействия с клиентами."
+
+msgid "Vetted Professional Network"
+msgstr "Проверенная Профессиональная Сеть"
+
+msgid "Premium Waitlist Priority"
+msgstr "Приоритет в Списке Ожидания"
+
+msgid "State-of-the-Art"
+msgstr "Передовые Технологии"
+
+msgid "Under the hood resides a custom-built infrastructure optimized for speed. 60FPS fluid interactions and precision map discovery come standard."
+msgstr "В основе лежит специально разработанная инфраструктура, оптимизированная для скорости. Плавное взаимодействие при 60FPS и точный поиск по карте являются стандартом."
+
+msgid "Ultra-Low Latency Booking"
+msgstr "Бронирование с Минимальной Задержкой"
+
+msgid "Advanced Geospatial Logic"
+msgstr "Продвинутая Геопространственная Логика"
+
+msgid "Choose Your Path."
+msgstr "Выберите Свой Путь."
+
+msgid "Define your experience in the Tonsor ecosystem."
+msgstr "Определите свои возможности в экосистеме Tonsor."
+
+msgid "Client Portal"
+msgstr "Клиентский Портал"
+
+msgid "Access the most exclusive barbershops in the network and optimize your grooming schedule."
+msgstr "Получите доступ к самым эксклюзивным барбершопам сети и оптимизируйте свой график ухода."
+
+msgid "Enter as Client"
+msgstr "Войти как Клиент"
+
+msgid "Barber Portal"
+msgstr "Портал Барбера"
+
+msgid "Scale your business with professional tools and showcase your identity to elite clientele."
+msgstr "Масштабируйте свой бизнес с помощью профессиональных инструментов и продемонстрируйте свою индивидуальность элитной клиентуре."
+
+msgid "Enter as Barber"
+msgstr "Войти как Барбер"

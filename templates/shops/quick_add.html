@@ -1,0 +1,249 @@
+{% extends 'base.html' %}
+{% load masterpiece_i18n %}
+
+{% block title %}{% masterpiece_trans "Quick Add" %} - Tonsor{% endblock %}
+
+{% block content %}
+<style>
+    .qa-wrap { max-width: 560px; margin: 0 auto; padding: 120px 6% 60px; position: relative; z-index: 2; }
+
+    .qa-head { margin-bottom: 26px; }
+    .qa-kicker {
+        display: inline-flex; align-items: center; gap: 10px; margin-bottom: 12px;
+        font-size: 0.66rem; text-transform: uppercase; letter-spacing: 3px; font-weight: 800; color: #8fa298;
+    }
+    .qa-kicker::before { content: ''; width: 24px; height: 2px; border-radius: 2px; background: linear-gradient(90deg, #13271E, #F2F3EF); }
+    .qa-title {
+        font-family: 'TAN - PEARL', serif; font-weight: 400; font-size: clamp(1.8rem, 6vw, 2.3rem);
+        letter-spacing: -0.6px; margin: 0 0 8px; color: #F4F5F1;
+    }
+    .qa-stat { color: #8fa298; font-size: 0.9rem; }
+    .qa-stat b { color: #F2F3EF; }
+
+    .qa-card {
+        border-radius: 26px; padding: clamp(1.5rem, 5vw, 2.2rem);
+        border: 1px solid rgba(242, 243, 239, 0.14);
+        background: linear-gradient(168deg, rgba(242, 243, 239, 0.07), rgba(242, 243, 239, 0.02));
+        backdrop-filter: blur(18px) saturate(160%); -webkit-backdrop-filter: blur(18px) saturate(160%);
+        box-shadow: 0 30px 80px -34px rgba(0, 0, 0, 0.65);
+    }
+
+    .qa-field { margin-bottom: 20px; }
+    .qa-label {
+        display: block; margin-bottom: 9px; font-size: 0.68rem; font-weight: 800;
+        text-transform: uppercase; letter-spacing: 2px; color: #8fa298;
+    }
+    .qa-input {
+        width: 100%; min-height: 54px; padding: 0 18px; box-sizing: border-box;
+        background: rgba(242, 243, 239, 0.05); border: 1px solid rgba(242, 243, 239, 0.16);
+        border-radius: 16px; color: #F4F5F1; font-family: 'Inter', sans-serif; font-size: 1rem;
+        -webkit-appearance: none; appearance: none; transition: border-color 0.3s, background 0.3s;
+    }
+    .qa-input::placeholder { color: rgba(242, 243, 239, 0.3); }
+    .qa-input:focus {
+        outline: none; background: rgba(242, 243, 239, 0.09);
+        border-color: rgba(242, 243, 239, 0.42);
+    }
+
+    .qa-type-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .qa-type {
+        padding: 16px 10px; border-radius: 16px; cursor: pointer; text-align: center;
+        background: rgba(242, 243, 239, 0.05); border: 1px solid rgba(242, 243, 239, 0.14);
+        transition: all 0.3s; user-select: none;
+    }
+    .qa-type i { display: block; font-size: 1.2rem; margin-bottom: 6px; color: #8fa298; }
+    .qa-type span { font-size: 0.86rem; font-weight: 700; color: #F4F5F1; }
+    .qa-type.active { background: rgba(242, 243, 239, 0.16); border-color: rgba(242, 243, 239, 0.45); }
+    .qa-type.active i { color: #F2F3EF; }
+
+    .qa-geo-btn {
+        display: flex; align-items: center; justify-content: center; gap: 10px;
+        width: 100%; min-height: 58px; margin-bottom: 12px; border-radius: 16px; cursor: pointer;
+        background: rgba(143, 212, 168, 0.1); border: 1px solid rgba(143, 212, 168, 0.32);
+        color: #8fd4a8; font-family: 'Inter', sans-serif; font-size: 0.95rem; font-weight: 700;
+        transition: background 0.3s, transform 0.3s;
+    }
+    .qa-geo-btn:hover { background: rgba(143, 212, 168, 0.18); transform: translateY(-2px); }
+    .qa-geo-btn.done { background: rgba(143, 212, 168, 0.2); }
+    .qa-geo-btn:disabled { opacity: 0.6; cursor: wait; }
+
+    /* Xarita saytning to'q ohangiga moslanadi — edit_profile bilan bir xil filtr */
+    #qa-map {
+        height: 200px; width: 100%; border-radius: 16px; margin-bottom: 10px;
+        border: 1px solid rgba(242, 243, 239, 0.14);
+        filter: grayscale(0.4) invert(0.92) brightness(0.95) contrast(1.05) hue-rotate(140deg);
+    }
+    .qa-coords { font-size: 0.78rem; color: #6d8177; font-variant-numeric: tabular-nums; margin-bottom: 4px; }
+
+    .qa-submit {
+        display: flex; align-items: center; justify-content: center; gap: 10px;
+        width: 100%; min-height: 58px; margin-top: 6px; border-radius: 16px; cursor: pointer;
+        border: 1px solid rgba(242, 243, 239, 0.28); background: rgba(242, 243, 239, 0.14);
+        color: #F2F3EF; font-family: 'Inter', sans-serif; font-size: 1rem; font-weight: 700;
+        box-shadow: 0 10px 30px -10px rgba(0,0,0,0.5), inset 0 1.5px 1px rgba(242, 243, 239, 0.5);
+        transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), background 0.3s;
+    }
+    .qa-submit:hover { transform: translateY(-2px); background: rgba(242, 243, 239, 0.22); }
+
+    .qa-error, .qa-success {
+        display: flex; align-items: flex-start; gap: 10px; margin-bottom: 20px;
+        padding: 14px 16px; border-radius: 14px; font-size: 0.88rem; line-height: 1.5;
+    }
+    .qa-error { background: rgba(214, 92, 82, 0.12); border: 1px solid rgba(214, 92, 82, 0.32); color: #f0b9b3; }
+    .qa-success { background: rgba(143, 212, 168, 0.1); border: 1px solid rgba(143, 212, 168, 0.3); color: #cfe8d9; flex-direction: column; }
+    .qa-success .qa-code {
+        font-family: ui-monospace, Menlo, monospace; font-size: 1.5rem; font-weight: 700;
+        color: #8fd4a8; letter-spacing: 2px; margin: 6px 0;
+    }
+    .qa-success small { color: #8fa298; }
+
+    @media (max-width: 520px) {
+        .qa-wrap { padding: 100px 5% 44px; }
+        .qa-card { border-radius: 20px; }
+    }
+</style>
+
+<div class="qa-wrap">
+    <div class="qa-head">
+        <span class="qa-kicker">{% masterpiece_trans "Admin" %}</span>
+        <h1 class="qa-title">{% masterpiece_trans "Quick Add" %}</h1>
+        <p class="qa-stat">
+            {% masterpiece_trans "In base" %}: <b>{{ shop_count }}</b> &nbsp;·&nbsp;
+            {% masterpiece_trans "Unclaimed" %}: <b>{{ unclaimed_count }}</b>
+        </p>
+    </div>
+
+    {% if created %}
+    <div class="qa-success" role="status">
+        <div><i class="fas fa-circle-check" aria-hidden="true"></i> <b>{{ created.shop_name }}</b> — {% masterpiece_trans "added" %}</div>
+        <div class="qa-code">{{ created.claim_code }}</div>
+        <small>{% masterpiece_trans "Give this code to the barber so they can claim the shop." %}</small>
+    </div>
+    {% endif %}
+
+    {% if error %}
+    <div class="qa-error" role="alert">
+        <i class="fas fa-circle-exclamation" aria-hidden="true"></i>
+        <span>{% masterpiece_trans error %}</span>
+    </div>
+    {% endif %}
+
+    <div class="qa-card">
+        <form method="post" id="qaForm">
+            {% csrf_token %}
+
+            <div class="qa-field">
+                <label class="qa-label" for="shop_name">{% masterpiece_trans "Shop Name" %}</label>
+                <input type="text" name="shop_name" id="shop_name" class="qa-input" required
+                       autocomplete="off" placeholder="{% masterpiece_trans 'e.g. Chilonzor Barber' %}">
+            </div>
+
+            <div class="qa-field">
+                <label class="qa-label" for="contact_phone">{% masterpiece_trans "Phone" %}</label>
+                <input type="tel" name="contact_phone" id="contact_phone" class="qa-input"
+                       inputmode="tel" autocomplete="off" placeholder="+998 90 123 45 67">
+            </div>
+
+            <div class="qa-field">
+                <label class="qa-label">{% masterpiece_trans "Shop Type" %}</label>
+                <div class="qa-type-grid">
+                    <div class="qa-type active" data-type="men" onclick="qaPickType(this)">
+                        <i class="fas fa-mars" aria-hidden="true"></i>
+                        <span>{% masterpiece_trans "Men" %}</span>
+                    </div>
+                    <div class="qa-type" data-type="women" onclick="qaPickType(this)">
+                        <i class="fas fa-venus" aria-hidden="true"></i>
+                        <span>{% masterpiece_trans "Women" %}</span>
+                    </div>
+                </div>
+                <input type="hidden" name="shop_type" id="shop_type" value="men">
+            </div>
+
+            <div class="qa-field">
+                <label class="qa-label">{% masterpiece_trans "Location" %}</label>
+                <button type="button" class="qa-geo-btn" id="qaGeoBtn" onclick="qaUseMyLocation()">
+                    <i class="fas fa-location-crosshairs" aria-hidden="true"></i>
+                    <span id="qaGeoText">{% masterpiece_trans "Use my current location" %}</span>
+                </button>
+                <div id="qa-map"></div>
+                <p class="qa-coords" id="qaCoords">—</p>
+                <input type="text" name="address" id="address" class="qa-input"
+                       autocomplete="off" placeholder="{% masterpiece_trans 'Address (optional)' %}">
+                <input type="hidden" name="location_lat" id="location_lat">
+                <input type="hidden" name="location_lng" id="location_lng">
+            </div>
+
+            <button type="submit" class="qa-submit">
+                <i class="fas fa-plus" aria-hidden="true"></i> {% masterpiece_trans "Add Shop" %}
+            </button>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://api-maps.yandex.ru/2.1/?apikey={{ YANDEX_MAPS_API_KEY }}&lang=uz_UZ" type="text/javascript"></script>
+<script>
+    function qaPickType(el) {
+        document.querySelectorAll('.qa-type').forEach(function (t) { t.classList.remove('active'); });
+        el.classList.add('active');
+        document.getElementById('shop_type').value = el.dataset.type;
+    }
+
+    var qaMap = null, qaPin = null;
+
+    function qaSetPoint(lat, lng, moveMap) {
+        document.getElementById('location_lat').value = lat;
+        document.getElementById('location_lng').value = lng;
+        document.getElementById('qaCoords').textContent = lat.toFixed(6) + ', ' + lng.toFixed(6);
+        if (qaPin) qaPin.geometry.setCoordinates([lat, lng]);
+        if (qaMap && moveMap) qaMap.setCenter([lat, lng], 17);
+    }
+
+    function qaUseMyLocation() {
+        var btn = document.getElementById('qaGeoBtn');
+        var txt = document.getElementById('qaGeoText');
+        if (!navigator.geolocation) {
+            txt.textContent = '{% masterpiece_trans "Location unavailable" %}';
+            return;
+        }
+        btn.disabled = true;
+        txt.textContent = '...';
+        navigator.geolocation.getCurrentPosition(
+            function (pos) {
+                qaSetPoint(pos.coords.latitude, pos.coords.longitude, true);
+                btn.disabled = false;
+                btn.classList.add('done');
+                txt.textContent = '{% masterpiece_trans "Location set" %}';
+            },
+            function () {
+                btn.disabled = false;
+                txt.textContent = '{% masterpiece_trans "Location unavailable" %}';
+            },
+            { enableHighAccuracy: true, timeout: 10000 }
+        );
+    }
+
+    // Yandex bloklangan yoki kalit yo'q bo'lsa ham forma ishlayverishi kerak,
+    // shuning uchun xarita ixtiyoriy qism sifatida yuklanadi.
+    if (typeof ymaps !== 'undefined') {
+        ymaps.ready(function () {
+            var start = [41.2995, 69.2401]; // Toshkent markazi
+            qaMap = new ymaps.Map('qa-map', { center: start, zoom: 12, controls: ['zoomControl'] });
+            qaPin = new ymaps.Placemark(start, {}, { preset: 'islands#redDotIcon', draggable: true });
+            qaMap.geoObjects.add(qaPin);
+
+            qaMap.events.add('click', function (e) {
+                var c = e.get('coords');
+                qaSetPoint(c[0], c[1], false);
+            });
+            qaPin.events.add('dragend', function () {
+                var c = qaPin.geometry.getCoordinates();
+                qaSetPoint(c[0], c[1], false);
+            });
+        });
+    } else {
+        document.getElementById('qa-map').style.display = 'none';
+    }
+</script>
+{% endblock %}
