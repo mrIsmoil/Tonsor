@@ -887,3 +887,30 @@ html, body {
     border-color: rgba(214, 92, 82, 0.5);
     color: #D65C52;
 }
+
+/* --- Navbar logosi ---
+   Logo baland va tor (qaychi "T" shaklida), shuning uchun balandligi
+   bo'yicha o'lchanadi va yozuv bilan bir chiziqda turadi. */
+.logo-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    text-decoration: none;
+}
+
+.logo-mark {
+    height: 34px;
+    width: auto;
+    display: block;
+    /* Yashil rang to'q fonda biroz yonib turadi — yumshoq soya uni
+       sayt uslubiga yaqinlashtiradi. */
+    filter: drop-shadow(0 1px 3px rgba(0, 0, 0, .35));
+    transition: transform .3s cubic-bezier(.165, .84, .44, 1);
+}
+
+.logo-link:hover .logo-mark { transform: translateY(-2px); }
+
+@media (max-width: 768px) {
+    .logo-mark { height: 28px; }
+    .logo-link { gap: 8px; }
+}
