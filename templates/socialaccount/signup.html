@@ -1,0 +1,120 @@
+{% extends 'base.html' %}
+{% load masterpiece_i18n %}
+
+{# Bu allauth'ning standart sahifasi o'rnini bosadi.                          #}
+{#                                                                            #}
+{# Odatda bu yerga kelinmaydi: CustomSocialAccountAdapter email to'qnashuvini #}
+{# oldindan ushlab, foydalanuvchini kirish sahifasiga qaytaradi. Lekin Google #}
+{# pochta qaytarmagan kabi kamdan-kam holatlar ham bor. Shablon bo'lmasa,     #}
+{# allauth o'zining bezaksiz oq sahifasini ko'rsatadi va sayt buzilgandek     #}
+{# ko'rinadi — shuning uchun bu zaxira kerak.                                 #}
+
+{% block title %}Tonsor — {% masterpiece_trans "Complete Your Profile" %}{% endblock %}
+
+{% block nav_links %}{% endblock %}
+{% block nav_actions %}{% endblock %}
+{% block mobile_toggle %}{% endblock %}
+
+{% block content %}
+<style>
+    .sas-wrap {
+        min-height: calc(100vh - 90px);
+        display: flex; align-items: center; justify-content: center;
+        padding: 40px 20px 80px;
+    }
+    .sas-card {
+        width: 100%; max-width: 460px;
+        padding: 40px 36px;
+        border-radius: 28px;
+        background: linear-gradient(180deg, rgba(242,243,239,.05), transparent);
+        border: 1px solid rgba(242,243,239,.14);
+        box-shadow: 0 24px 60px rgba(0,0,0,.35);
+    }
+    .sas-kicker {
+        display: block; margin-bottom: 14px;
+        color: #8fa298; font-size: .72rem; font-weight: 700;
+        letter-spacing: .18em; text-transform: uppercase;
+    }
+    .sas-title {
+        font-family: 'TAN - PEARL', serif;
+        font-size: 2.1rem; color: #F2F3EF; margin: 0 0 10px;
+    }
+    .sas-sub { color: #8fa298; font-size: .92rem; margin: 0 0 26px; line-height: 1.5; }
+    .sas-field { margin-bottom: 18px; }
+    .sas-label {
+        display: block; margin-bottom: 8px;
+        color: #8fa298; font-size: .72rem; font-weight: 700;
+        letter-spacing: .12em; text-transform: uppercase;
+    }
+    .sas-card input[type="text"],
+    .sas-card input[type="email"],
+    .sas-card input[type="password"] {
+        width: 100%; padding: 14px 16px;
+        border-radius: 14px;
+        background: rgba(0,0,0,.25);
+        border: 1px solid rgba(242,243,239,.16);
+        color: #F2F3EF; font-family: 'Inter', sans-serif; font-size: .95rem;
+    }
+    .sas-card input:focus {
+        outline: none; border-color: rgba(242,243,239,.4);
+        box-shadow: 0 0 0 3px rgba(143,162,152,.12);
+    }
+    .sas-btn {
+        width: 100%; margin-top: 8px; padding: 15px;
+        border-radius: 14px; cursor: pointer;
+        background: rgba(242,243,239,.1);
+        border: 1px solid rgba(242,243,239,.28);
+        color: #F2F3EF; font-family: 'Inter', sans-serif;
+        font-size: .95rem; font-weight: 700;
+        transition: background .25s ease, border-color .25s ease;
+    }
+    .sas-btn:hover { background: rgba(242,243,239,.18); border-color: rgba(242,243,239,.5); }
+    .sas-errors {
+        margin-bottom: 18px; padding: 12px 14px; border-radius: 12px;
+        background: rgba(214,92,82,.12); border-left: 3px solid #D65C52;
+        color: #F2F3EF; font-size: .88rem; line-height: 1.45;
+    }
+    .sas-errors ul { margin: 0; padding-left: 18px; }
+    .sas-back {
+        display: block; margin-top: 22px; text-align: center;
+        color: #8fa298; font-size: .85rem; text-decoration: none;
+    }
+    .sas-back:hover { color: #F2F3EF; }
+    @media (max-width: 520px) { .sas-card { padding: 32px 22px; } }
+</style>
+
+<div class="sas-wrap">
+    <div class="sas-card">
+        <span class="sas-kicker">Tonsor</span>
+        <h1 class="sas-title">{% masterpiece_trans "Almost there" %}</h1>
+        <p class="sas-sub">{% masterpiece_trans "Confirm the details below to finish signing in with Google." %}</p>
+
+        {% if form.errors %}
+        <div class="sas-errors" role="alert">
+            <ul>
+                {% for field in form %}{% for e in field.errors %}<li>{{ e }}</li>{% endfor %}{% endfor %}
+                {% for e in form.non_field_errors %}<li>{{ e }}</li>{% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+
+        <form method="post" action="{% url 'socialaccount_signup' %}">
+            {% csrf_token %}
+            {% for field in form %}
+            <div class="sas-field">
+                <label class="sas-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                {{ field }}
+            </div>
+            {% endfor %}
+            {% if redirect_field_value %}
+            <input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}">
+            {% endif %}
+            <button type="submit" class="sas-btn">{% masterpiece_trans "Continue" %}</button>
+        </form>
+
+        <a href="{% url 'accounts:login' %}" class="sas-back">
+            &larr; {% masterpiece_trans "Back to login" %}
+        </a>
+    </div>
+</div>
+{% endblock %}
