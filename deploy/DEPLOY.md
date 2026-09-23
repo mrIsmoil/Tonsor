@@ -29,17 +29,18 @@ siz u bilan allaqachon tanishsiz.
 | Disk — 512 MB | kod ~15 MB + media 14 MB + baza 0.4 MB | ✅ bemalol |
 | Bitta web-ishchi | Telegram xabarlari fonda yuboriladi, so'rovni ushlab turmaydi | ✅ |
 | Tashqi tarmoq — oq ro'yxat | `api.telegram.org` va Google OAuth ro'yxatda bor | ⚠️ 8-bosqichda tekshiriladi |
-| Custom domen yo'q | `<siz>.pythonanywhere.com` | ⚠️ tanlov uchun yetarli |
+| Custom domen yo'q | `tonsor.hair` GitHub Pages orqali yo'naltiriladi | ✅ [pastga qarang](#tonsorhair-domeni) |
 | Har 3 oyda "renew" | tugmani bosish kerak | ⚠️ pastga qarang |
 
 ⚠️ **Har 3 oyda Web bo'limidagi "Run until 3 months from today" tugmasini
 bosing.** Bosilmasa sayt o'chib qoladi. Telefoningizga eslatma qo'ying.
 
 Media hajmi 512 MB ga yaqinlashganda yoki kunlik bronlar yuzlab bo'lganda
-**Hacker tarifi ($5/oy)** ga o'tiladi: oq ro'yxat olib tashlanadi, custom
-domen va ko'proq resurs beriladi, **kodga bitta ham o'zgartirish kerak
-emas**. PostgreSQL kerak bo'lsa ham shunchaki `.env` ga
-`DATABASE_URL=postgres://...` yoziladi.
+**Developer tarifiga ($10/oy)** o'tiladi: oq ro'yxat olib tashlanadi, disk
+5 GB bo'ladi, custom domen to'g'ridan-to'g'ri ulanadi va 3 oylik yangilash
+kerak bo'lmaydi — **kodga bitta ham o'zgartirish kerak emas**. PostgreSQL
+kerak bo'lsa ham shunchaki `.env` ga `DATABASE_URL=postgres://...` yoziladi.
+Yillik to'lovda 12 oy o'rniga 10 oy hisoblanadi.
 
 ---
 
@@ -290,3 +291,71 @@ Agar kelajakda siqilmagan eski rasmlar paydo bo'lsa, bir marta yugurtiring:
 .venv/bin/python manage.py compress_media --dry-run   # avval ko'rib oling
 .venv/bin/python manage.py compress_media             # keyin bajaring
 ```
+
+---
+
+## tonsor.hair domeni
+
+Sayt `MIM.pythonanywhere.com` da turadi, lekin odamlar **tonsor.hair** yozib
+ham kira oladi. Buning sxemasi:
+
+```
+tonsor.hair  ->  GitHub Pages (gh-pages shoxobchasi)  ->  mim.pythonanywhere.com
+```
+
+### Nega bunday
+
+PythonAnywhere **bepul** tarifi o'z domeningizni qo'llamaydi — bu faqat
+pullik tarifda (Developer, $10/oy). Namecheap'ning bepul "URL Redirect"
+imkoniyati esa **HTTPS bermaydi**: 443-port umuman javob bermasdi, brauzer
+esa avval `https://` ni sinaydi va o'n soniyalab kutib qolardi.
+
+GitHub Pages ikkalasini ham bepul hal qiladi: domen uchun Let's Encrypt
+sertifikatini o'zi chiqaradi va avtomatik yangilab turadi.
+
+### Qanday sozlangan
+
+**1. `gh-pages` shoxobchasi** — faqat yo'naltirish uchun, asosiy kodga
+aloqasi yo'q:
+
+| Fayl | Vazifasi |
+|---|---|
+| `index.html` | Bosh sahifani yo'naltiradi |
+| `404.html` | Boshqa yo'llarni yo'naltiradi (`/login/` -> `/login/`) |
+| `CNAME` | GitHub'ga domen nomini aytadi |
+
+Yo'naltirish JavaScript orqali va **yo'lni saqlaydi**, shuning uchun
+`tonsor.hair/login/` to'g'ri sahifaga tushadi.
+
+**2. Namecheap Advanced DNS** — beshta yozuv:
+
+| Type | Host | Value |
+|---|---|---|
+| A Record | `@` | `185.199.108.153` |
+| A Record | `@` | `185.199.109.153` |
+| A Record | `@` | `185.199.110.153` |
+| A Record | `@` | `185.199.111.153` |
+| CNAME Record | `www` | `mrismoil.github.io.` |
+
+Bu IP manzillar GitHub Pages'niki va o'zgarmaydi.
+
+**3. GitHub Pages** — `gh-pages` shoxobchasi push qilinganda **o'zi yoqiladi**.
+Sertifikat DNS to'g'rilangandan ~7 daqiqa keyin chiqdi.
+
+### Keyinchalik nima qilish kerak
+
+- Domen har yili Namecheap'da yangilanishi kerak (avtomatik to'lovni yoqing)
+- Sertifikatni GitHub o'zi yangilaydi, aralashish shart emas
+- Agar bir kun **Developer tarifiga** o'tsangiz, `tonsor.hair` ni
+  to'g'ridan-to'g'ri PythonAnywhere'ga ulaysiz va manzil qatorida
+  yo'naltirish emas, domenning o'zi qoladi. Unda `gh-pages` shoxobchasi va
+  A yozuvlari o'chiriladi.
+
+### Ma'lum kamchilik
+
+Ichki sahifalar (`tonsor.hair/login/`) foydalanuvchi uchun normal ishlaydi,
+lekin server javobida `404` kodi qaytadi — GitHub Pages statik xosting
+bo'lgani uchun noma'lum yo'lga boshqa kod qaytara olmaydi. Bu brauzerga
+ta'sir qilmaydi; faqat Telegram yoki Facebook'da **ichki** havolaning
+oldindan ko'rinishi chiqmasligi mumkin. Asosiy `tonsor.hair` havolasi esa
+`200` qaytaradi va normal ko'rinadi.
