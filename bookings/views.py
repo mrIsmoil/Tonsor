@@ -154,8 +154,12 @@ def book_appointment(request, barber_id):
             barber=barber,
             service=service,
             employee=employee,
-            date=date_str,
-            time=time_str,
+            # Matn emas, yuqorida tekshirilgan haqiqiy sana/vaqt obyektlari.
+            # Matn uzatilsa Django uni bazaga to'g'ri yozadi, lekin xotiradagi
+            # obyektda matn bo'lib qoladi — keyin uni sana sifatida
+            # formatlamoqchi bo'lgan kod qulaydi.
+            date=selected_date,
+            time=selected_time,
             client_comment=comment
         )
         notifications.notify_barber_new_booking(appointment)
