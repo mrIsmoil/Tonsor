@@ -60,13 +60,23 @@ def login_view(request):
             if user is None:
                 from accounts.models import normalize_phone
                 User = get_user_model()
-                match = User.objects.filter(email__iexact=identifier).first()
-                if match is None:
+
+                candidates = list(User.objects.filter(email__iexact=identifier))
+                if not candidates:
                     phone = normalize_phone(identifier)
                     if phone:
-                        match = User.objects.filter(phone=phone).first()
-                if match:
-                    user = authenticate(request, username=match.get_username(), password=password)
+                        candidates = list(User.objects.filter(phone=phone))
+
+                # Bitta email bir nechta hisobga tegishli bo'lishi mumkin
+                # (masalan admin va shaxsiy hisob bitta pochtada). Ilgari
+                # bu yerda .first() turardi — shuning uchun ikkinchi hisobga
+                # to'g'ri parol bilan ham kirib bo'lmasdi. Endi qaysinisining
+                # paroli mos kelsa, o'sha kiradi.
+                for match in candidates:
+                    user = authenticate(
+                        request, username=match.get_username(), password=password)
+                    if user is not None:
+                        break
 
             if user is None:
                 error = 'Email or password is incorrect.'
