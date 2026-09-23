@@ -30,14 +30,18 @@ siz u bilan allaqachon tanishsiz.
 | Bitta web-ishchi | Telegram xabarlari fonda yuboriladi, so'rovni ushlab turmaydi | ✅ |
 | Tashqi tarmoq — oq ro'yxat | `api.telegram.org` va Google OAuth ro'yxatda bor | ⚠️ 8-bosqichda tekshiriladi |
 | Custom domen yo'q | `tonsor.hair` GitHub Pages orqali yo'naltiriladi | ✅ [pastga qarang](#tonsorhair-domeni) |
-| Har 3 oyda "renew" | tugmani bosish kerak | ⚠️ pastga qarang |
+| Har oy "renew" | tugmani bosish kerak | ⚠️ pastga qarang |
 
-⚠️ **Har 3 oyda Web bo'limidagi "Run until 3 months from today" tugmasini
-bosing.** Bosilmasa sayt o'chib qoladi. Telefoningizga eslatma qo'ying.
+⚠️ **Har oyda Web bo'limidagi "Run until 1 month from today" tugmasini
+bosing.** Bosilmasa sayt o'chib qoladi. O'sha sahifada "This site will be
+disabled on ..." deb aniq sana yozib turadi.
+
+PythonAnywhere bir hafta oldin emailga eslatma yuboradi, lekin unga
+tayanmang — telefoningizga oylik takrorlanadigan eslatma qo'ying.
 
 Media hajmi 512 MB ga yaqinlashganda yoki kunlik bronlar yuzlab bo'lganda
 **Developer tarifiga ($10/oy)** o'tiladi: oq ro'yxat olib tashlanadi, disk
-5 GB bo'ladi, custom domen to'g'ridan-to'g'ri ulanadi va 3 oylik yangilash
+5 GB bo'ladi, custom domen to'g'ridan-to'g'ri ulanadi va oylik yangilash
 kerak bo'lmaydi — **kodga bitta ham o'zgartirish kerak emas**. PostgreSQL
 kerak bo'lsa ham shunchaki `.env` ga `DATABASE_URL=postgres://...` yoziladi.
 Yillik to'lovda 12 oy o'rniga 10 oy hisoblanadi.
