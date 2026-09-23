@@ -1,0 +1,13 @@
+User-agent: *
+Allow: /
+
+# Shaxsiy va xizmat sahifalari — indekslanmasin.
+Disallow: /admin/
+Disallow: /auth/
+Disallow: /profile/
+Disallow: /bookings/
+Disallow: /shops/dashboard/
+Disallow: /shops/quick-add/
+Disallow: /social/upload/
+Disallow: /claim/
+Disallow: /telegram/

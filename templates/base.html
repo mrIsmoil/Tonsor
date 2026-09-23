@@ -1,13 +1,40 @@
 {% load static masterpiece_i18n %}
 <!DOCTYPE html>
-<html lang="en" data-theme="dark">
+{# Sayt sukut bo'yicha o'zbekcha. Ilgari bu yerda doim "en" turardi va Chrome #}
+{# o'zbek matnini ko'rib "ingliz tilidan tarjima qilaymi?" deb so'rayverardi. #}
+<html lang="{{ request.session.masterpiece_lang|default:'uz' }}" data-theme="dark">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Tonsor{% endblock %}</title>
+
+    {# Havola Telegram yoki Instagram'ga tashlanganda ko'rinadigan ma'lumot. #}
+    {# Busiz quruq havoladan boshqa hech narsa ko'rinmasdi. #}
+    {% block meta %}
+    <meta name="description" content="{% block meta_description %}{% masterpiece_trans "Find your barber, book in seconds and see the result before you sit down." %}{% endblock %}">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="Tonsor">
+    <meta property="og:title" content="{% block og_title %}Tonsor{% endblock %}">
+    <meta property="og:description" content="{% masterpiece_trans "Find your barber, book in seconds and see the result before you sit down." %}">
+    <meta property="og:image" content="{{ request.scheme }}://{{ request.get_host }}{% static 'images/og-preview.jpg' %}">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:url" content="{{ request.scheme }}://{{ request.get_host }}{{ request.path }}">
+    <meta property="og:locale" content="{{ request.session.masterpiece_lang|default:'uz' }}">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Tonsor">
+    <meta name="twitter:description" content="{% masterpiece_trans "Find your barber, book in seconds and see the result before you sit down." %}">
+    <meta name="twitter:image" content="{{ request.scheme }}://{{ request.get_host }}{% static 'images/og-preview.jpg' %}">
+    {% endblock %}
+
+    {# Telefon brauzerining yuqori chizig'i sayt rangiga bo'yaladi. #}
+    <meta name="theme-color" content="#13271E">
+
     <!-- Favicon -->
     <link rel="icon" type="image/x-icon" href="{% static 'images/favicon.ico' %}">
+    {# iPhone'da "bosh ekranga qo'shish" qilinganda ko'rinadigan belgi. #}
+    <link rel="apple-touch-icon" href="{% static 'images/apple-touch-icon.png' %}">
     <!-- Fonts -->
     <style>
         @font-face {

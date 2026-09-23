@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
-from django.views.generic import RedirectView
+from django.views.generic import RedirectView, TemplateView
 
 from core.telegram_webhook import telegram_webhook
 
@@ -15,6 +15,10 @@ urlpatterns = [
     path('auth/', include('allauth.urls')),
     path('i18n/', include('django.conf.urls.i18n')),
     path('favicon.ico', RedirectView.as_view(url=settings.STATIC_URL + 'images/favicon.ico')),
+    # Qidiruv tizimlari birinchi navbatda shu faylni so'raydi. Bo'lmasa
+    # har safar 404 yoziladi va shaxsiy sahifalar ham ko'rib chiqiladi.
+    path('robots.txt', TemplateView.as_view(
+        template_name='robots.txt', content_type='text/plain')),
     path('', include('accounts.urls')),
     path('shops/', include('shops.urls')),
     path('bookings/', include('bookings.urls')),
