@@ -6,7 +6,7 @@ from .models import BarberProfile, Employee, Service, ShopImage, ShopInvite
 
 @admin.register(BarberProfile)
 class BarberProfileAdmin(admin.ModelAdmin):
-    """Dala ishi uchun ro'yxat.
+    """Salonlarni yig'ish ishi uchun ro'yxat.
 
     Salonlar ko'chada yig'iladi, keyin ularga qayta borish kerak bo'ladi.
     Standart ko'rinishda faqat nom chiqardi — telefon, claim kodi va kim

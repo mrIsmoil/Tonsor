@@ -229,7 +229,7 @@ def get_all_shop_statuses(request):
 def quick_add_shop(request):
     """Sartaroshxonani tez qo'shish — baza yig'ish uchun asosiy vosita.
 
-    Dala ishida siz sartaroshxona ichida turgan bo'lasiz, ya'ni telefoningizning
+    Salon yig'ayotganda siz sartaroshxona ichida turgan bo'lasiz, ya'ni telefoningizning
     GPS koordinatasi aynan do'kon manzili. Shuning uchun "hozirgi joylashuvim"
     asosiy usul, xaritani qo'lda surish esa zaxira.
 
