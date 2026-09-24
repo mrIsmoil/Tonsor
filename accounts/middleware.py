@@ -94,7 +94,14 @@ class ProfileCompletionMiddleware:
             # Default to 'client' if not specified, but EXEMPT barbers
             portal_type = request.session.get('portal_type', 'client')
             
-            if not request.user.is_profile_complete and portal_type == 'client' and not request.user.is_barber:
+            # Xodimlar (is_staff) mijoz emas: ular platformani boshqaradi.
+            # Ularni mijoz profilini to'ldirishga majburlash salon qo'shish
+            # sahifasini ham yopib qo'yardi — `createsuperuser` bilan ochilgan
+            # hisobda is_profile_complete har doim False bo'ladi.
+            if (not request.user.is_profile_complete
+                    and portal_type == 'client'
+                    and not request.user.is_barber
+                    and not request.user.is_staff):
                 path = request.path
                 
                 # Allowed paths: completion page, logout, admin, social account callbacks, static/media
