@@ -238,6 +238,11 @@ if os.getenv('GOOGLE_OAUTH_CLIENT_ID') and os.getenv('GOOGLE_OAUTH_SECRET'):
 
 YANDEX_MAPS_API_KEY = os.getenv('YANDEX_MAPS_API_KEY')
 
+# /demo/ sahifasidagi video. YouTube uchun "embed" ko'rinishdagi havola:
+#   https://www.youtube.com/embed/VIDEO_ID
+# Bo'sh bo'lsa, sahifada "video hali qo'shilmagan" degan joy ko'rinadi.
+DEMO_VIDEO_EMBED = os.getenv('DEMO_VIDEO_EMBED', '')
+
 # --- Telegram bot ---
 # Token faqat .env faylidan o'qiladi va hech qachon kodga yozilmaydi.
 # Bo'sh bo'lsa xabarnomalar jimgina o'chiq turadi — sayt normal ishlayveradi.

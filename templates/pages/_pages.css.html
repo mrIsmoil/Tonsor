@@ -1,0 +1,106 @@
+{# Loyiha taqdimoti sahifalari uchun umumiy uslublar. #}
+{# Ikkala sahifa ham shuni ishlatadi, nusxa ko'chirilmaydi. #}
+<style>
+    .lxp {
+        max-width: 1080px;
+        margin: 0 auto;
+        padding: 110px 24px 120px;
+        color: #F2F3EF;
+        font-family: 'Inter', sans-serif;
+    }
+
+    .lxp-hero { padding: 40px 0 72px; border-bottom: 1px solid rgba(242,243,239,.12); }
+    .lxp-kicker {
+        display: block; margin-bottom: 18px;
+        color: #8fa298; font-size: .74rem; font-weight: 700;
+        letter-spacing: .22em; text-transform: uppercase;
+    }
+    .lxp-h1 {
+        font-family: 'TAN - PEARL', Georgia, serif;
+        font-size: clamp(2.6rem, 7vw, 4.4rem);
+        line-height: 1.08; margin: 0 0 22px; color: #F2F3EF;
+    }
+    .lxp-lead { font-size: 1.18rem; line-height: 1.65; color: #cfd8d2; max-width: 760px; }
+
+    .lxp-sec { padding: 72px 0; border-bottom: 1px solid rgba(242,243,239,.1); }
+    .lxp-sec:last-of-type { border-bottom: none; }
+    .lxp-num {
+        display: inline-block; margin-bottom: 14px;
+        color: #8fd4a8; font-size: .78rem; font-weight: 700; letter-spacing: .18em;
+    }
+    .lxp-h2 {
+        font-family: 'TAN - PEARL', Georgia, serif;
+        font-size: clamp(1.9rem, 4.4vw, 2.9rem);
+        line-height: 1.15; margin: 0 0 26px; color: #F2F3EF;
+    }
+    .lxp-h3 { font-size: 1.12rem; font-weight: 600; margin: 0 0 10px; color: #F2F3EF; }
+    .lxp-p { font-size: 1.04rem; line-height: 1.68; color: #cfd8d2; margin: 0 0 18px; max-width: 780px; }
+    .lxp-p b { color: #F2F3EF; }
+
+    .lxp-grid { display: grid; gap: 20px; }
+    .lxp-grid.two { grid-template-columns: repeat(2, 1fr); }
+    .lxp-grid.three { grid-template-columns: repeat(3, 1fr); }
+
+    .lxp-card {
+        padding: 30px; border-radius: 18px;
+        background: rgba(242,243,239,.04);
+        border: 1px solid rgba(242,243,239,.12);
+    }
+    .lxp-card.accent { background: rgba(143,212,168,.1); border-color: rgba(143,212,168,.34); }
+    .lxp-card ul { margin: 10px 0 0; padding-left: 20px; }
+    .lxp-card li { font-size: 1rem; line-height: 1.6; color: #cfd8d2; margin-bottom: 7px; }
+
+    .lxp-tags { display: flex; flex-wrap: wrap; gap: 9px; margin-top: 14px; }
+    .lxp-tag {
+        padding: 7px 13px; border-radius: 999px;
+        background: rgba(242,243,239,.07); border: 1px solid rgba(242,243,239,.16);
+        color: #cfd8d2; font-size: .84rem; font-weight: 500;
+    }
+
+    /* Yo'l xaritasi — bosqichlar */
+    .lxp-steps { display: grid; gap: 16px; }
+    .lxp-step {
+        display: grid; grid-template-columns: 54px 1fr; gap: 20px; align-items: start;
+        padding: 24px 26px; border-radius: 16px;
+        background: rgba(242,243,239,.04); border: 1px solid rgba(242,243,239,.12);
+    }
+    .lxp-step.done { background: rgba(143,212,168,.1); border-color: rgba(143,212,168,.34); }
+    .lxp-step.now { background: rgba(242,243,239,.08); border-color: rgba(242,243,239,.3); }
+    .lxp-badge {
+        width: 54px; height: 54px; border-radius: 50%;
+        display: flex; align-items: center; justify-content: center;
+        background: rgba(242,243,239,.08); color: #8fa298; font-size: 1.1rem;
+    }
+    .lxp-step.done .lxp-badge { background: rgba(143,212,168,.2); color: #8fd4a8; }
+    .lxp-state {
+        display: inline-block; margin-top: 8px; padding: 4px 11px; border-radius: 999px;
+        font-size: .76rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase;
+    }
+    .lxp-state.ok { background: rgba(143,212,168,.2); color: #8fd4a8; }
+    .lxp-state.wip { background: rgba(242,243,239,.14); color: #F2F3EF; }
+    .lxp-state.next { background: rgba(242,243,239,.07); color: #8fa298; }
+
+    .lxp-cta {
+        display: inline-flex; align-items: center; gap: 10px;
+        margin-top: 10px; padding: 15px 28px; border-radius: 999px;
+        background: rgba(143,212,168,.14); border: 1px solid rgba(143,212,168,.45);
+        color: #F2F3EF; font-weight: 700; font-size: 1rem; text-decoration: none;
+        transition: background .25s ease, border-color .25s ease;
+    }
+    .lxp-cta:hover { background: rgba(143,212,168,.26); border-color: rgba(143,212,168,.7); }
+    .lxp-cta.ghost { background: rgba(242,243,239,.05); border-color: rgba(242,243,239,.22); }
+
+    .lxp-todo {
+        padding: 18px 22px; border-radius: 14px; margin-bottom: 20px;
+        background: rgba(214,92,82,.1); border-left: 3px solid #D65C52;
+        color: #F2F3EF; font-size: .96rem; line-height: 1.55;
+    }
+
+    .lxp-note { font-size: .92rem; color: #8fa298; line-height: 1.6; }
+
+    @media (max-width: 760px) {
+        .lxp { padding: 92px 18px 80px; }
+        .lxp-grid.two, .lxp-grid.three { grid-template-columns: 1fr; }
+        .lxp-step { grid-template-columns: 1fr; gap: 12px; }
+    }
+</style>

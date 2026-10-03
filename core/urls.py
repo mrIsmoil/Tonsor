@@ -19,6 +19,8 @@ urlpatterns = [
     # har safar 404 yoziladi va shaxsiy sahifalar ham ko'rib chiqiladi.
     path('robots.txt', TemplateView.as_view(
         template_name='robots.txt', content_type='text/plain')),
+    # Loyiha taqdimoti — mahsulotdan oldin, chunki accounts.urls ildizni oladi.
+    path('', include('core.pages_urls')),
     path('', include('accounts.urls')),
     path('shops/', include('shops.urls')),
     path('bookings/', include('bookings.urls')),

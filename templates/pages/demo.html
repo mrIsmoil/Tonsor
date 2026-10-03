@@ -1,0 +1,154 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Tonsor — Demo{% endblock %}
+{% block og_title %}Tonsor — Demo{% endblock %}
+{% block meta_description %}Tonsor prototipining demo videosi, tavsifi va ishlayotgan saytga havola.{% endblock %}
+
+{% block content %}
+{% include 'pages/_pages.css.html' %}
+
+<style>
+    /* Video ramkasi — nisbatni saqlab, kenglikka moslashadi. */
+    .lxp-video {
+        position: relative; width: 100%; aspect-ratio: 16 / 9;
+        border-radius: 18px; overflow: hidden;
+        background: rgba(242,243,239,.05);
+        border: 1px solid rgba(242,243,239,.14);
+    }
+    .lxp-video iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+    .lxp-video-empty {
+        position: absolute; inset: 0;
+        display: flex; flex-direction: column; align-items: center; justify-content: center;
+        gap: 14px; text-align: center; padding: 30px; color: #8fa298;
+    }
+    .lxp-video-empty i { font-size: 2.4rem; opacity: .5; }
+</style>
+
+<div class="lxp">
+
+    <div class="lxp-hero">
+        <span class="lxp-kicker">Demo</span>
+        <h1 class="lxp-h1">Tonsor qanday ishlaydi</h1>
+        <p class="lxp-lead">
+            Quyidagi videoda mijozning salon qidirishdan navbat olishgacha bo‘lgan yo‘li va
+            sartaroshning bronni qabul qilishi ko‘rsatilgan. Prototip jonli ishlaydi —
+            havola orqali o‘zingiz sinab ko‘rishingiz mumkin.
+        </p>
+    </div>
+
+    <!-- 6.1 -->
+    <section class="lxp-sec">
+        <span class="lxp-num">6.1</span>
+        <h2 class="lxp-h2">Demo video</h2>
+
+        {% if demo_video_embed %}
+        <div class="lxp-video">
+            <iframe src="{{ demo_video_embed }}" title="Tonsor demo video"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; picture-in-picture"
+                    allowfullscreen></iframe>
+        </div>
+        {% else %}
+        <div class="lxp-todo">
+            <b>Video hali qo‘shilmagan.</b> Videoni YouTube yoki Vimeo‘ga yuklab, havolasini
+            <code>core/settings.py</code> dagi <code>DEMO_VIDEO_EMBED</code> sozlamasiga
+            yozing — shundan keyin u shu yerda ko‘rinadi.
+        </div>
+        <div class="lxp-video">
+            <div class="lxp-video-empty">
+                <i class="fas fa-film" aria-hidden="true"></i>
+                <span>Demo video shu yerda ko‘rinadi</span>
+            </div>
+        </div>
+        {% endif %}
+    </section>
+
+    <!-- 6.2 -->
+    <section class="lxp-sec">
+        <span class="lxp-num">6.2</span>
+        <h2 class="lxp-h2">Videoda nima ko‘rsatiladi</h2>
+
+        <p class="lxp-p">
+            Video ikki tomonni ketma-ket ko‘rsatadi: avval mijoz, keyin sartarosh. Maqsad —
+            butun zanjirning haqiqatan ishlashini isbotlash.
+        </p>
+
+        <div class="lxp-grid two">
+            <div class="lxp-card">
+                <h3 class="lxp-h3">Mijoz tomoni</h3>
+                <ul>
+                    <li>Saytga telefon raqami orqali kirish</li>
+                    <li>“Menga eng yaqini” tugmasi — salonlar masofa bo‘yicha saralanadi
+                        (540 m, 4,1 km, 11 km)</li>
+                    <li>Salon sahifasi: xizmatlar, narxlar, ish vaqti, ustalar</li>
+                    <li>Xizmat, sana va vaqtni tanlab navbat olish</li>
+                </ul>
+            </div>
+            <div class="lxp-card accent">
+                <h3 class="lxp-h3">Sartarosh tomoni</h3>
+                <ul>
+                    <li>Telegramga darhol kelgan xabar: mijoz ismi, xizmat, vaqt</li>
+                    <li>Panelda yangi bron paydo bo‘ladi</li>
+                    <li>“Tasdiqlash” tugmasi bosiladi</li>
+                    <li>Mijozga tasdiq xabari boradi</li>
+                </ul>
+            </div>
+        </div>
+
+        <p class="lxp-p" style="margin-top:26px">
+            Videoda ko‘rsatilgan salonlar namunaviy ma’lumot bilan to‘ldirilgan —
+            platformaning o‘zi va barcha funksiyalar haqiqiy.
+        </p>
+    </section>
+
+    <!-- 6.3 -->
+    <section class="lxp-sec">
+        <span class="lxp-num">6.3</span>
+        <h2 class="lxp-h2">Ishlayotgan prototip</h2>
+
+        <p class="lxp-p">
+            Prototip emas, to‘liq ishlaydigan mahsulot. O‘z domenida, himoyalangan ulanish
+            bilan, bugun ochiq.
+        </p>
+
+        <div class="lxp-grid three">
+            <div class="lxp-card">
+                <h3 class="lxp-h3">Sayt</h3>
+                <p class="lxp-note">Mijoz va sartarosh uchun asosiy kirish nuqtasi</p>
+                <div class="lxp-tags" style="margin-top:14px">
+                    <a href="https://tonsor.hair" class="lxp-tag" target="_blank" rel="noopener">tonsor.hair</a>
+                </div>
+            </div>
+            <div class="lxp-card">
+                <h3 class="lxp-h3">Biznes bo‘limi</h3>
+                <p class="lxp-note">Sartarosh sifatida ro‘yxatdan o‘tish va panelni ko‘rish</p>
+                <div class="lxp-tags" style="margin-top:14px">
+                    <a href="{% url 'accounts:barber_entry' %}" class="lxp-tag">Ochish</a>
+                </div>
+            </div>
+            <div class="lxp-card">
+                <h3 class="lxp-h3">Manba kodi</h3>
+                <p class="lxp-note">Loyiha ochiq, kodni ko‘rish mumkin</p>
+                <div class="lxp-tags" style="margin-top:14px">
+                    <a href="https://github.com/mrIsmoil/Tonsor" class="lxp-tag" target="_blank" rel="noopener">GitHub</a>
+                </div>
+            </div>
+        </div>
+
+        <p class="lxp-p" style="margin-top:30px">
+            <b>Sinab ko‘rish uchun:</b> saytni oching, telefon raqamingiz bilan hisob
+            yarating va “Sartaroshlar” bo‘limida “Menga eng yaqini” tugmasini bosing.
+            Brauzer joylashuvni so‘raydi — ruxsat bersangiz, salonlar masofa bo‘yicha
+            saralanadi.
+        </p>
+
+        <div style="margin-top:20px; display:flex; gap:12px; flex-wrap:wrap">
+            <a href="https://tonsor.hair" class="lxp-cta" target="_blank" rel="noopener">
+                Saytni ochish
+            </a>
+            <a href="{% url 'pages:project' %}" class="lxp-cta ghost">Loyiha haqida</a>
+        </div>
+    </section>
+
+</div>
+{% endblock %}

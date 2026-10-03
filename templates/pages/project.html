@@ -1,0 +1,333 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Tonsor — Loyiha haqida{% endblock %}
+{% block og_title %}Tonsor — Loyiha haqida{% endblock %}
+{% block meta_description %}Tonsor loyihasi: muammo, yechim, jamoa, yo'l xaritasi va amalga oshirish rejasi.{% endblock %}
+
+{% block content %}
+{% include 'pages/_pages.css.html' %}
+
+<div class="lxp">
+
+    <div class="lxp-hero">
+        <span class="lxp-kicker">Loyiha haqida</span>
+        <h1 class="lxp-h1">Tonsor</h1>
+        <p class="lxp-lead">
+            O‘zbekistondagi sartaroshxona va go‘zallik salonlari uchun mijozga qaratilgan
+            bron platformasi. Mijoz yaqin atrofdagi salonni topadi, ustaning ishini video
+            orqali ko‘radi va bir necha soniyada navbat oladi. Sartaroshga bron haqida
+            Telegram orqali darhol xabar boradi.
+        </p>
+        <div style="display:flex; gap:12px; flex-wrap:wrap; margin-top:30px">
+            <a href="https://tonsor.hair" class="lxp-cta" target="_blank" rel="noopener">
+                Ishlayotgan saytni ochish
+            </a>
+            <a href="{% url 'pages:demo' %}" class="lxp-cta ghost">Demo sahifasi</a>
+        </div>
+    </div>
+
+    <!-- 1 -->
+    <section class="lxp-sec" id="muammo">
+        <span class="lxp-num">01</span>
+        <h2 class="lxp-h2">Muammo → Yechim</h2>
+
+        <div class="lxp-grid two">
+            <div class="lxp-card">
+                <h3 class="lxp-h3">Muammo</h3>
+                <p class="lxp-p" style="margin-bottom:12px">
+                    Toshkentda sartaroshga yozilish hali ham qo‘ng‘iroq orqali bo‘ladi.
+                    Ikkala tomon ham yutqazadi:
+                </p>
+                <ul>
+                    <li><b>Mijoz</b> notanish joyda qaysi salon yaxshiligini bilmaydi</li>
+                    <li>Qo‘ng‘iroq qiladi — ko‘tarilmaydi yoki band</li>
+                    <li>Natijani faqat o‘tirgandan keyin ko‘radi</li>
+                    <li><b>Sartarosh</b>ning qo‘li band — telefonga javob berolmaydi</li>
+                    <li>Bo‘sh o‘rindiq — yo‘qotilgan daromad</li>
+                </ul>
+            </div>
+            <div class="lxp-card accent">
+                <h3 class="lxp-h3">Yechim</h3>
+                <p class="lxp-p" style="margin-bottom:12px">
+                    Uch qadamda, ilova yuklamasdan, brauzerda:
+                </p>
+                <ul>
+                    <li><b>Toping</b> — salonlar masofa bo‘yicha saralanadi</li>
+                    <li><b>Ko‘ring</b> — har bir usta o‘z ishini video qilib joylaydi</li>
+                    <li><b>Yoziling</b> — xizmat, sana va vaqt tanlanadi</li>
+                    <li>Sartaroshga <b>Telegram orqali darhol xabar</b> boradi</li>
+                    <li>Tasdiqlangach mijozga javob xabari keladi</li>
+                </ul>
+            </div>
+        </div>
+
+        <p class="lxp-p" style="margin-top:26px">
+            Asosiy raqobatchimiz boshqa ilova emas — <b>Instagram yozishmasi va telefon
+            qo‘ng‘irog‘i</b>. Kataloglar salonni topadi, lekin bron qilmaydi. Tarmoq
+            ilovalari bron qiladi, lekin faqat o‘z brendini. Mustaqil salonni topib,
+            ko‘rib, yozilish mumkin bo‘lgan joy yo‘q edi.
+        </p>
+    </section>
+
+    <!-- 2 -->
+    <section class="lxp-sec" id="jamoa">
+        <span class="lxp-num">02</span>
+        <h2 class="lxp-h2">Jamoa</h2>
+
+        <div class="lxp-todo">
+            <b>To‘ldirilishi kerak:</b> jamoaning qolgan a’zolari — ism, rol, ko‘nikmalar va
+            havolalar. Agar jamoa bitta kishidan iborat bo‘lsa, quyidagi bo‘sh kartochkalarni
+            o‘chirib tashlang.
+        </div>
+
+        <div class="lxp-grid two">
+            <div class="lxp-card accent">
+                <h3 class="lxp-h3">Muhammadismoil Mo‘minxo‘jayev</h3>
+                <p class="lxp-note" style="margin-bottom:10px">Asoschi · Full-stack dasturchi</p>
+                <p class="lxp-p" style="font-size:.98rem">
+                    Mahsulotni boshidan oxirigacha o‘zi qurdi: backend, interfeys, Telegram
+                    integratsiyasi, serverga joylash va domen sozlash.
+                </p>
+                <div class="lxp-tags">
+                    <span class="lxp-tag">Python</span>
+                    <span class="lxp-tag">Django</span>
+                    <span class="lxp-tag">HTML / CSS / JS</span>
+                    <span class="lxp-tag">Telegram Bot API</span>
+                    <span class="lxp-tag">Deploy va DevOps</span>
+                </div>
+                <div class="lxp-tags" style="margin-top:16px">
+                    <a href="https://github.com/mrIsmoil/Tonsor" class="lxp-tag" target="_blank" rel="noopener">GitHub</a>
+                    <a href="https://tonsor.hair" class="lxp-tag" target="_blank" rel="noopener">tonsor.hair</a>
+                </div>
+            </div>
+
+            <div class="lxp-card">
+                <h3 class="lxp-h3">[Ism Familiya]</h3>
+                <p class="lxp-note" style="margin-bottom:10px">[Roli]</p>
+                <p class="lxp-p" style="font-size:.98rem">
+                    [Loyihada nima qiladi — bir-ikki jumla]
+                </p>
+                <div class="lxp-tags">
+                    <span class="lxp-tag">[ko‘nikma]</span>
+                    <span class="lxp-tag">[ko‘nikma]</span>
+                </div>
+            </div>
+        </div>
+
+        <h3 class="lxp-h3" style="margin-top:38px">Loyihada ishlatilgan texnologiyalar</h3>
+        <div class="lxp-tags">
+            <span class="lxp-tag">Python 3.12</span>
+            <span class="lxp-tag">Django 5</span>
+            <span class="lxp-tag">SQLite</span>
+            <span class="lxp-tag">Telegram Bot API</span>
+            <span class="lxp-tag">Yandex Maps API</span>
+            <span class="lxp-tag">Google OAuth</span>
+            <span class="lxp-tag">WhiteNoise</span>
+            <span class="lxp-tag">Pillow</span>
+            <span class="lxp-tag">PythonAnywhere</span>
+            <span class="lxp-tag">GitHub Pages</span>
+            <span class="lxp-tag">Let’s Encrypt</span>
+        </div>
+    </section>
+
+    <!-- 3 -->
+    <section class="lxp-sec" id="nega-biz">
+        <span class="lxp-num">03</span>
+        <h2 class="lxp-h2">Nega bizning jamoa bu muammoni hal qila oladi</h2>
+
+        <div class="lxp-grid three">
+            <div class="lxp-card">
+                <h3 class="lxp-h3">Mahsulot allaqachon ishlaydi</h3>
+                <p class="lxp-p" style="font-size:.98rem; margin:0">
+                    Bu g‘oya emas. Sayt serverda, o‘z domenida, HTTPS bilan ishlab turibdi.
+                    Bron, xabarnoma va qidiruv zanjiri boshidan oxirigacha sinovdan o‘tgan.
+                </p>
+            </div>
+            <div class="lxp-card">
+                <h3 class="lxp-h3">Bozorni ichkaridan bilamiz</h3>
+                <p class="lxp-p" style="font-size:.98rem; margin:0">
+                    Biz Toshkentda yashaymiz va muammoni o‘zimiz boshdan kechirganmiz.
+                    Salonlarga borib, sartaroshlar bilan to‘g‘ridan-to‘g‘ri gaplasha olamiz —
+                    bu masofadan turib qilinmaydigan ish.
+                </p>
+            </div>
+            <div class="lxp-card">
+                <h3 class="lxp-h3">Tez harakat qilamiz</h3>
+                <p class="lxp-p" style="font-size:.98rem; margin:0">
+                    Mahsulot tashqi buyurtma bilan emas, jamoa ichida qurildi. Shuning uchun
+                    yangi talab paydo bo‘lsa, uni kunlar ichida qo‘sha olamiz —
+                    kelishuv va shartnoma kutmaymiz.
+                </p>
+            </div>
+        </div>
+
+        <p class="lxp-p" style="margin-top:26px">
+            Eng qiyin qism texnologiya emas — <b>sartaroshlarni jalb qilish</b>. Buning uchun
+            alohida vosita qurdik: salonni o‘zimiz bazaga kiritamiz, u xaritada paydo bo‘ladi,
+            sartaroshga esa faqat kalit — qisqa kod beriladi. U kodni kiritib, salonni
+            o‘ziniki qilib oladi. Ro‘yxatdan o‘tishni so‘ramaymiz.
+        </p>
+    </section>
+
+    <!-- 4 -->
+    <section class="lxp-sec" id="yol-xaritasi">
+        <span class="lxp-num">04</span>
+        <h2 class="lxp-h2">Yo‘l xaritasi</h2>
+
+        <div class="lxp-steps">
+            <div class="lxp-step done">
+                <div class="lxp-badge"><i class="fas fa-check" aria-hidden="true"></i></div>
+                <div>
+                    <h3 class="lxp-h3">Idea</h3>
+                    <p class="lxp-p" style="font-size:.98rem; margin:0">
+                        Muammo aniqlandi: mustaqil salonlar onlayn navbat qabul qila olmaydi,
+                        mijoz esa ularni topa olmaydi.
+                    </p>
+                    <span class="lxp-state ok">Tugallandi</span>
+                </div>
+            </div>
+
+            <div class="lxp-step done">
+                <div class="lxp-badge"><i class="fas fa-check" aria-hidden="true"></i></div>
+                <div>
+                    <h3 class="lxp-h3">Prototype</h3>
+                    <p class="lxp-p" style="font-size:.98rem; margin:0">
+                        Bron oqimi, salon profili va qidiruv ishlab chiqildi va lokal muhitda
+                        sinaldi.
+                    </p>
+                    <span class="lxp-state ok">Tugallandi</span>
+                </div>
+            </div>
+
+            <div class="lxp-step done">
+                <div class="lxp-badge"><i class="fas fa-check" aria-hidden="true"></i></div>
+                <div>
+                    <h3 class="lxp-h3">MVP</h3>
+                    <p class="lxp-p" style="font-size:.98rem; margin:0">
+                        Mijoz va sartarosh hisoblari, masofa bo‘yicha qidiruv, bron va bekor
+                        qilish, Telegram xabarnomalari, video lenta, baholash, uch tilli
+                        interfeys va salon bazasini yig‘ish vositalari.
+                    </p>
+                    <span class="lxp-state ok">Tugallandi</span>
+                </div>
+            </div>
+
+            <div class="lxp-step now">
+                <div class="lxp-badge"><i class="fas fa-rocket" aria-hidden="true"></i></div>
+                <div>
+                    <h3 class="lxp-h3">Launched</h3>
+                    <p class="lxp-p" style="font-size:.98rem; margin:0">
+                        Sayt <b>tonsor.hair</b> domenida jonli ishlayapti va foydalanishga
+                        tayyor. Hozirgi bosqich — Toshkentning birinchi tumanida salon
+                        bazasini yig‘ish va birinchi haqiqiy bronlarni olish.
+                    </p>
+                    <span class="lxp-state wip">Jarayonda</span>
+                </div>
+            </div>
+
+            <div class="lxp-step">
+                <div class="lxp-badge"><i class="fas fa-arrow-right" aria-hidden="true"></i></div>
+                <div>
+                    <h3 class="lxp-h3">Keyingi bosqich</h3>
+                    <p class="lxp-p" style="font-size:.98rem; margin:0">
+                        To‘lov tizimlarini ulash, Pro obunasini ishga tushirish va boshqa
+                        shaharlarga kengayish.
+                    </p>
+                    <span class="lxp-state next">Rejada</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 5 -->
+    <section class="lxp-sec" id="reja">
+        <span class="lxp-num">05</span>
+        <h2 class="lxp-h2">Yechimni qanday amalga oshiramiz</h2>
+
+        <h3 class="lxp-h3" style="margin-bottom:16px">Bosqichlar</h3>
+        <div class="lxp-grid two">
+            <div class="lxp-card">
+                <h3 class="lxp-h3">1–3 oy · Bitta tuman</h3>
+                <ul>
+                    <li>Chilonzorda 80 salonni bazaga kiritish</li>
+                    <li>Birinchi 20 ta salon egasini jalb qilish</li>
+                    <li>Birinchi haqiqiy bronlarni olish</li>
+                </ul>
+            </div>
+            <div class="lxp-card">
+                <h3 class="lxp-h3">4–6 oy · Toshkent</h3>
+                <ul>
+                    <li>500 salon, video lentani to‘ldirish</li>
+                    <li>Mijozlarga birinchi reklama</li>
+                </ul>
+            </div>
+            <div class="lxp-card">
+                <h3 class="lxp-h3">7–9 oy · Daromad</h3>
+                <ul>
+                    <li>Pro obunasini ishga tushirish</li>
+                    <li>Click va Payme integratsiyasi</li>
+                </ul>
+            </div>
+            <div class="lxp-card">
+                <h3 class="lxp-h3">10–12 oy · Kengayish</h3>
+                <ul>
+                    <li>Samarqand, Buxoro, Namangan</li>
+                    <li>Keyingi investitsiya bosqichiga tayyorgarlik</li>
+                </ul>
+            </div>
+        </div>
+
+        <h3 class="lxp-h3" style="margin-top:38px; margin-bottom:12px">Texnik yondashuv</h3>
+        <p class="lxp-p">
+            Backend <b>Django</b> da yozilgan, ma’lumotlar bazasi hozircha <b>SQLite</b> —
+            yuklama oshganda bitta sozlama orqali PostgreSQL‘ga o‘tadi, kodga tegilmaydi.
+            Interfeys alohida mobil ilova emas: sayt telefonda to‘liq ishlaydi va yuklab
+            olish talab qilmaydi. Mamlakatda internetga kiruvchilarning 82 foizi telefondan
+            foydalanadi, shuning uchun bu ataylab tanlangan yo‘l.
+        </p>
+        <p class="lxp-p">
+            Xabarnomalar <b>Telegram Bot API</b> orqali boradi — mamlakat internet
+            auditoriyasining 76 foizi shu yerda. Joylashuv bo‘yicha qidiruv masofani
+            serverda hisoblaydi; bazada minglab salon bo‘lganda indekslangan hudud filtri
+            qo‘shiladi.
+        </p>
+
+        <h3 class="lxp-h3" style="margin-top:38px; margin-bottom:12px">AI vositalari</h3>
+        <div class="lxp-grid two">
+            <div class="lxp-card">
+                <h3 class="lxp-h3">Bugun ishlatilmoqda</h3>
+                <ul>
+                    <li><b>Claude (Anthropic)</b> — kod yozish, xatolarni topish va texnik
+                        hujjatlarni tayyorlashda yordamchi sifatida</li>
+                    <li>Yuklangan rasmlarni avtomatik siqish va o‘lchamini moslashtirish</li>
+                </ul>
+                <p class="lxp-note" style="margin-top:12px">
+                    AI tufayli bitta dasturchi bir necha oylik ishni ancha qisqa muddatda
+                    bajardi — mahsulot shuning uchun tayyor.
+                </p>
+            </div>
+            <div class="lxp-card">
+                <h3 class="lxp-h3">Rejalashtirilgan</h3>
+                <ul>
+                    <li>Mijozga yoqqan soch turmagi bo‘yicha o‘xshash ustalarni tavsiya qilish</li>
+                    <li>Salon uchun band soatlarni oldindan bashorat qilish</li>
+                    <li>Sartarosh uchun avtomatik javob yordamchisi</li>
+                </ul>
+                <p class="lxp-note" style="margin-top:12px">
+                    Bular hali qurilmagan. Ular ma’lumot yig‘ilgandan keyin mantiqan
+                    ishlaydi — bo‘sh bazada tavsiya tizimining foydasi yo‘q.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <div style="padding-top:60px; display:flex; gap:12px; flex-wrap:wrap">
+        <a href="{% url 'pages:demo' %}" class="lxp-cta">Demo sahifasiga o‘tish</a>
+        <a href="https://tonsor.hair" class="lxp-cta ghost" target="_blank" rel="noopener">
+            Ishlayotgan saytni ochish
+        </a>
+    </div>
+
+</div>
+{% endblock %}

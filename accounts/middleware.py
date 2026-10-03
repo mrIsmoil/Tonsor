@@ -121,8 +121,12 @@ class ProfileCompletionMiddleware:
                 try: is_set_language = path == reverse('accounts:set_language_direct')
                 except: is_set_language = 'set-language' in path
 
+                # Loyiha taqdimoti sahifalari hamma uchun ochiq: ularni
+                # hakam yoki investor ko'radi, mijoz profili bilan aloqasi yo'q.
+                is_public_page = path.startswith('/loyiha/') or path.startswith('/demo/')
+
                 # If not on an allowed path, redirect to completion page
-                if not any([is_auth_process, is_static_or_media, is_admin, is_complete_profile, is_logout, is_set_language]):
+                if not any([is_auth_process, is_static_or_media, is_admin, is_complete_profile, is_logout, is_set_language, is_public_page]):
                     return redirect('accounts:complete_profile')
 
         return self.get_response(request)
