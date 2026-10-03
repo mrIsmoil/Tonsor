@@ -1,0 +1,255 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Tonsor — API{% endblock %}
+{% block og_title %}Tonsor — Ochiq API{% endblock %}
+{% block meta_description %}Tonsor ochiq API: O‘zbekistondagi sartaroshxona va go‘zallik salonlari ma’lumotlarini olish uchun.{% endblock %}
+
+{% block content %}
+{% include 'pages/_pages.css.html' %}
+
+<style>
+    /* Endpoint bloki — usul, manzil va tavsif bir qatorda o'qilsin. */
+    .lxp-ep {
+        padding: 24px 26px; border-radius: 16px; margin-bottom: 16px;
+        background: rgba(242,243,239,.04); border: 1px solid rgba(242,243,239,.12);
+    }
+    .lxp-ep-top { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-bottom: 12px; }
+    .lxp-verb {
+        padding: 4px 11px; border-radius: 7px;
+        background: rgba(143,212,168,.2); color: #8fd4a8;
+        font-size: .76rem; font-weight: 700; letter-spacing: .08em;
+    }
+    .lxp-path {
+        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+        font-size: 1rem; color: #F2F3EF; word-break: break-all;
+    }
+    .lxp-pre {
+        margin: 14px 0 0; padding: 18px 20px; border-radius: 12px; overflow-x: auto;
+        background: rgba(0,0,0,.28); border: 1px solid rgba(242,243,239,.1);
+        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+        font-size: .86rem; line-height: 1.65; color: #cfd8d2;
+    }
+    .lxp-params { width: 100%; border-collapse: collapse; margin-top: 14px; }
+    .lxp-params th, .lxp-params td {
+        padding: 9px 12px; text-align: left; font-size: .92rem;
+        border-bottom: 1px solid rgba(242,243,239,.09);
+    }
+    .lxp-params th { color: #8fa298; font-weight: 600; font-size: .8rem;
+                     letter-spacing: .1em; text-transform: uppercase; }
+    .lxp-params td { color: #cfd8d2; }
+    .lxp-params td:first-child {
+        font-family: ui-monospace, SFMono-Regular, Menlo, monospace; color: #8fd4a8;
+        white-space: nowrap;
+    }
+    .lxp-try {
+        display: inline-flex; align-items: center; gap: 8px; margin-top: 14px;
+        padding: 9px 16px; border-radius: 999px;
+        background: rgba(242,243,239,.06); border: 1px solid rgba(242,243,239,.18);
+        color: #F2F3EF; font-size: .88rem; font-weight: 600; text-decoration: none;
+    }
+    .lxp-try:hover { background: rgba(242,243,239,.12); }
+</style>
+
+<div class="lxp">
+
+    <div class="lxp-hero">
+        <span class="lxp-kicker">Dasturchilar uchun</span>
+        <h1 class="lxp-h1">Tonsor ochiq API</h1>
+        <p class="lxp-lead">
+            O‘zbekistondagi sartaroshxona va go‘zallik salonlari ma’lumotlarini
+            boshqa dasturdan olish mumkin. Ro‘yxatdan o‘tish shart emas, kalit
+            kerak emas — havolani ochsangiz, javob JSON ko‘rinishida keladi.
+        </p>
+        <div style="margin-top:26px; display:flex; gap:12px; flex-wrap:wrap">
+            <a href="{% url 'api:index' %}" class="lxp-cta" target="_blank" rel="noopener">API’ni ochish</a>
+            <a href="{% url 'pages:project' %}" class="lxp-cta ghost">Loyiha haqida</a>
+        </div>
+    </div>
+
+    <section class="lxp-sec">
+        <span class="lxp-num">01</span>
+        <h2 class="lxp-h2">Asosiy qoidalar</h2>
+
+        <div class="lxp-grid three">
+            <div class="lxp-card">
+                <h3 class="lxp-h3">Faqat o‘qish</h3>
+                <p class="lxp-note">
+                    API ma’lumotni faqat qaytaradi. Yozish, o‘zgartirish yoki o‘chirish
+                    uchun endpoint yo‘q — ya’ni bazaga tashqaridan zarar yetkazib bo‘lmaydi.
+                </p>
+            </div>
+            <div class="lxp-card">
+                <h3 class="lxp-h3">Kalitsiz</h3>
+                <p class="lxp-note">
+                    Ma’lumot ochiq, shuning uchun autentifikatsiya talab qilinmaydi.
+                    Har qanday saytdagi brauzer kodi ham chaqira oladi (CORS ochiq).
+                </p>
+            </div>
+            <div class="lxp-card">
+                <h3 class="lxp-h3">Tezlik chegarasi</h3>
+                <p class="lxp-note">
+                    Bitta IP uchun {{ rate_window }} soniyada {{ rate_limit }} ta so‘rov.
+                    Oshib ketsa <code>429</code> qaytadi.
+                </p>
+            </div>
+        </div>
+
+        <p class="lxp-p" style="margin-top:28px">
+            <b>Shaxsiy ma’lumot chiqmaydi.</b> API faqat salonning o‘zi e’lon qilgan
+            ma’lumotini beradi: nomi, manzili, xizmatlari, ish vaqti. Mijozlar, bronlar,
+            elektron pochta, to‘lov rekvizitlari va salonni tasdiqlash kodlari
+            javobga hech qachon qo‘shilmaydi.
+        </p>
+    </section>
+
+    <section class="lxp-sec">
+        <span class="lxp-num">02</span>
+        <h2 class="lxp-h2">Endpointlar</h2>
+
+        <div class="lxp-ep">
+            <div class="lxp-ep-top">
+                <span class="lxp-verb">GET</span>
+                <span class="lxp-path">/api/salons/</span>
+            </div>
+            <p class="lxp-note">
+                Salonlar ro‘yxati. Qidiruv, filtr va joylashuv bo‘yicha saralash bilan.
+            </p>
+
+            <table class="lxp-params">
+                <tr><th>Parametr</th><th>Nima qiladi</th></tr>
+                <tr><td>q</td><td>Nom yoki manzil bo‘yicha qidiruv</td></tr>
+                <tr><td>type</td><td><code>men</code> yoki <code>women</code></td></tr>
+                <tr><td>lat, lng</td><td>Joylashuv. Berilsa, natija masofa bo‘yicha saralanadi va har bir salonga <code>distance_km</code> qo‘shiladi</td></tr>
+                <tr><td>radius</td><td>Km. <code>lat</code>/<code>lng</code> bilan birga ishlaydi, eng kattasi {{ max_radius }}</td></tr>
+                <tr><td>limit</td><td>1 dan {{ max_limit }} gacha, standart {{ default_limit }}</td></tr>
+                <tr><td>offset</td><td>Nechtasini tashlab ketish — sahifalash uchun</td></tr>
+            </table>
+
+            <pre class="lxp-pre">GET /api/salons/?lat=41.311&amp;lng=69.240&amp;radius=5&amp;limit=2
+
+{
+  "count": 2,
+  "limit": 2,
+  "offset": 0,
+  "results": [
+    {
+      "id": 1,
+      "name": "Barbershop Chilonzor",
+      "type": "men",
+      "address": "Toshkent, Chilonzor tumani, Bunyodkor 12",
+      "rating": 4.8,
+      "reviews": 23,
+      "is_claimed": true,
+      "location": { "lat": 41.2756, "lng": 69.2034 },
+      "url": "https://tonsor.hair/shops/profile/1/",
+      "distance_km": 0.54
+    }
+  ]
+}</pre>
+            <a class="lxp-try" href="{% url 'api:salons' %}?limit=3" target="_blank" rel="noopener">
+                Sinab ko‘rish
+            </a>
+        </div>
+
+        <div class="lxp-ep">
+            <div class="lxp-ep-top">
+                <span class="lxp-verb">GET</span>
+                <span class="lxp-path">/api/salons/{id}/</span>
+            </div>
+            <p class="lxp-note">
+                Bitta salon haqida to‘liq ma’lumot: xizmatlar va narxlar, ish vaqti,
+                ustalar, rasmlar, bog‘lanish havolalari.
+            </p>
+            <pre class="lxp-pre">GET /api/salons/1/
+
+{
+  "id": 1,
+  "name": "Barbershop Chilonzor",
+  "phone": "+998 90 123 45 67",
+  "currency": "UZS",
+  "hours": { "open": "09:00", "close": "21:00",
+             "days": ["Mon","Tue","Wed","Thu","Fri","Sat"] },
+  "services": [
+    { "id": 4, "name": "Soch olish", "price": 50000.0,
+      "currency": "UZS", "duration_minutes": 40 }
+  ],
+  "staff": [ { "name": "Aziz Karimov", "role": "professional" } ]
+}</pre>
+        </div>
+
+        <div class="lxp-ep">
+            <div class="lxp-ep-top">
+                <span class="lxp-verb">GET</span>
+                <span class="lxp-path">/api/stats/</span>
+            </div>
+            <p class="lxp-note">
+                Platformadagi umumiy sonlar: nechta salon bor, nechtasi egasi tomonidan
+                tasdiqlangan, nechtasining joylashuvi belgilangan.
+            </p>
+            <a class="lxp-try" href="{% url 'api:stats' %}" target="_blank" rel="noopener">
+                Sinab ko‘rish
+            </a>
+        </div>
+
+        <div class="lxp-ep">
+            <div class="lxp-ep-top">
+                <span class="lxp-verb">GET</span>
+                <span class="lxp-path">/api/</span>
+            </div>
+            <p class="lxp-note">
+                API o‘zi haqida: qanday endpointlar bor va ular qanday parametr qabul
+                qiladi. Dastur API tuzilishini shu yerdan avtomatik o‘qiy oladi.
+            </p>
+            <a class="lxp-try" href="{% url 'api:index' %}" target="_blank" rel="noopener">
+                Sinab ko‘rish
+            </a>
+        </div>
+    </section>
+
+    <section class="lxp-sec">
+        <span class="lxp-num">03</span>
+        <h2 class="lxp-h2">Misollar</h2>
+
+        <div class="lxp-grid two">
+            <div class="lxp-card">
+                <h3 class="lxp-h3">Terminal</h3>
+                <pre class="lxp-pre">curl "https://tonsor.hair/api/salons/?q=chilonzor"</pre>
+            </div>
+            <div class="lxp-card">
+                <h3 class="lxp-h3">JavaScript</h3>
+                <pre class="lxp-pre">const r = await fetch(
+  "https://tonsor.hair/api/salons/" +
+  "?lat=41.311&amp;lng=69.240&amp;radius=3"
+);
+const data = await r.json();
+console.log(data.results);</pre>
+            </div>
+            <div class="lxp-card">
+                <h3 class="lxp-h3">Python</h3>
+                <pre class="lxp-pre">import requests
+
+r = requests.get(
+    "https://tonsor.hair/api/salons/",
+    params={"lat": 41.311, "lng": 69.240,
+            "radius": 3, "limit": 10},
+)
+for salon in r.json()["results"]:
+    print(salon["name"], salon["distance_km"], "km")</pre>
+            </div>
+            <div class="lxp-card accent">
+                <h3 class="lxp-h3">Xatolar</h3>
+                <ul>
+                    <li><code>404</code> — bunday salon yo‘q</li>
+                    <li><code>429</code> — tezlik chegarasidan oshdingiz</li>
+                    <li><code>405</code> — faqat <code>GET</code> qabul qilinadi</li>
+                </ul>
+                <p class="lxp-note" style="margin-top:12px">
+                    Xato javobi ham JSON: <code>{ "error": "..." }</code>
+                </p>
+            </div>
+        </div>
+    </section>
+
+</div>
+{% endblock %}

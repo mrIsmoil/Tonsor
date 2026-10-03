@@ -19,6 +19,8 @@ urlpatterns = [
     # har safar 404 yoziladi va shaxsiy sahifalar ham ko'rib chiqiladi.
     path('robots.txt', TemplateView.as_view(
         template_name='robots.txt', content_type='text/plain')),
+    # Ochiq API — faqat o'qish, kalit talab qilinmaydi.
+    path('api/', include('core.api_urls')),
     # Loyiha taqdimoti — mahsulotdan oldin, chunki accounts.urls ildizni oladi.
     path('', include('core.pages_urls')),
     path('', include('accounts.urls')),

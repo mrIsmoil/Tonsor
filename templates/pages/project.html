@@ -320,6 +320,25 @@
                 </p>
             </div>
         </div>
+
+        <h3 class="lxp-h3" style="margin-top:38px; margin-bottom:12px">Ochiq API</h3>
+        <p class="lxp-p">
+            Yig‘ilgan salon bazasi faqat bizning saytimiz ichida qolib ketmaydi: uni
+            <b>ochiq API</b> orqali boshqa dasturlar ham o‘qiy oladi — kalit kerak emas,
+            ro‘yxatdan o‘tish shart emas. Masalan shahar yo‘riqnomasi ilovasi yoki
+            Telegram boti “yaqinimdagi sartaroshxonalar” ro‘yxatini shu yerdan oladi.
+            API faqat o‘qish uchun: tashqaridan bazaga hech narsa yozib bo‘lmaydi, va
+            mijozlar, bronlar, to‘lov rekvizitlari hech qachon javobga tushmaydi.
+        </p>
+        <div class="lxp-tags">
+            <a href="{% url 'api:docs' %}" class="lxp-tag">API hujjati</a>
+            <a href="{% url 'api:salons' %}?limit=3" class="lxp-tag" target="_blank" rel="noopener">
+                /api/salons/
+            </a>
+            <a href="{% url 'api:stats' %}" class="lxp-tag" target="_blank" rel="noopener">
+                /api/stats/
+            </a>
+        </div>
     </section>
 
     <div style="padding-top:60px; display:flex; gap:12px; flex-wrap:wrap">
