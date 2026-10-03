@@ -240,14 +240,35 @@ Sayt ochilgach quyidagilarni birma-bir sinab ko'ring:
 ## 10. Keyingi o'zgarishlarni chiqarish
 
 ```bash
-cd ~/Tonsor
-git pull
-.venv/bin/pip install -r requirements.txt
-.venv/bin/python manage.py migrate
-.venv/bin/python manage.py collectstatic --noinput
+bash ~/Tonsor/deploy/update.sh
 ```
 
-So'ng **Web** bo'limidagi **Reload** tugmasi.
+So'ng **Web** bo'limidagi **Reload** tugmasi. Reload'siz sayt eski kodda
+ishlayveradi.
+
+Skript yuqoridagi qadamlarni o'zi bajaradi: `git pull`, kutubxonalar,
+sozlama va shablon tekshiruvi, `migrate`, `collectstatic`.
+
+### `.venv/bin/python` — nega har safar to'liq yo'l
+
+Serverda to'rtta har xil Python bor va ularda Django'ning turli versiyalari
+yotibdi:
+
+| Python | Django | Holat |
+|---|---|---|
+| `python3.9` | 4.2.16 | ❌ eski versiya |
+| `python3.10` | 5.0.9 | ❌ loyihanikidan farq qiladi |
+| `python3.11`–`3.13` | — | ❌ `pyjwt` yo'q, `django.setup()` yiqiladi |
+| **`~/Tonsor/.venv`** | **5.0.6** | ✅ **faqat shuni ishlating** |
+
+Konsoldagi yalang'och `python` → 3.13 ga ketadi va `ModuleNotFoundError:
+No module named 'jwt'` beradi (allauth'ning Google provayderi `pyjwt` ni
+talab qiladi). Bu xato o'zi zararsiz — buyruq shunchaki bajarilmaydi.
+
+Haqiqiy xavf boshqa joyda: `migrate` ni noto'g'ri Django versiyasida ishga
+tushirsangiz, u bazaga sayt tushunmaydigan o'zgarish yozib qo'yadi. Shuning
+uchun qo'lda buyruq yozishdan ko'ra `update.sh` ni ishlatgan ma'qul — u
+muhitni o'zi tanlaydi va topa olmasa to'xtaydi.
 
 ---
 
